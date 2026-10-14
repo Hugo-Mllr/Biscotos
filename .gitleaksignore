@@ -1,0 +1,4 @@
+# Reviewed false positives — see docs/SECURITY_AUDIT.md.
+# Dummy VAPID *public* key in a unit test ("any base64url string"), not a secret.
+477fc07f8bd71c859ae5059c475f6f178ca443b2:frontend/src/lib/push.test.js:generic-api-key:15
+frontend/src/lib/push.test.js:generic-api-key:15

@@ -30,3 +30,69 @@ frontend/bundle-size.json
 
 # Local planning notes
 docs/superpowers/plans/
+
+# ---------------------------------------------------------------------------
+# Biscotos hardening (docs/SECURITY_AUDIT.md). The repo is PUBLIC: anything
+# committed is readable forever. Synthetic test fixtures live under fixtures/.
+# ---------------------------------------------------------------------------
+
+# Secrets / environment — only .env.example (fake values) is tracked
+.env.*
+!.env.example
+*.env
+secrets/
+*.secret
+
+# Keys, certificates, signing material (APK keystores included)
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.keystore
+*.jks
+keystore.properties
+google-services.json
+GoogleService-Info.plist
+vapid.json
+
+# Runtime data, databases, uploads, backups, dumps
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.db
+*.db-journal
+uploads/
+backups/
+*.bak
+*.dump
+*.sql.gz
+state-*.json
+db.json
+audit.log*
+
+# Health / workout exports (real personal data) — synthetic fixtures excepted
+*.fit
+*.gpx
+*.tcx
+*.csv
+apple_health_export/
+export.xml
+export_cda.xml
+!**/fixtures/**
+
+# Logs and debug output
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+*.trace
+*.heapsnapshot
+
+# OS / IDE
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

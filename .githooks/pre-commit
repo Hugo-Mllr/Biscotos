@@ -1,0 +1,10 @@
+#!/bin/sh
+# Biscotos pre-commit: block any commit whose staged changes contain a secret.
+# Enable once per clone:  git config core.hooksPath .githooks
+# Never bypass with --no-verify — see docs/SECURITY_AUDIT.md.
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks is not installed — commit blocked." >&2
+  echo "Install it: https://github.com/gitleaks/gitleaks#installing" >&2
+  exit 1
+fi
+exec gitleaks git --pre-commit --staged --redact --no-banner --verbose .
