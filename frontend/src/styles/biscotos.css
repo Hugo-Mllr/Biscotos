@@ -1,0 +1,268 @@
+/* ============================================================================
+   Biscotos — « Nocturne de stade » (stadium-night scoreboard)
+   ----------------------------------------------------------------------------
+   The Biscotos layer sits beside openGym's design system (index.css) without
+   touching it: every token is prefixed --bx-, every rule is scoped under .bx.
+   New screens opt in with className="bx"; existing screens are untouched until
+   the dedicated polish phase. Rules and rationale: docs/DESIGN.md.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- tokens -- */
+:root {
+  /* surfaces — dark is the default: an unlit stadium, ink not pure black */
+  --bx-bg:        #0a0b0d;
+  --bx-surface:   #14161a;
+  --bx-surface-2: #1d2026;
+  --bx-surface-3: #282c34;
+  --bx-line:      rgba(255,255,255,.08);
+  --bx-line-2:    rgba(255,255,255,.14);
+
+  /* text */
+  --bx-ink:   #f4f5f1;
+  --bx-ink-2: rgba(244,245,241,.64);
+  --bx-ink-3: rgba(244,245,241,.38);
+
+  /* brand — one electric accent, one warm signal; nothing else is saturated */
+  --bx-volt:      #d4ff3a;            /* primary: scores, CTAs, progress */
+  --bx-volt-ink:  #0a0b0d;            /* text on a volt fill (15.9:1) */
+  --bx-volt-soft: rgba(212,255,58,.14);
+  --bx-ember:     #ff6b2c;            /* PRs, streaks, over-target */
+  --bx-ember-soft:rgba(255,107,44,.16);
+
+  /* data — macros keep one colour everywhere (ring, bar, chip, chart) */
+  --bx-kcal:    var(--bx-volt);
+  --bx-protein: #5ac8fa;
+  --bx-carbs:   #ffc94a;
+  --bx-fat:     #ff7ab6;
+  --bx-ok:      #3ddc84;
+  --bx-danger:  #ff4d4d;
+
+  /* typography — system stacks only: no font CDN (privacy, offline, CSP) */
+  --bx-font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, system-ui, sans-serif;
+  --bx-font-display: 'SF Pro Display', 'Roboto Condensed', 'Arial Narrow', 'Helvetica Neue', system-ui, sans-serif;
+  --bx-fs-xs: 12px;  --bx-fs-sm: 14px;  --bx-fs-md: 16px;  --bx-fs-lg: 20px;
+  --bx-fs-xl: 28px;  --bx-fs-2xl: 40px; --bx-fs-score: 64px;
+  --bx-track-caps: .12em;   /* letter-spacing of uppercase labels */
+  --bx-track-score: -.04em; /* tight scoreboard numerals */
+
+  /* spacing — 4 px grid */
+  --bx-s1: 4px;  --bx-s2: 8px;  --bx-s3: 12px; --bx-s4: 16px;
+  --bx-s5: 24px; --bx-s6: 32px; --bx-s7: 48px;
+
+  /* radii */
+  --bx-r-sm: 8px; --bx-r: 14px; --bx-r-lg: 20px; --bx-r-pill: 999px;
+
+  /* elevation — dark UIs show depth with light edges, not drop shadows */
+  --bx-shadow-1: 0 1px 0 rgba(255,255,255,.04) inset, 0 1px 2px rgba(0,0,0,.4);
+  --bx-shadow-2: 0 1px 0 rgba(255,255,255,.06) inset, 0 8px 24px rgba(0,0,0,.45);
+  --bx-glow:     0 0 0 1px var(--bx-volt), 0 0 24px rgba(212,255,58,.35);
+
+  /* motion — the single source of truth (mirrored in lib/motion.js) */
+  --bx-dur-instant: 90ms;
+  --bx-dur-fast:    160ms;
+  --bx-dur-base:    240ms;
+  --bx-dur-slow:    420ms;
+  --bx-dur-draw:    900ms;   /* charts and rings drawing themselves */
+  --bx-ease-out:    cubic-bezier(.2,.8,.2,1);    /* entering, settling */
+  --bx-ease-in-out: cubic-bezier(.65,0,.35,1);   /* moving between two places */
+  --bx-ease-spring: cubic-bezier(.3,1.5,.5,1);   /* celebration only: set done, PR */
+}
+
+:root[data-theme="light"] {
+  /* daylight: warm paper, ink stays near-black; volt is too light for text on paper,
+     so it is used as a FILL with dark ink, and --bx-volt-text carries text/lines */
+  --bx-bg:        #f4f3ee;
+  --bx-surface:   #ffffff;
+  --bx-surface-2: #ecebe5;
+  --bx-surface-3: #e0dfd8;
+  --bx-line:      rgba(10,11,13,.08);
+  --bx-line-2:    rgba(10,11,13,.16);
+  --bx-ink:   #0a0b0d;
+  --bx-ink-2: rgba(10,11,13,.62);
+  --bx-ink-3: rgba(10,11,13,.40);
+  --bx-volt-soft: rgba(140,180,0,.16);
+  --bx-ember:     #e5541b;
+  --bx-protein:   #0a84c6;
+  --bx-carbs:     #c98a00;
+  --bx-fat:       #d6337f;
+  --bx-ok:        #1f9d55;
+  --bx-danger:    #d92d2d;
+  --bx-shadow-1: 0 1px 2px rgba(10,11,13,.06);
+  --bx-shadow-2: 0 8px 24px rgba(10,11,13,.10);
+}
+:root           { --bx-volt-text: var(--bx-volt) }
+:root[data-theme="light"] { --bx-volt-text: #4d6600; --bx-kcal: #4d6600 } /* 6.9:1 on paper */
+
+/* Reduced motion: every duration collapses; JS reads the same media query (lib/motion.js). */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --bx-dur-instant: 1ms; --bx-dur-fast: 1ms; --bx-dur-base: 1ms;
+    --bx-dur-slow: 1ms; --bx-dur-draw: 1ms;
+  }
+}
+
+/* ------------------------------------------------------------ keyframes -- */
+@keyframes bx-page-in   { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+@keyframes bx-rise      { from { opacity: 0; transform: translateY(6px) }  to { opacity: 1; transform: none } }
+@keyframes bx-pop       { 0% { transform: scale(1) } 40% { transform: scale(1.12) } 100% { transform: scale(1) } }
+@keyframes bx-flash     { 0% { box-shadow: 0 0 0 0 var(--bx-volt) } 100% { box-shadow: 0 0 0 14px transparent } }
+@keyframes bx-pr-burst  { 0% { transform: scale(.6); opacity: 0 } 50% { transform: scale(1.08); opacity: 1 } 100% { transform: scale(1); opacity: 1 } }
+@keyframes bx-shimmer   { from { background-position: -200% 0 } to { background-position: 200% 0 } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bx *, .bx *::before, .bx *::after, .bx {
+    animation-duration: 1ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important; scroll-behavior: auto !important;
+  }
+}
+
+/* ----------------------------------------------------------------- base -- */
+.bx {
+  background: var(--bx-bg); color: var(--bx-ink);
+  font-family: var(--bx-font-ui); font-size: var(--bx-fs-md); line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+  min-height: 100%;
+  padding: calc(var(--sat, 0px) + var(--conn, 0px) + var(--bx-s4)) var(--bx-s4) calc(110px + var(--sab, 0px));
+  animation: bx-page-in var(--bx-dur-slow) var(--bx-ease-out) both;
+}
+.bx-wrap { max-width: 640px; margin: 0 auto }
+
+/* page header: small caps kicker over a massive condensed title */
+.bx-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--bx-s3); margin-bottom: var(--bx-s5) }
+.bx-kicker {
+  font-size: var(--bx-fs-xs); font-weight: 700; letter-spacing: var(--bx-track-caps);
+  text-transform: uppercase; color: var(--bx-volt-text);
+}
+.bx-title {
+  font-family: var(--bx-font-display); font-stretch: condensed;
+  font-size: var(--bx-fs-2xl); font-weight: 800; line-height: .95;
+  letter-spacing: -.03em; text-transform: uppercase;
+}
+.bx-label {
+  font-size: var(--bx-fs-xs); font-weight: 600; letter-spacing: var(--bx-track-caps);
+  text-transform: uppercase; color: var(--bx-ink-3);
+}
+.bx-dim { color: var(--bx-ink-2) }
+.bx-small { font-size: var(--bx-fs-sm) }
+
+/* scoreboard numerals */
+.bx-score {
+  font-family: var(--bx-font-display); font-stretch: condensed;
+  font-size: var(--bx-fs-score); font-weight: 800; line-height: .9;
+  letter-spacing: var(--bx-track-score);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.bx-score-sm { font-size: var(--bx-fs-xl) }
+.bx-unit { font-size: var(--bx-fs-sm); font-weight: 600; color: var(--bx-ink-3); margin-left: 4px; letter-spacing: 0 }
+
+/* cards */
+.bx-card {
+  background: var(--bx-surface); border: 1px solid var(--bx-line);
+  border-radius: var(--bx-r-lg); padding: var(--bx-s4);
+  box-shadow: var(--bx-shadow-1);
+  animation: bx-rise var(--bx-dur-base) var(--bx-ease-out) both;
+}
+.bx-card + .bx-card { margin-top: var(--bx-s3) }
+.bx-card-hd { display: flex; align-items: center; justify-content: space-between; gap: var(--bx-s2); margin-bottom: var(--bx-s3) }
+.bx-stagger > * { animation-delay: calc(var(--i, 0) * 40ms) }
+
+/* interactive: buttons, rows, chips — micro-interactions on press and hover */
+.bx-tap {
+  transition: transform var(--bx-dur-fast) var(--bx-ease-out),
+              background-color var(--bx-dur-fast) var(--bx-ease-out),
+              border-color var(--bx-dur-fast) var(--bx-ease-out);
+}
+.bx-tap:active { transform: scale(.97) }
+@media (hover: hover) { .bx-tap:hover { border-color: var(--bx-line-2) } }
+
+.bx-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--bx-s2);
+  min-height: 48px; padding: 0 var(--bx-s5); border-radius: var(--bx-r-pill);
+  font-weight: 700; font-size: var(--bx-fs-md); letter-spacing: .01em;
+  background: var(--bx-surface-2); color: var(--bx-ink); border: 1px solid var(--bx-line);
+}
+.bx-btn-primary { background: var(--bx-volt); color: var(--bx-volt-ink); border-color: transparent }
+.bx-btn-primary:focus-visible { box-shadow: var(--bx-glow) }
+.bx-btn-ghost { background: transparent }
+.bx-btn-block { width: 100% }
+.bx-btn[disabled] { opacity: .45; pointer-events: none }
+.bx-iconbtn {
+  width: 44px; height: 44px; border-radius: var(--bx-r-pill); display: inline-grid; place-items: center;
+  background: var(--bx-surface-2); border: 1px solid var(--bx-line); font-size: 20px; color: var(--bx-ink);
+}
+
+.bx-chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 var(--bx-s3);
+  border-radius: var(--bx-r-pill); font-size: var(--bx-fs-sm); font-weight: 600;
+  background: var(--bx-surface-2); color: var(--bx-ink-2); border: 1px solid var(--bx-line);
+}
+.bx-chip[aria-pressed="true"] { background: var(--bx-volt-soft); color: var(--bx-volt-text); border-color: transparent }
+
+/* form fields */
+.bx-field { display: block; margin-bottom: var(--bx-s3) }
+.bx-field > span { display: block; margin-bottom: 6px }
+.bx-input {
+  width: 100%; min-height: 48px; padding: 0 var(--bx-s4); border-radius: var(--bx-r);
+  background: var(--bx-surface-2); border: 1px solid var(--bx-line); color: var(--bx-ink);
+  font-size: var(--bx-fs-md);
+  transition: border-color var(--bx-dur-fast) var(--bx-ease-out), box-shadow var(--bx-dur-fast) var(--bx-ease-out);
+}
+.bx-input:focus { outline: none; border-color: var(--bx-volt-text); box-shadow: 0 0 0 3px var(--bx-volt-soft) }
+.bx-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--bx-s3) }
+.bx-row4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--bx-s2) }
+
+/* list rows */
+.bx-list { list-style: none }
+.bx-item {
+  display: flex; align-items: center; gap: var(--bx-s3); padding: var(--bx-s3) 0;
+  border-top: 1px solid var(--bx-line);
+  animation: bx-rise var(--bx-dur-base) var(--bx-ease-out) both;
+}
+.bx-item:first-child { border-top: 0 }
+.bx-item-main { flex: 1; min-width: 0 }
+.bx-item-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.bx-item-sub { font-size: var(--bx-fs-sm); color: var(--bx-ink-2) }
+
+/* macro bars — width animates from 0 on mount */
+.bx-bar { height: 8px; border-radius: var(--bx-r-pill); background: var(--bx-surface-3); overflow: hidden }
+.bx-bar > i {
+  display: block; height: 100%; border-radius: inherit; background: var(--c, var(--bx-volt));
+  transform-origin: left; transition: width var(--bx-dur-draw) var(--bx-ease-out);
+}
+.bx-bar.is-over > i { background: var(--bx-ember) }
+[dir="rtl"] .bx-bar > i { transform-origin: right }
+
+/* ring (SVG): stroke-dashoffset is animated by transition on mount/update */
+.bx-ring circle { fill: none; stroke-linecap: round }
+.bx-ring .bx-ring-track { stroke: var(--bx-surface-3) }
+.bx-ring .bx-ring-val { stroke: var(--c, var(--bx-volt)); transition: stroke-dashoffset var(--bx-dur-draw) var(--bx-ease-out) }
+.bx-ring.is-over .bx-ring-val { stroke: var(--bx-ember) }
+
+/* feedback */
+.bx-pop   { animation: bx-pop var(--bx-dur-slow) var(--bx-ease-spring) }
+.bx-flash { animation: bx-flash var(--bx-dur-slow) var(--bx-ease-out) }
+.bx-pr    { animation: bx-pr-burst var(--bx-dur-slow) var(--bx-ease-spring) both; color: var(--bx-ember) }
+.bx-skeleton {
+  border-radius: var(--bx-r-sm); min-height: 16px;
+  background: linear-gradient(90deg, var(--bx-surface-2) 25%, var(--bx-surface-3) 50%, var(--bx-surface-2) 75%);
+  background-size: 200% 100%; animation: bx-shimmer 1.4s linear infinite;
+}
+.bx-empty { text-align: center; padding: var(--bx-s6) var(--bx-s4); color: var(--bx-ink-2) }
+.bx-alert { padding: var(--bx-s3) var(--bx-s4); border-radius: var(--bx-r); background: var(--bx-ember-soft); color: var(--bx-ink); font-size: var(--bx-fs-sm) }
+
+/* bottom sheet used by Biscotos screens */
+.bx-sheet-bg {
+  position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.55);
+  display: flex; align-items: flex-end; justify-content: center;
+  animation: bx-rise var(--bx-dur-fast) var(--bx-ease-out) both;
+}
+.bx-sheet {
+  width: 100%; max-width: 640px; max-height: 92dvh; overflow: auto;
+  background: var(--bx-bg); color: var(--bx-ink);
+  border-radius: var(--bx-r-lg) var(--bx-r-lg) 0 0; border: 1px solid var(--bx-line);
+  padding: var(--bx-s4) var(--bx-s4) calc(var(--bx-s5) + var(--sab, 0px));
+  animation: bx-page-in var(--bx-dur-base) var(--bx-ease-out) both;
+}
+.bx-sheet-grip { width: 40px; height: 5px; border-radius: 3px; background: var(--bx-surface-3); margin: 0 auto var(--bx-s4) }
+
+.bx-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap }
