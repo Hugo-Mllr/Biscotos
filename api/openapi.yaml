@@ -153,6 +153,10 @@ tags:
       attached to a logged workout. Stored per profile (one quota for both) and named
       by the SHA-256 of its bytes; the state only carries a `MediaRef`. Every route here is a
       404 when the instance runs with `MEDIA_UPLOADS=0`.
+  - name: health
+    description: >-
+      Biscotos health import: per-profile webhook tokens and the Apple Health webhook an iOS
+      Shortcut posts to (docs/APPLE_HEALTH.md).
   - name: nutrition
     description: >-
       Biscotos nutrition: food log, own foods, daily goals and height, stored per profile
@@ -3158,8 +3162,125 @@ paths:
         '502': { description: Open Food Facts unreachable or answered with an error. }
         '503': { description: Food search off, or the instance-wide budget is spent. }
 
+  /api/hooks/tokens:
+    get:
+      tags: [health]
+      operationId: listHookTokens
+      summary: The caller's webhook tokens (never the token or its hash)
+      responses:
+        '200':
+          description: The caller's tokens, live and revoked, and the webhook path.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hooks: { type: array, items: { $ref: '#/components/schemas/HookToken' } }
+                  endpoint: { type: string, example: /api/hooks/apple-health }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [health]
+      operationId: createHookToken
+      summary: Create a webhook token (shown once)
+      description: >-
+        Mints 256 random bits prefixed `bxh_`. The answer is the only place the token ever
+        appears: the server keeps its SHA-256. At most 5 live tokens per profile.
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { label: { type: string, maxLength: 40 } } }
+      responses:
+        '201':
+          description: The new token, once.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hook: { $ref: '#/components/schemas/HookToken' }
+                  token: { type: string, pattern: '^bxh_[A-Za-z0-9_-]{43}$' }
+        '400': { description: label is not a string. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: Five live tokens already; revoke one first. }
+        '429': { description: More than 20 token changes a minute. }
+  /api/hooks/tokens/revoke:
+    post:
+      tags: [health]
+      operationId: revokeHookToken
+      summary: Revoke one of the caller's webhook tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [id], properties: { id: { type: string } } }
+      responses:
+        '200': { description: 'The revoked token, as `{ hook }`.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Not one of the caller's tokens. }
+  /api/hooks/apple-health:
+    post:
+      tags: [health]
+      operationId: appleHealthWebhook
+      summary: 'Webhook: samples from an iOS Shortcut'
+      description: >-
+        Authenticated only by a webhook token in `Authorization: Bearer bxh_…` (never a session,
+        never a query parameter). Writes into the token owner's samples and nothing else.
+        Daily types keep one value per day (the later replaces the earlier). Limits: 60
+        requests/min per address, 30/min per token, 256 KiB and 500 samples per request.
+        Rejected samples are counted and named by index; values are never echoed. See
+        docs/APPLE_HEALTH.md.
+      security:
+        - webhookToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [samples]
+              properties:
+                samples: { type: array, maxItems: 500, items: { $ref: '#/components/schemas/HealthSampleInput' } }
+      responses:
+        '200':
+          description: What was kept.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accepted: { type: integer }
+                  changed: { type: integer }
+                  rejected: { type: integer }
+                  errors: { type: array, items: { type: object, properties: { index: { type: integer }, error: { type: string } } } }
+        '400': { description: samples is not an array, or the body is not JSON. }
+        '401': { description: Missing, malformed, unknown or revoked token (one answer for all). }
+        '413': { description: Over 256 KiB or 500 samples. }
+        '429': { description: Over the address or token budget. }
+  /api/health-samples:
+    get:
+      tags: [health]
+      operationId: getHealthSamples
+      summary: The caller's imported samples between two days
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Samples, each with `source`.
+          content:
+            application/json:
+              schema: { type: object, properties: { samples: { type: array, items: { $ref: '#/components/schemas/HealthSample' } } } }
+        '400': { description: from/to missing or out of order. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
 components:
   securitySchemes:
+    webhookToken:
+      type: http
+      scheme: bearer
+      description: >-
+        A Biscotos webhook token (`bxh_…`, POST /api/hooks/tokens). Accepted by the webhook
+        route only; it is not a session.
     cookieAuth:
       type: apiKey
       in: cookie
@@ -3314,6 +3435,32 @@ components:
           example: { error: "that code is wrong, used or expired", code: "link-invalid" }
 
   schemas:
+    HookToken:
+      type: object
+      properties:
+        id: { type: string }
+        label: { type: string }
+        kind: { type: string, enum: [apple-health] }
+        createdAt: { type: integer }
+        lastUsedAt: { type: [integer, 'null'] }
+        revokedAt: { type: [integer, 'null'] }
+    HealthSampleInput:
+      type: object
+      required: [type, date, value]
+      properties:
+        type: { type: string, enum: [weight, steps, restingHr, sleepMin, activeKcal, workoutMin] }
+        date: { type: string, description: 'YYYY-MM-DD or ISO 8601 date-time; its date as written is kept.' }
+        value: { type: [number, string] }
+        unit: { type: string, description: 'Optional. kg or lb for weight, min or h for sleep; any other unit than the type''s own is refused.' }
+        id: { type: string, description: 'workoutMin only: an id to de-duplicate on.' }
+    HealthSample:
+      type: object
+      properties:
+        type: { type: string }
+        d: { type: string, format: date }
+        value: { type: number }
+        source: { type: string, enum: [apple-health] }
+        extId: { type: string }
     Per100g:
       type: object
       description: Nutrients per 100 g. Macros cannot add up to more than 105 g.

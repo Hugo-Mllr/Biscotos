@@ -38,6 +38,8 @@ import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { nutritionRoutes } from './nutrition/routes.js';
 import { createOff, DEFAULT_BASE as OFF_DEFAULT_BASE } from './nutrition/off.js';
 import { removeDoc as removeNutrition } from './nutrition/store.js';
+import { healthRoutes, forgetHealthUser } from './health/routes.js';
+import { removeHealth } from './health/store.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -2500,6 +2502,8 @@ const routes = {
     // The training history and any Coach credential of theirs, both outside db.json.
     try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
     removeNutrition(DATA, u.id);
+    removeHealth(DATA, u.id);
+    try { forgetHealthUser(DATA, u.id, atomicWrite); } catch (e) { console.error('health: could not drop the tokens of a deleted profile', e.message); }
     try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
     // Their photos and videos — the one place a profile's folder under uploads/ is removed.
     try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
@@ -2587,6 +2591,10 @@ const routes = {
   // them: they are closures over db and SECRET, and passing them in keeps that module free of
   // a cycle. Every one of them is inert while the feature is unconfigured.
   ...coachRoutes({ json, readBody, readSession, requireAdmin }),
+  ...healthRoutes({
+    json, readBody, readSession, tooMany, createWindow, limitAddress, audit, dataDir: DATA, atomicWrite,
+    todayISO: () => new Date().toISOString().slice(0, 10)
+  }),
   ...nutritionRoutes({
     json, readBody, readSession, tooMany, createWindow, dataDir: DATA, atomicWrite,
     off: FOOD_SEARCH ? createOff({

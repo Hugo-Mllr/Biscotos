@@ -134,6 +134,7 @@ const TAGS = {
   // A tag missing from this map renders nowhere at all, silently, so every tag in the
   // spec needs a line here.
   nutrition: { title: 'Nutrition', side: 'Food log, goals, Open Food Facts' },
+  health: { title: 'Health import', side: 'Apple Health webhook &amp; tokens' },
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
 }
@@ -148,6 +149,9 @@ const sumText = s => {
 function authOf (op, tag) {
   if (Array.isArray(op.security) && op.security.length === 0) {
     return { chip: 'public', line: 'Public: no authentication required.' }
+  }
+  if (Array.isArray(op.security) && op.security.some(s => s && 'webhookToken' in s)) {
+    return { chip: 'webhook', line: 'Webhook token only: <code>Authorization: Bearer bxh_…</code> from POST /api/hooks/tokens. A session is not accepted here, and the token is accepted nowhere else.' }
   }
   if (tag === 'admin') {
     return {
@@ -377,6 +381,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 .ep-chip { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 6px; }
 .ep-chip.public { color: var(--fg-2); background: rgba(255, 255, 255, .07); }
 .ep-chip.admin { color: #ffb340; background: rgba(255, 159, 10, .12); }
+.ep-chip.webhook { color: #5ac8fa; background: rgba(90, 200, 250, .12); }
 .ep-chev { width: 8px; height: 8px; border-right: 1.6px solid var(--fg-3); border-bottom: 1.6px solid var(--fg-3); transform: rotate(45deg) translate(-1px, -1px); transition: transform .25s var(--ease); }
 .ep[open] > summary .ep-chev { transform: rotate(225deg); }
 .ep-sum { grid-column: 2 / -1; color: var(--fg-3); font-size: 13.5px; line-height: 1.45; }
