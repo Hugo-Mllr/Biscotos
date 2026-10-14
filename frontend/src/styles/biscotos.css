@@ -121,21 +121,25 @@
   background: var(--bx-bg); color: var(--bx-ink);
   font-family: var(--bx-font-ui); font-size: var(--bx-fs-md); line-height: 1.35;
   font-variant-numeric: tabular-nums;
-  min-height: 100%;
-  padding: calc(var(--sat, 0px) + var(--conn, 0px) + var(--bx-s4)) var(--bx-s4) calc(110px + var(--sab, 0px));
-  animation: bx-page-in var(--bx-dur-slow) var(--bx-ease-out) both;
 }
+/* A whole Biscotos screen inside openGym's #app (which already pads for the safe areas and the
+   tab bar): the page takes the Biscotos background edge to edge instead of showing a panel. */
+.bx-page { padding-bottom: var(--bx-s4); animation: bx-page-in var(--bx-dur-slow) var(--bx-ease-out) both }
+:root:has(.bx-page), :root:has(.bx-page) body { background: var(--bx-bg) }
 .bx-wrap { max-width: 640px; margin: 0 auto }
 
 /* page header: small caps kicker over a massive condensed title */
 .bx-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--bx-s3); margin-bottom: var(--bx-s5) }
+.bx-head > :first-child { min-width: 0 }
+.bx-head-actions { display: flex; gap: 6px; flex-shrink: 0 }
 .bx-kicker {
   font-size: var(--bx-fs-xs); font-weight: 700; letter-spacing: var(--bx-track-caps);
   text-transform: uppercase; color: var(--bx-volt-text);
 }
 .bx-title {
   font-family: var(--bx-font-display); font-stretch: condensed;
-  font-size: var(--bx-fs-2xl); font-weight: 800; line-height: .95;
+  font-size: clamp(28px, 8.5vw, var(--bx-fs-2xl)); font-weight: 800; line-height: .95;
+  overflow-wrap: anywhere;
   letter-spacing: -.03em; text-transform: uppercase;
 }
 .bx-label {
@@ -187,7 +191,7 @@
 .bx-btn-block { width: 100% }
 .bx-btn[disabled] { opacity: .45; pointer-events: none }
 .bx-iconbtn {
-  width: 44px; height: 44px; border-radius: var(--bx-r-pill); display: inline-grid; place-items: center;
+  width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--bx-r-pill); display: inline-grid; place-items: center;
   background: var(--bx-surface-2); border: 1px solid var(--bx-line); font-size: 20px; color: var(--bx-ink);
 }
 
@@ -226,7 +230,7 @@
 /* macro bars — width animates from 0 on mount */
 .bx-bar { height: 8px; border-radius: var(--bx-r-pill); background: var(--bx-surface-3); overflow: hidden }
 .bx-bar > i {
-  display: block; height: 100%; border-radius: inherit; background: var(--c, var(--bx-volt));
+  display: block; height: 100%; border-radius: inherit; background: var(--c, var(--bx-kcal));
   transform-origin: left; transition: width var(--bx-dur-draw) var(--bx-ease-out);
 }
 .bx-bar.is-over > i { background: var(--bx-ember) }
@@ -235,7 +239,8 @@
 /* ring (SVG): stroke-dashoffset is animated by transition on mount/update */
 .bx-ring circle { fill: none; stroke-linecap: round }
 .bx-ring .bx-ring-track { stroke: var(--bx-surface-3) }
-.bx-ring .bx-ring-val { stroke: var(--c, var(--bx-volt)); transition: stroke-dashoffset var(--bx-dur-draw) var(--bx-ease-out) }
+/* --bx-kcal, not --bx-volt: on daylight paper volt is ~1.1:1, under the 3:1 a graphic needs */
+.bx-ring .bx-ring-val { stroke: var(--c, var(--bx-kcal)); transition: stroke-dashoffset var(--bx-dur-draw) var(--bx-ease-out) }
 .bx-ring.is-over .bx-ring-val { stroke: var(--bx-ember) }
 
 /* feedback */
@@ -252,7 +257,8 @@
 
 /* bottom sheet used by Biscotos screens */
 .bx-sheet-bg {
-  position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.55);
+  /* above openGym's tab bar (50) and banners (60), below its own modal root (100) */
+  position: fixed; inset: 0; z-index: 95; background: rgba(0,0,0,.55);
   display: flex; align-items: flex-end; justify-content: center;
   animation: bx-rise var(--bx-dur-fast) var(--bx-ease-out) both;
 }

@@ -73,10 +73,14 @@ describe('Sheet', () => {
   it('closes on Escape and on a backdrop tap, not on a tap inside', () => {
     const onClose = vi.fn()
     act(() => root.render(<Sheet title="Add" onClose={onClose}><button>inside</button></Sheet>))
-    expect(document.querySelector('[role="dialog"]').getAttribute('aria-label')).toBe('Add')
-    act(() => { host.querySelector('button').click() })
+    const dialog = document.querySelector('[role="dialog"]')
+    expect(dialog.getAttribute('aria-label')).toBe('Add')
+    // portalled to <body>, out of any transformed page that would trap a fixed element
+    expect(host.contains(dialog)).toBe(false)
+    expect(dialog.closest('.bx-sheet-bg').parentElement).toBe(document.body)
+    act(() => { dialog.querySelector('button').click() })
     expect(onClose).not.toHaveBeenCalled()
-    act(() => { host.querySelector('.bx-sheet-bg').click() })
+    act(() => { document.querySelector('.bx-sheet-bg').click() })
     expect(onClose).toHaveBeenCalledTimes(1)
     act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })) })
     expect(onClose).toHaveBeenCalledTimes(2)

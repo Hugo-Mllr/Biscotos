@@ -188,6 +188,22 @@ export default function Home() {
       </div>
     )}
 
+    {/* Biscotos: the way into the food log. Signed in only — the log is stored on the server. */}
+    {user && (
+      <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => nav('/nutrition'))}>
+        <div className="row between">
+          <div className="row" style={{ gap: 9 }}>
+            <span className="lrow-i" style={{ background: 'var(--green)' }}><Icon name="flame" /></span>
+            <div>
+              <div className="lbl2">{t('Food log, macros, goals')}</div>
+              <div className="ttl">{t('Nutrition')}</div>
+            </div>
+          </div>
+          <Icon name="chevronRight" className="chev" />
+        </div>
+      </div>
+    )}
+
     {S.showWeightCard !== false && <div className="card">
       <div className="row between bw-head" style={{ marginBottom: 6 }}>
         <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>

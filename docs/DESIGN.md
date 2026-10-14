@@ -46,7 +46,8 @@ sombre par défaut). La refonte des écrans hérités viendra dans une phase dé
 | `--bx-bg` | `#0a0b0d` | `#f4f3ee` | fond de page |
 | `--bx-surface` / `-2` / `-3` | `#14161a` / `#1d2026` / `#282c34` | `#fff` / `#ecebe5` / `#e0dfd8` | cartes / champs / pistes |
 | `--bx-ink` / `-2` / `-3` | `#f4f5f1` à 100 / 64 / 38 % | `#0a0b0d` à 100 / 62 / 40 % | texte principal / secondaire / tertiaire |
-| `--bx-volt` | `#d4ff3a` | idem (remplissage) | accent, CTA, kcal |
+| `--bx-volt` | `#d4ff3a` | idem (remplissage) | accent, CTA (fond Volt + encre) |
+| `--bx-kcal` | = Volt | `#4d6600` | traits et graphes kcal (contraste ≥ 3:1 en clair) |
 | `--bx-volt-text` | `#d4ff3a` | `#4d6600` | texte/traits Volt (6,9:1 sur papier) |
 | `--bx-volt-ink` | `#0a0b0d` | idem | texte sur fond Volt (15,9:1) |
 | `--bx-ember` | `#ff6b2c` | `#e5541b` | PR, streak, dépassement |

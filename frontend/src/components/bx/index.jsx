@@ -2,6 +2,7 @@
 // that rolls, a ring and a bar that draw themselves, and a bottom sheet. All timing comes from
 // lib/motion.js, so prefers-reduced-motion turns every one of them into a plain static render.
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { duration, ringOffset, tween } from '../../lib/motion.js'
 
 /** Rolls from the previous value to `value` like a scoreboard. */
@@ -79,7 +80,9 @@ export function Bar({ fraction, color, label }) {
   )
 }
 
-/** Bottom sheet: closes on backdrop tap and on Escape. */
+/** Bottom sheet: closes on backdrop tap and on Escape. Rendered into <body>: a page that
+ *  animates a transform becomes the containing block of anything fixed inside it, and its
+ *  stacking context would keep the sheet under openGym's tab bar whatever its z-index. */
 export function Sheet({ title, onClose, children }) {
   const ref = useRef(null)
   useEffect(() => {
@@ -88,13 +91,14 @@ export function Sheet({ title, onClose, children }) {
     ref.current?.focus()
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
-  return (
+  return createPortal(
     <div className="bx-sheet-bg bx" style={{ padding: 0, minHeight: 0 }} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bx-sheet" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref}>
         <div className="bx-sheet-grip" aria-hidden="true" />
         {title && <h2 className="bx-title" style={{ fontSize: 'var(--bx-fs-xl)', marginBottom: 'var(--bx-s4)' }}>{title}</h2>}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
