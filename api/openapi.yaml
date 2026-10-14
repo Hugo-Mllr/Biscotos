@@ -153,6 +153,10 @@ tags:
       attached to a logged workout. Stored per profile (one quota for both) and named
       by the SHA-256 of its bytes; the state only carries a `MediaRef`. Every route here is a
       404 when the instance runs with `MEDIA_UPLOADS=0`.
+  - name: nutrition
+    description: >-
+      Biscotos nutrition: food log, own foods, daily goals and height, stored per profile
+      (nutrition-<uid>.json), plus Open Food Facts search and barcode lookup through the server.
   - name: coach
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
@@ -2953,6 +2957,207 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/nutrition:
+    get:
+      tags: [nutrition]
+      operationId: getNutrition
+      summary: The caller's nutrition data for a range of days
+      description: >-
+        Goals, height, the caller's own foods, and the food-log entries between `from` and
+        `to` (inclusive, at most 93 days). Always the session's profile: there is no parameter
+        naming another one. Macros are not stored; a client computes them from `grams` and `per100`.
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: The profile's nutrition data for the range.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile: { type: object, properties: { heightCm: { type: [number, 'null'] } } }
+                  goals: { oneOf: [{ $ref: '#/components/schemas/NutritionGoals' }, { type: 'null' }] }
+                  foods: { type: array, items: { $ref: '#/components/schemas/Food' } }
+                  log: { type: array, items: { $ref: '#/components/schemas/FoodLogEntry' } }
+                  from: { type: string, format: date }
+                  to: { type: string, format: date }
+        '400': { $ref: '#/components/responses/NutritionInvalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { description: The profile's nutrition file cannot be read. }
+  /api/nutrition/settings:
+    put:
+      tags: [nutrition]
+      operationId: putNutritionSettings
+      summary: Set daily goals and/or height
+      description: '`goals: null` clears the goals. At least one of `goals`, `profile` is required.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                goals: { oneOf: [{ $ref: '#/components/schemas/NutritionGoals' }, { type: 'null' }] }
+                profile: { type: object, properties: { heightCm: { type: [number, 'null'], minimum: 50, maximum: 260 } } }
+      responses:
+        '200': { description: The stored profile and goals. }
+        '400': { $ref: '#/components/responses/NutritionInvalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { description: More than 120 nutrition writes a minute from this profile. }
+  /api/nutrition/log:
+    post:
+      tags: [nutrition]
+      operationId: addFoodLogEntry
+      summary: Log a food eaten
+      description: The server mints `id`, `createdAt` and `updatedAt`; any sent are ignored.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FoodLogEntryInput' }
+      responses:
+        '201': { description: 'The stored entry, as `{ entry }`.' }
+        '400': { $ref: '#/components/responses/NutritionInvalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: The log holds its maximum of 20000 entries. }
+        '429': { description: More than 120 nutrition writes a minute from this profile. }
+  /api/nutrition/log/update:
+    post:
+      tags: [nutrition]
+      operationId: updateFoodLogEntry
+      summary: Change some fields of one of the caller's entries
+      description: >-
+        Only the fields sent are validated and changed; `brand` or `barcode` set to null clears
+        them. An id that is not one of the caller's entries answers 404, whether or not it
+        exists in another profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - type: object
+                  required: [id]
+                  properties: { id: { type: string } }
+                - $ref: '#/components/schemas/FoodLogEntryInput'
+      responses:
+        '200': { description: 'The updated entry, as `{ entry }`.' }
+        '400': { $ref: '#/components/responses/NutritionInvalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Not one of the caller's entries. }
+  /api/nutrition/log/delete:
+    post:
+      tags: [nutrition]
+      operationId: deleteFoodLogEntry
+      summary: Remove one of the caller's entries
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [id], properties: { id: { type: string } } }
+      responses:
+        '200': { description: '`{ ok: true, id }`' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Not one of the caller's entries. }
+  /api/nutrition/foods:
+    post:
+      tags: [nutrition]
+      operationId: addFood
+      summary: Save a food to the caller's own list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FoodInput' }
+      responses:
+        '201': { description: 'The stored food, as `{ food }`.' }
+        '400': { $ref: '#/components/responses/NutritionInvalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: The list holds its maximum of 500 foods. }
+  /api/nutrition/foods/update:
+    post:
+      tags: [nutrition]
+      operationId: updateFood
+      summary: Replace one of the caller's foods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - type: object
+                  required: [id]
+                  properties: { id: { type: string } }
+                - $ref: '#/components/schemas/FoodInput'
+      responses:
+        '200': { description: 'The stored food, as `{ food }`.' }
+        '400': { $ref: '#/components/responses/NutritionInvalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Not one of the caller's foods. }
+  /api/nutrition/foods/delete:
+    post:
+      tags: [nutrition]
+      operationId: deleteFood
+      summary: Remove one of the caller's foods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [id], properties: { id: { type: string } } }
+      responses:
+        '200': { description: '`{ ok: true, id }`' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Not one of the caller's foods. }
+  /api/food/search:
+    get:
+      tags: [nutrition]
+      operationId: searchFood
+      summary: Search Open Food Facts
+      description: >-
+        Proxied by the server (it identifies itself to Open Food Facts; the caller's address
+        and query never reach a third party), cached, and normalised: only name, brand,
+        barcode, nutrients per 100 g and serving travel back. 30 lookups a minute per profile.
+        503 with `code: off` when the instance runs with `FOOD_SEARCH=0`. Data © Open Food
+        Facts contributors, ODbL.
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 2, maxLength: 80 } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 5 } }
+        - { name: lang, in: query, schema: { type: string, pattern: '^[a-z]{2}$', default: fr } }
+      responses:
+        '200':
+          description: Matching foods.
+          content:
+            application/json:
+              schema: { type: object, properties: { foods: { type: array, items: { $ref: '#/components/schemas/FoodInput' } } } }
+        '400': { description: q missing, too short or too long. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { description: Over this profile's lookup budget. }
+        '502': { description: Open Food Facts unreachable or answered with an error. }
+        '503': { description: 'Food search off (`code: off`) or the instance-wide budget is spent (`code: busy`, Retry-After).' }
+  /api/food/barcode:
+    get:
+      tags: [nutrition]
+      operationId: foodByBarcode
+      summary: Look up a product by barcode (EAN/UPC) on Open Food Facts
+      description: Same proxying, cache and limits as the search.
+      parameters:
+        - { name: code, in: query, required: true, schema: { type: string, pattern: '^\d{8,14}$' } }
+        - { name: lang, in: query, schema: { type: string, pattern: '^[a-z]{2}$', default: fr } }
+      responses:
+        '200':
+          description: The product.
+          content:
+            application/json:
+              schema: { type: object, properties: { food: { $ref: '#/components/schemas/FoodInput' } } }
+        '400': { description: Not 8–14 digits. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Unknown product, or one without usable nutrition facts. }
+        '429': { description: Over this profile's lookup budget. }
+        '502': { description: Open Food Facts unreachable or answered with an error. }
+        '503': { description: Food search off, or the instance-wide budget is spent. }
+
 components:
   securitySchemes:
     cookieAuth:
@@ -2974,6 +3179,16 @@ components:
         skip the CSRF origin check; a browser never attaches this header on its own.
 
   responses:
+    NutritionInvalid:
+      description: A field failed validation; `field` names it. Nothing was written.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+              field: { type: string }
+          example: { error: "grams: out of range 0.1–5000", field: "grams" }
     Unauthorized:
       description: No session, expired/revoked session, or a disabled account.
       content:
@@ -3099,6 +3314,68 @@ components:
           example: { error: "that code is wrong, used or expired", code: "link-invalid" }
 
   schemas:
+    Per100g:
+      type: object
+      description: Nutrients per 100 g. Macros cannot add up to more than 105 g.
+      required: [kcal, protein, carbs, fat]
+      properties:
+        kcal: { type: number, minimum: 0, maximum: 900 }
+        protein: { type: number, minimum: 0, maximum: 100 }
+        carbs: { type: number, minimum: 0, maximum: 100 }
+        fat: { type: number, minimum: 0, maximum: 100 }
+        fiber: { type: number, minimum: 0, maximum: 100 }
+        sugar: { type: number, minimum: 0, maximum: 100 }
+        salt: { type: number, minimum: 0, maximum: 100 }
+    NutritionGoals:
+      type: object
+      properties:
+        kcal: { type: integer, minimum: 0, maximum: 10000 }
+        protein: { type: integer, minimum: 0, maximum: 1000 }
+        carbs: { type: integer, minimum: 0, maximum: 1000 }
+        fat: { type: integer, minimum: 0, maximum: 1000 }
+    FoodInput:
+      type: object
+      required: [name, per100]
+      properties:
+        name: { type: string, maxLength: 120 }
+        brand: { type: string, maxLength: 80 }
+        barcode: { type: string, pattern: '^\d{8,14}$' }
+        source: { type: string, enum: [manual, off], default: manual }
+        per100: { $ref: '#/components/schemas/Per100g' }
+        serving:
+          type: object
+          required: [label, grams]
+          properties:
+            label: { type: string, maxLength: 40 }
+            grams: { type: number, exclusiveMinimum: 0, maximum: 5000 }
+    Food:
+      allOf:
+        - $ref: '#/components/schemas/FoodInput'
+        - type: object
+          properties:
+            id: { type: string }
+            createdAt: { type: integer }
+            updatedAt: { type: integer }
+    FoodLogEntryInput:
+      type: object
+      required: [d, meal, grams, name, per100]
+      properties:
+        d: { type: string, format: date }
+        meal: { type: string, enum: [breakfast, lunch, dinner, snack] }
+        grams: { type: number, exclusiveMinimum: 0, maximum: 5000 }
+        name: { type: string, maxLength: 120 }
+        brand: { type: string, maxLength: 80 }
+        barcode: { type: string, pattern: '^\d{8,14}$' }
+        source: { type: string, enum: [manual, off], default: manual }
+        per100: { $ref: '#/components/schemas/Per100g' }
+    FoodLogEntry:
+      allOf:
+        - $ref: '#/components/schemas/FoodLogEntryInput'
+        - type: object
+          properties:
+            id: { type: string }
+            createdAt: { type: integer }
+            updatedAt: { type: integer }
     Error:
       type: object
       required: [error]

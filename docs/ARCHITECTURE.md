@@ -31,7 +31,6 @@ data/
   db.json                       comptes, passkeys, invitations          (openGym)
   state-<uid>.json              entraînement, poids, mensurations       (openGym)
   nutrition-<uid>.json          journal, aliments perso, objectifs, taille   ← Phase 1
-  food-cache.json               cache Open Food Facts (public, non personnel) ← Phase 1
   health-<uid>.json             mesures importées (pas, sommeil, FC…)   ← Phase 2
   social.json                   groupes, membres, préférences de partage ← Phase 3
   integrations.json             jetons webhook hachés, liens Strava     ← Phase 2/4
@@ -129,7 +128,10 @@ l'uid, ni nom ni e-mail). À ajouter :
   - OFF demande un `User-Agent` identifiant l'application (`Biscotos/<version> (+repo URL)`),
     qu'un navigateur ne peut pas poser ;
   - l'adresse IP et les recherches de l'utilisateur ne partent pas chez un tiers ;
-  - cache partagé (les produits sont publics) → moins d'appels, rapide en salle ;
+  - cache partagé **en mémoire** (les produits sont publics ; 2 000 entrées, 7 j par produit,
+    1 j par recherche, 1 h pour un code inconnu) → moins d'appels, rapide en salle ;
+  - budget global sous les limites publiées d'OFF (8 recherches et 90 lectures / min pour toute
+    l'instance), dépensé seulement en cas d'appel réel ;
   - la CSP du front pourra rester `connect-src 'self'`.
 - Routes : `GET /api/food/search?q=` et `GET /api/food/barcode/<8–14 chiffres>`, **authentifiées**
   (pas de proxy ouvert), **rate-limitées par utilisateur**, timeout 8 s, réponse **normalisée et

@@ -35,6 +35,9 @@ import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
+import { nutritionRoutes } from './nutrition/routes.js';
+import { createOff, DEFAULT_BASE as OFF_DEFAULT_BASE } from './nutrition/off.js';
+import { removeDoc as removeNutrition } from './nutrition/store.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -85,6 +88,15 @@ const DEFAULT_LANG = (() => {
 // sign-in throttle asks (limitAddress below); the bundled compose file sets it, because the API
 // is reachable there only through the web container, which overwrites those headers.
 const TRUST_PROXY = /^(1|true|yes|on)$/i.test(process.env.TRUST_PROXY || '');
+// Biscotos nutrition: food search and barcode lookup through Open Food Facts, on by default.
+// FOOD_SEARCH=0 turns the two lookup routes off (manual entry keeps working); OFF_BASE_URL
+// points them at a mirror or a staging instance. See docs/ARCHITECTURE.md § 4.
+const FOOD_SEARCH = !/^(0|false|no|off)$/i.test(process.env.FOOD_SEARCH || '');
+const OFF_BASE_URL = process.env.OFF_BASE_URL || OFF_DEFAULT_BASE;
+const API_VERSION = (() => {
+  try { return JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version || '0'; }
+  catch { return '0'; }
+})();
 // 90 days keeps someone who trains a few times a week permanently signed in without a stolen
 // cookie staying good for a year. Overridable because a family instance and one on the open
 // internet don't want the same number. Only affects cookies minted from now on — the expiry is
@@ -2487,6 +2499,7 @@ const routes = {
     presence.delete(u.id);
     // The training history and any Coach credential of theirs, both outside db.json.
     try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
+    removeNutrition(DATA, u.id);
     try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
     // Their photos and videos — the one place a profile's folder under uploads/ is removed.
     try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
@@ -2574,6 +2587,16 @@ const routes = {
   // them: they are closures over db and SECRET, and passing them in keeps that module free of
   // a cycle. Every one of them is inert while the feature is unconfigured.
   ...coachRoutes({ json, readBody, readSession, requireAdmin }),
+  ...nutritionRoutes({
+    json, readBody, readSession, tooMany, createWindow, dataDir: DATA, atomicWrite,
+    off: FOOD_SEARCH ? createOff({
+      base: OFF_BASE_URL,
+      // Open Food Facts asks every client to name itself and give a way to reach its author.
+      userAgent: `Biscotos/${API_VERSION} (+https://github.com/Hugo-Mllr/Biscotos)`,
+      // Instance-wide, under OFF's published 10 searches / 100 product reads a minute.
+      budget: { search: createWindow({ max: 8, windowMs: 60000 }), product: createWindow({ max: 90, windowMs: 60000 }) }
+    }) : null
+  }),
 
   /* ---------- photos & videos ---------- */
   // Absent, not refusing, when MEDIA_UPLOADS=0: a 404 is what a server from before the feature
