@@ -154,9 +154,13 @@ describe('Settings — reset everything', () => {
 })
 
 describe('Settings — footer', () => {
+  // AGPL §13: the source offered is the one of the version that runs (the Biscotos fork), and
+  // the upstream project keeps its attribution next to it.
   it('links the source code to its home on GitHub, on About & updates', () => {
     act(() => root.render(<Settings page="about" />))
     const link = [...host.querySelectorAll('a')].find(a => a.textContent === 'Source code')
-    expect(link.getAttribute('href')).toBe('https://github.com/DuarteSantos8/openGym')
+    expect(link.getAttribute('href')).toBe('https://github.com/Hugo-Mllr/Biscotos')
+    const upstream = [...host.querySelectorAll('a')].find(a => a.textContent === 'openGym')
+    expect(upstream.getAttribute('href')).toBe('https://github.com/DuarteSantos8/openGym')
   })
 })

@@ -1,7 +1,7 @@
 {
-  "name": "openGym",
-  "short_name": "openGym",
-  "description": "Personal gym & body weight tracker",
+  "name": "Biscotos",
+  "short_name": "Biscotos",
+  "description": "Training, nutrition & body tracking — self-hosted",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
