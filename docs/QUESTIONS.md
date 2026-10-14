@@ -27,3 +27,11 @@ regarde qu'une fenêtre récente : depuis mi-octobre 2026 ces fixtures sont « t
 
 **En attendant** : rien modifié ; règle « aucun nouvel échec » vs la liste de
 `docs/SECURITY_AUDIT.md`.
+
+## Q3 — Workflows GitHub hérités d'openGym
+
+`.github/workflows/` contient `mirror.yml` (push vers le GitLab **d'openGym**), `docker-publish.yml`,
+`pages.yml`, `cla.yml`, `cla-issue.yml`, `catalogue.yml`. Sans les secrets d'upstream ils échouent
+ou ne font rien d'utile, mais `cla*.yml` peut commenter sur les PR de ton dépôt. **Supprimer ou
+désactiver des workflows** est une décision qui t'appartient : je n'y ai pas touché. Suggestion :
+garder `test.yml`, désactiver les autres dans Settings → Actions (réversible, sans commit).
