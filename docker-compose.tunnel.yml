@@ -1,0 +1,25 @@
+# Optional: a Cloudflare Tunnel next to Biscotos, so the homelab opens no port at all.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d --build
+#
+# The tunnel token lives in its own file, .env.tunnel (one line: TUNNEL_TOKEN=…), gitignored
+# like every .env.*, and read by this container only: in .env it would also reach the api one,
+# which loads the whole of .env. In the Cloudflare dashboard the tunnel's public hostname points at the web
+# container by its compose name: http://web:80 (docs/DEPLOY_HOMELAB.md).
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:2026.8.1   # pinned: bump it on purpose
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    env_file: .env.tunnel
+    depends_on:
+      - web
+
+  web:
+    # With the tunnel, nothing outside this machine needs the web port: keep it on loopback
+    # (http://localhost:8080 still works on the server itself).
+    ports: !override
+      - "127.0.0.1:${WEB_PORT:-8080}:${NGINX_PORT:-80}"
+    environment:
+      # The visitor's real address, from Cloudflare's header (activity log, sign-in throttle).
+      - CF_CONNECTING_IP=$$http_cf_connecting_ip

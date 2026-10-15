@@ -1,5 +1,12 @@
 # Biscotos — direction design
 
+> **Mise à jour du 15 octobre — couleurs choisies par chacun.** Le Volt fixe a laissé la place à
+> la couleur d'accent de l'app (Réglages → Apparence, **violet par défaut**) : `--bx-volt` vaut
+> `var(--acc)`, et les fonds Biscotos reprennent ceux de l'app (`--bg`, `--surface`…). Le
+> **fond teinté** (`lib/tint.js`, activé par défaut) mélange 3 à 12 % de l'accent dans chaque
+> fond, en sombre comme en clair, texte toujours ≥ 7:1 (`tint.test.js`). Sur PC (≥ 1000 px) :
+> barre latérale et pages sur deux colonnes. Le tableau ci-dessous décrit la version d'origine.
+
 ## Direction : « Nocturne de stade »
 
 Un stade la nuit, projecteurs éteints sauf le tableau d'affichage. Fond d'encre (pas du noir

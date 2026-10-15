@@ -33,12 +33,13 @@ cp .env.example .env          # valeurs factices : à adapter (RP_ID, ORIGIN…)
 docker compose up -d --build  # http://localhost:8080
 ```
 
-Déploiement réel derrière un tunnel HTTPS : [`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md).
+Mise en ligne sur un homelab avec Cloudflare Tunnel (pas de port ouvert) :
+[`docs/DEPLOY_HOMELAB.md`](docs/DEPLOY_HOMELAB.md). Toutes les options : [`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md).
 Le domaine, l'adresse et tout identifiant d'infrastructure viennent **uniquement** de `.env`.
 
 ## Voir le site en local, sans Docker
 
-Il faut **Node 22** (`node -v`). Deux terminaux, depuis la racine du dépôt :
+Il faut **Node 22** ou plus récent (`node -v`). Deux terminaux, depuis la racine du dépôt :
 
 ```bash
 # Terminal 1 — l'API (données dans ./data, ignoré par git)

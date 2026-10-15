@@ -1,5 +1,25 @@
 # Biscotos — compte rendu
 
+## 15 octobre, après-midi — couleurs, PC, mise en ligne
+
+| Demande | Fait |
+|---|---|
+| Recherche d'aliments « injoignable » (le code-barres marchait) | la recherche passe par **search-a-licious** d'OFF (rapide), l'ancienne `/cgi/search.pl` en secours avec un délai de 15 s ; un 503/429 d'OFF s'affiche « réessaie dans une minute » ; le serveur journalise la cause (`[food] Open Food Facts search failed: timeout`), jamais les termes cherchés |
+| Couleurs, violet | **violet par défaut** ; les 8 couleurs + « ta couleur » valent pour sombre **et** clair ; **fond teinté** (Réglages → Apparence, activé par défaut) : fonds et cartes prennent une touche de la couleur (aubergine la nuit, lavande le jour), contraste du texte ≥ 7:1 vérifié par test ; l'écran Nutrition suit la couleur |
+| Site trop « mobile » sur PC | dès 1000 px : **barre latérale** (Démarrer, onglets, Nutrition, Réglages), Accueil et Nutrition sur **deux colonnes** ; le téléphone garde la barre d'onglets |
+| Accueil plus rempli | carte **Nutrition du jour** (kcal / objectif + P/G/L), sur téléphone et PC |
+| Problèmes | « Jour De Repos » (majuscules forcées) corrigé ; `coach-auth/` (jeton du coach IA) ajouté au `.gitignore` |
+| Mise en ligne | `docs/DEPLOY_HOMELAB.md` + `docker-compose.tunnel.yml` (cloudflared, port web limité à la machine, vraie IP des visiteurs) |
+
+- Ton profil local garde sa couleur actuelle (le vert d'openGym) : choisis le violet dans
+  **Réglages → Apparence et Accueil**. Les nouveaux profils démarrent en violet.
+- **Alertes Dependabot (12)** : toutes dans l'outillage de build de l'app mobile Capacitor
+  (`@capacitor/assets` → `sharp`, `tar`, `uuid`), jamais embarqué dans les images Docker ;
+  `npm audit --omit=dev` = **0** pour api, frontend et mcp. Pas de correctif sans `--force`.
+- Tests : frontend **5 123 ✅**, api **671 ✅** (0 échec).
+
+---
+
 ## Matin du 15 octobre — décisions appliquées (`docs/QUESTIONS.md`)
 
 - Q2 : les 10 tests hérités passent (fixtures datées par rapport à aujourd'hui) → **api 668 ✅, 0 échec**.

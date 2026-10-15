@@ -42,6 +42,8 @@ docs/superpowers/plans/
 *.env
 secrets/
 *.secret
+# AI coach provider login cache (docker-compose.yml mounts it next to data/): a live refresh token
+coach-auth/
 
 # Keys, certificates, signing material (APK keystores included)
 *.pem
