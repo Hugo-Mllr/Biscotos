@@ -50,6 +50,22 @@ cd frontend && npm ci
 API_ORIGIN=http://localhost:5173 VITE_EXERCISE_MEDIA=0 npm run dev
 ```
 
+Sous **Windows (PowerShell)**, les mêmes commandes, une ligne à la fois :
+
+```powershell
+# Terminal 1 — l'API
+cd api
+npm ci --omit=optional
+$env:DATA_DIR="../data"; $env:ORIGIN="http://localhost:5173"; $env:RP_ID="localhost"
+node server.js
+
+# Terminal 2 — l'interface
+cd frontend
+npm ci --ignore-scripts
+$env:API_ORIGIN="http://localhost:5173"; $env:VITE_EXERCISE_MEDIA="0"
+npm run dev
+```
+
 Ouvre **http://localhost:5173** → « Créer un nouveau profil » → « Créer une passkey » (Touch ID,
 Windows Hello ou le gestionnaire de mots de passe de ton navigateur).
 
