@@ -248,7 +248,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>84 endpoints</span>
+    <span>87 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -2490,6 +2490,121 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s5">503</span>
     <span class="p-desc">Food search off</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-exportNutrition">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/nutrition/export</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Download all of the caller's nutrition and imported health data</span>
+  </summary>
+  <div class="ep-body">
+<p>One JSON file (<code>format: biscotos-nutrition</code>, <code>version: 1</code>): goals, height, own foods, food log and imported health samples. Never a webhook token or its hash. 10 calls a minute per profile across export, import and erase.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The export file</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the per-profile budget.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-importNutrition">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/nutrition/import</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Bring an export file back</span>
+  </summary>
+  <div class="ep-body">
+<p>Every entry is validated like one typed by hand or sent by the webhook; what fails is counted in <code>skipped</code> and never stored. Health samples from a source other than <code>apple-health</code> are skipped, never relabelled. <code>merge</code> (default) keeps entries whose id is already there; <code>replace</code> swaps foods and log whole.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">file<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object</span>
+    <span class="p-desc">An export file.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">mode</span>
+    <span class="p-type">&quot;merge&quot; | &quot;replace&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">What was added and how many entries were skipped.<span class="r-sig">{ mode: string, added: object, skipped: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">A field failed validation; <code>field</code> names it. Nothing was written.<span class="r-sig"><code>{&quot;error&quot;:&quot;grams: out of range 0.1–5000&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the per-profile budget.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-eraseNutrition">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/nutrition/erase</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Erase the caller's nutrition data, health samples and webhook tokens</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">confirm<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;erase&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Erased.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">The confirmation is missing.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the per-profile budget.</span>
   </div>
     </div>
   </div>

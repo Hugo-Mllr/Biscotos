@@ -36,6 +36,7 @@ import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { nutritionRoutes } from './nutrition/routes.js';
+import { portabilityRoutes } from './nutrition/portability.js';
 import { createOff, DEFAULT_BASE as OFF_DEFAULT_BASE } from './nutrition/off.js';
 import { removeDoc as removeNutrition } from './nutrition/store.js';
 import { healthRoutes, forgetHealthUser } from './health/routes.js';
@@ -2595,6 +2596,7 @@ const routes = {
     json, readBody, readSession, tooMany, createWindow, limitAddress, audit, dataDir: DATA, atomicWrite,
     todayISO: () => new Date().toISOString().slice(0, 10)
   }),
+  ...portabilityRoutes({ json, readBody, readSession, tooMany, createWindow, audit, dataDir: DATA, atomicWrite }),
   ...nutritionRoutes({
     json, readBody, readSession, tooMany, createWindow, dataDir: DATA, atomicWrite,
     off: FOOD_SEARCH ? createOff({

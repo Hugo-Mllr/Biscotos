@@ -18,6 +18,7 @@ import { CountUp, Ring, Bar, Sheet } from '../components/bx/index.jsx'
 import FoodScanner, { canScanInBrowser } from '../components/bx/FoodScanner.jsx'
 import Icon from '../components/Icon.jsx'
 import HealthImportSheet from '../components/bx/HealthImportSheet.jsx'
+import NutritionDataSheet from '../components/bx/NutritionDataSheet.jsx'
 
 const MEAL_LABEL = { breakfast: () => t('Breakfast'), lunch: () => t('Lunch'), dinner: () => t('Dinner'), snack: () => t('Snack') }
 const MACRO_LABEL = { protein: () => t('Protein'), carbs: () => t('Carbs'), fat: () => t('Fat') }
@@ -184,13 +185,17 @@ export default function Nutrition() {
       {sheet === 'add' && <AddFoodSheet day={day} foods={data?.foods || []} onClose={() => setSheet(null)} onLogged={onLogged}
         onFoodSaved={f => setData(d => ({ ...d, foods: [...(d?.foods || []), f] }))} />}
       {sheet === 'health' && <HealthImportSheet onClose={() => setSheet(null)} />}
+      {sheet === 'data' && <NutritionDataSheet onClose={() => setSheet(null)} onChanged={reload} />}
       {sheet === 'goals' && <GoalsSheet data={data} onClose={() => setSheet(null)}
         onSaved={r => { setData(d => ({ ...d, ...r })); setSheet(null) }} />}
       {sheet?.edit && <EditEntrySheet entry={sheet.edit} onClose={() => setSheet(null)}
         onSaved={e => { setData(d => ({ ...d, log: d.log.map(x => (x.id === e.id ? e : x)) })); setSheet(null) }}
         onDeleted={id => { setData(d => ({ ...d, log: d.log.filter(x => x.id !== id) })); setSheet(null) }} />}
 
-      <p className="bx-small bx-dim" style={{ marginTop: 'var(--bx-s5)', textAlign: 'center' }}>
+      <div style={{ textAlign: 'center', marginTop: 'var(--bx-s5)' }}>
+        <button className="bx-chip bx-tap" onClick={() => setSheet('data')}>{t('My nutrition data')}</button>
+      </div>
+      <p className="bx-small bx-dim" style={{ marginTop: 'var(--bx-s3)', textAlign: 'center' }}>
         {t('Food data')}: © <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener" style={{ color: 'inherit', textDecoration: 'underline' }}>Open Food Facts</a> (ODbL)
       </p>
     </div></div>

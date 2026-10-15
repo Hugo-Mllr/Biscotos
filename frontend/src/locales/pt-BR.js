@@ -1435,6 +1435,15 @@ export const PT_BR_OVERRIDES = {
   'Last used: {0}': 'Último uso: {0}',
   'No token yet.': 'Nenhum token ainda.',
   'Paste both into the Shortcut, as described in the guide. Treat the token like a password.': 'Cole os dois no Atalho, como descrito no guia. Trate o token como uma senha.',
+  'An import adds what is missing and never overwrites an entry you already have.': 'Uma importação acrescenta o que falta e nunca substitui uma entrada que você já tem.',
+  'Erase my nutrition data': 'Apagar meus dados de nutrição',
+  'Export as a file': 'Exportar como arquivo',
+  'Import a file': 'Importar um arquivo',
+  'My nutrition data': 'Meus dados de nutrição',
+  'That file is not a Biscotos nutrition export.': 'Esse arquivo não é uma exportação de nutrição do Biscotos.',
+  'This erases your food log, foods, goals, height, Apple Health imports and tokens, on the server, for good. Export first if you may want them back.': 'Isto apaga do servidor, de vez, seu diário, alimentos, metas, altura, importações e tokens da Saúde da Apple. Exporte antes se quiser recuperá-los.',
+  'Your food log, foods, goals and Apple Health imports live on your server, apart from the training backup in Settings.': 'Seu diário, alimentos, metas e importações da Saúde da Apple ficam no seu servidor, à parte do backup de treinos nas Configurações.',
+  'Your nutrition data, health imports and Apple Health tokens are erased.': 'Seus dados de nutrição, importações de saúde e tokens da Saúde da Apple foram apagados.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

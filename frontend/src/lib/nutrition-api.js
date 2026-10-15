@@ -31,3 +31,8 @@ export const listHookTokens = () => api('/api/hooks/tokens')
 export const createHookToken = label => post('/api/hooks/tokens', { label })
 export const revokeHookToken = id => post('/api/hooks/tokens/revoke', { id }).then(r => r.hook)
 export const loadHealthSamples = (from, to) => api('/api/health-samples?' + qs({ from, to })).then(r => r.samples || [])
+
+// Portability (api/nutrition/portability.js): the whole of it as one file, back, or erased.
+export const exportNutrition = () => api('/api/nutrition/export')
+export const importNutrition = (file, mode = 'merge') => post('/api/nutrition/import', { file, mode })
+export const eraseNutrition = () => post('/api/nutrition/erase', { confirm: 'erase' })

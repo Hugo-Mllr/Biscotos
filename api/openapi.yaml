@@ -3273,6 +3273,69 @@ paths:
         '400': { description: from/to missing or out of order. }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/nutrition/export:
+    get:
+      tags: [nutrition]
+      operationId: exportNutrition
+      summary: Download all of the caller's nutrition and imported health data
+      description: >-
+        One JSON file (`format: biscotos-nutrition`, `version: 1`): goals, height, own foods,
+        food log and imported health samples. Never a webhook token or its hash. 10 calls a
+        minute per profile across export, import and erase.
+      responses:
+        '200': { description: The export file, sent as an attachment. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { description: Over the per-profile budget. }
+  /api/nutrition/import:
+    post:
+      tags: [nutrition]
+      operationId: importNutrition
+      summary: Bring an export file back
+      description: >-
+        Every entry is validated like one typed by hand or sent by the webhook; what fails is
+        counted in `skipped` and never stored. Health samples from a source other than
+        `apple-health` are skipped, never relabelled. `merge` (default) keeps entries whose id is
+        already there; `replace` swaps foods and log whole.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: object, description: An export file. }
+                mode: { type: string, enum: [merge, replace], default: merge }
+      responses:
+        '200':
+          description: What was added and how many entries were skipped.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mode: { type: string }
+                  added: { type: object, properties: { foods: { type: integer }, log: { type: integer }, samples: { type: integer } } }
+                  skipped: { type: integer }
+        '400': { $ref: '#/components/responses/NutritionInvalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { description: Over the per-profile budget. }
+  /api/nutrition/erase:
+    post:
+      tags: [nutrition]
+      operationId: eraseNutrition
+      summary: Erase the caller's nutrition data, health samples and webhook tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [confirm], properties: { confirm: { type: string, enum: [erase] } } }
+      responses:
+        '200': { description: Erased. }
+        '400': { description: The confirmation is missing. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { description: Over the per-profile budget. }
+
 components:
   securitySchemes:
     webhookToken:
