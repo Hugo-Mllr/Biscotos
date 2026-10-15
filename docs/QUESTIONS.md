@@ -63,3 +63,22 @@ le format des fichiers de sauvegarde / plans (`not an openGym backup`), l'ID And
 le champ fabricant des exports `.fit`. Changer l'ID d'application Android ou le dossier de
 sauvegarde est **irréversible pour les utilisateurs existants** → à décider par toi, avec un plan
 de migration. Le reste des chaînes peut se faire dans la phase de polish.
+
+## Q6 — Nutrition et Santé hors de la sauvegarde intégrée à l'app
+
+Le journal alimentaire (`data/nutrition-<uid>.json`) et les mesures Apple Santé
+(`data/health-<uid>.json`) sont stockés côté serveur, à part du document openGym. Ils sont donc
+couverts par la sauvegarde du dossier `./data` (recommandée par `docs/SELF_HOSTING.md`), **mais
+pas** par « Exporter une sauvegarde » dans Réglages, ni effacés par « Tout réinitialiser » (qui
+ne touche que le document openGym). Ils sont bien supprimés quand un admin supprime le compte.
+
+Options : (a) ajouter un export/import JSON dédié à la nutrition (simple, recommandé) ;
+(b) les inclure dans le zip de sauvegarde existant (touche le code de sauvegarde d'openGym,
+plus risqué) ; (c) ajouter une route « supprimer mes données nutrition/santé » pour le RGPD.
+Je n'ai rien fait en attendant ta décision.
+
+## Q7 — Le poids reçu d'Apple Santé n'alimente pas encore la courbe de poids
+
+Volontaire (le brief s'arrêtait au webhook). Proposition dans `docs/ARCHITECTURE.md` § 3.2 : le
+client propose d'ajouter le poids reçu à `state.bodyweight`, pour que la fusion multi-appareils
+d'openGym reste la seule à écrire ce document.
