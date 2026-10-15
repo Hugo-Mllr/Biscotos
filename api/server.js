@@ -37,7 +37,7 @@ import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { nutritionRoutes } from './nutrition/routes.js';
 import { portabilityRoutes } from './nutrition/portability.js';
-import { createOff, DEFAULT_BASE as OFF_DEFAULT_BASE } from './nutrition/off.js';
+import { createOff, DEFAULT_BASE as OFF_DEFAULT_BASE, DEFAULT_SEARCH_BASE as OFF_DEFAULT_SEARCH } from './nutrition/off.js';
 import { removeDoc as removeNutrition } from './nutrition/store.js';
 import { healthRoutes, forgetHealthUser } from './health/routes.js';
 import { removeHealth } from './health/store.js';
@@ -96,6 +96,8 @@ const TRUST_PROXY = /^(1|true|yes|on)$/i.test(process.env.TRUST_PROXY || '');
 // points them at a mirror or a staging instance. See docs/ARCHITECTURE.md § 4.
 const FOOD_SEARCH = !/^(0|false|no|off)$/i.test(process.env.FOOD_SEARCH || '');
 const OFF_BASE_URL = process.env.OFF_BASE_URL || OFF_DEFAULT_BASE;
+// OFF_SEARCH_URL: OFF's search-a-licious service; '0' skips it (the historical search only).
+const OFF_SEARCH_URL = /^(0|false|no|off)$/i.test(process.env.OFF_SEARCH_URL || '') ? '' : (process.env.OFF_SEARCH_URL || OFF_DEFAULT_SEARCH);
 const API_VERSION = (() => {
   try { return JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version || '0'; }
   catch { return '0'; }
@@ -2601,10 +2603,16 @@ const routes = {
     json, readBody, readSession, tooMany, createWindow, dataDir: DATA, atomicWrite,
     off: FOOD_SEARCH ? createOff({
       base: OFF_BASE_URL,
+      searchBase: OFF_SEARCH_URL,
+      // Which call failed and why (timeout, status 503…), never what was searched.
+      onFail: (what, why) => console.warn(`[food] Open Food Facts ${what} failed: ${why}`),
       // Open Food Facts asks every client to name itself and give a way to reach its author.
       userAgent: `Biscotos/${API_VERSION} (+https://github.com/Hugo-Mllr/Biscotos)`,
       // Instance-wide, under OFF's published 10 searches / 100 product reads a minute.
-      budget: { search: createWindow({ max: 8, windowMs: 60000 }), product: createWindow({ max: 90, windowMs: 60000 }) }
+      budget: {
+        search: createWindow({ max: 8, windowMs: 60000 }), quick: createWindow({ max: 60, windowMs: 60000 }),
+        product: createWindow({ max: 90, windowMs: 60000 })
+      }
     }) : null
   }),
 

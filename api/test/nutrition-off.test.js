@@ -72,7 +72,7 @@ test('upstream failures are "unavailable", whatever their shape', async () => {
 
 test('search: terms encoded, short queries never sent, results normalised and cached', async () => {
   const s = stubFetch({ status: 200, body: { products: [product, { product_name: 'junk' }] } });
-  const off = createOff({ fetch: s.fetch, base: 'http://off.test', userAgent: 'x' });
+  const off = createOff({ fetch: s.fetch, base: 'http://off.test', searchBase: '', userAgent: 'x' });
   assert.deepEqual(await off.search(' a '), []);
   assert.equal(s.calls.length, 0);
   const r = await off.search('flocons & avoine', { page: 99 });
@@ -105,4 +105,43 @@ test('cache: bounded and expiring', () => {
   assert.equal(c.size, 2);
   t = 11;
   assert.equal(c.get('b'), undefined);
+});
+
+test('search: search-a-licious first, its translated fields read in the asked language', async () => {
+  const hit = { ...product, product_name: { main: 'Demo oats', fr: 'Flocons SAL' }, brands: ['DemoBrand', 'Other'] };
+  delete hit.product_name_fr;
+  const s = stubFetch(url => (url.startsWith('http://sal.test/') ? { status: 200, body: { hits: [hit], count: 1 } } : { status: 500, body: {} }));
+  const off = createOff({ fetch: s.fetch, base: 'http://off.test', searchBase: 'http://sal.test/', userAgent: 'x' });
+  const r = await off.search('flocons & avoine', { lang: 'fr' });
+  assert.equal(r.length, 1);
+  assert.equal(r[0].name, 'Flocons SAL');
+  assert.equal(r[0].brand, 'DemoBrand');
+  assert.equal(s.calls.length, 1);
+  assert.match(s.calls[0].url, /^http:\/\/sal\.test\/search\?q=flocons%20%26%20avoine&langs=fr%2Cen&page_size=20&page=1&fields=/);
+  assert.equal(s.calls[0].init.redirect, 'error');
+});
+
+test('search: falls back to /cgi/search.pl when search-a-licious fails or has nothing usable', async () => {
+  for (const sal of [new TypeError('fetch failed'), { status: 500, body: {} }, { status: 200, body: { hits: [{ product_name: 'no nutriments' }] } }]) {
+    const s = stubFetch(url => (url.startsWith('http://sal.test/') ? sal : { status: 200, body: { products: [product] } }));
+    const fails = [];
+    const off = createOff({ fetch: s.fetch, base: 'http://off.test', searchBase: 'http://sal.test', userAgent: 'x', onFail: (w, why) => fails.push(w + ':' + why) });
+    const r = await off.search('oats');
+    assert.equal(r.length, 1);
+    assert.equal(s.calls.length, 2);
+    assert.match(s.calls[1].url, /^http:\/\/off\.test\/cgi\/search\.pl\?/);
+    for (const f of fails) assert.doesNotMatch(f, /oats/, 'the terms are never in the failure note');
+  }
+});
+
+test('search: OFF shedding load (503/429) is "busy", a timeout is noted as such', async () => {
+  for (const status of [503, 429]) {
+    const off = createOff({ fetch: stubFetch({ status, body: {} }).fetch, searchBase: '', userAgent: 'x' });
+    await assert.rejects(off.search('oats'), e => e.code === 'busy' && e.retryAfter === 30);
+  }
+  const fails = [];
+  const timeout = Object.assign(new Error('t'), { name: 'TimeoutError' });
+  const off = createOff({ fetch: async () => { throw timeout; }, userAgent: 'x', onFail: (w, why) => fails.push(`${w}:${why}`) });
+  await assert.rejects(off.search('oats'), e => e.code === 'unavailable');
+  assert.deepEqual(fails, ['search:timeout', 'legacy search:timeout']);
 });
