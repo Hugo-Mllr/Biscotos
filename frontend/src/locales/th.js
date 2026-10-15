@@ -2350,4 +2350,5 @@ export default {
   'Your food log, foods, goals and Apple Health imports live on your server, apart from the training backup in Settings.': 'บันทึกอาหาร อาหาร เป้าหมาย และข้อมูลนำเข้า Apple Health อยู่บนเซิร์ฟเวอร์ของคุณ แยกจากข้อมูลสำรองการฝึกในการตั้งค่า',
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'ลบข้อมูลโภชนาการ ข้อมูลสุขภาพที่นำเข้า และโทเค็น Apple Health แล้ว',
   '{0} entries added, {1} skipped.': 'เพิ่ม {0} รายการ ข้าม {1} รายการ',
+  'From Apple Health': 'จาก Apple Health',
 }

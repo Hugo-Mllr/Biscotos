@@ -16,6 +16,7 @@ import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
+import HealthWeightPrompt from '../components/HealthWeightPrompt.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -238,6 +239,8 @@ export default function Home() {
       </> : <div className="muted small">{S.weighIn === false
         ? t('No weigh-ins yet. Log your weight to start the curve.')
         : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>}
+      {/* Biscotos: weights from the Apple Health Shortcut, added on a tap (lib/health-weight.js) */}
+      <HealthWeightPrompt />
     </div>}
 
     <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>

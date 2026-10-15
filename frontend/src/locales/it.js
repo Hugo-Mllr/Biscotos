@@ -2339,4 +2339,5 @@ export default {
   'Your food log, foods, goals and Apple Health imports live on your server, apart from the training backup in Settings.': 'Diario, alimenti, obiettivi e importazioni di Salute di Apple sono sul tuo server, separati dal backup degli allenamenti nelle Impostazioni.',
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'I tuoi dati alimentari, le importazioni di salute e i token di Salute di Apple sono stati cancellati.',
   '{0} entries added, {1} skipped.': '{0} voci aggiunte, {1} saltate.',
+  'From Apple Health': 'Da Salute di Apple',
 }

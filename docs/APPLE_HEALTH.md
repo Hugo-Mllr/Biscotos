@@ -137,9 +137,12 @@ Santé : autorise uniquement les types utilisés.
   sans le jeton.
 - Les mesures sont stockées dans `data/health-<uid>.json` (0600) et supprimées avec le compte.
 
-## 5. Et ensuite
+## 5. Le poids dans la courbe
 
-Les mesures reçues sont visibles dans la feuille Apple Santé. Les prochaines étapes (hors de cette
-phase) : proposer le poids reçu dans la courbe de poids (`state.bodyweight`, côté client, pour
-garder une seule source de vérité), les afficher dans Stats, et les donner au coach IA sous forme
-agrégée. Voir `docs/ARCHITECTURE.md`.
+Quand le Raccourci envoie un poids pour un jour où ta courbe n'en a pas, l'**Accueil** le propose
+dans la carte « Poids corporel » : **Ajouter** l'inscrit comme une pesée normale (synchronisée
+sur tes appareils), **Écarter** le masque sur cet appareil. Une pesée que tu as notée toi-même
+n'est jamais remplacée par l'import.
+
+Toutes les données importées s'exportent, se réimportent et s'effacent depuis
+**Nutrition → Mes données nutrition**.

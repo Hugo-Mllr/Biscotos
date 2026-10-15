@@ -2342,4 +2342,5 @@ export default {
   'Your food log, foods, goals and Apple Health imports live on your server, apart from the training backup in Settings.': 'A naplód, ételeid, céljaid és Apple Egészség importjaid a szervereden vannak, külön a Beállítások edzésmentésétől.',
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'A táplálkozási adataid, egészségimportjaid és Apple Egészség tokenjeid törölve.',
   '{0} entries added, {1} skipped.': '{0} bejegyzés hozzáadva, {1} kihagyva.',
+  'From Apple Health': 'Az Apple Egészségből',
 }

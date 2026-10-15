@@ -2339,4 +2339,5 @@ export default {
   'Your food log, foods, goals and Apple Health imports live on your server, apart from the training backup in Settings.': 'Günlüğün, besinlerin, hedeflerin ve Apple Sağlık içe aktarımların sunucunda, Ayarlar\'daki antrenman yedeğinden ayrı durur.',
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'Beslenme verilerin, sağlık içe aktarımların ve Apple Sağlık anahtarların silindi.',
   '{0} entries added, {1} skipped.': '{0} kayıt eklendi, {1} atlandı.',
+  'From Apple Health': 'Apple Sağlık\'tan',
 }

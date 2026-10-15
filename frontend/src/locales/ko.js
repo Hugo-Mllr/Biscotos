@@ -2339,4 +2339,5 @@ export default {
   'Your food log, foods, goals and Apple Health imports live on your server, apart from the training backup in Settings.': '식단 기록, 음식, 목표, Apple 건강 가져오기는 설정의 운동 백업과 별도로 서버에 저장됩니다.',
   'Your nutrition data, health imports and Apple Health tokens are erased.': '영양 데이터, 건강 가져오기, Apple 건강 토큰이 삭제되었습니다.',
   '{0} entries added, {1} skipped.': '{0}개 추가, {1}개 건너뜀.',
+  'From Apple Health': 'Apple 건강에서',
 }

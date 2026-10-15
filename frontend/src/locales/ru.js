@@ -2343,4 +2343,5 @@ export default {
   'Your food log, foods, goals and Apple Health imports live on your server, apart from the training backup in Settings.': 'Дневник, продукты, цели и импорты Apple Здоровья хранятся на вашем сервере, отдельно от резервной копии тренировок в Настройках.',
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'Ваши данные о питании, импорты здоровья и токены Apple Здоровья удалены.',
   '{0} entries added, {1} skipped.': 'Добавлено записей: {0}, пропущено: {1}.',
+  'From Apple Health': 'Из Apple Здоровья',
 }

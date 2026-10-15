@@ -2418,4 +2418,5 @@ export default {
   'Your food log, foods, goals and Apple Health imports live on your server, apart from the training backup in Settings.': 'আপনার খাদ্য লগ, খাবার, লক্ষ্য ও Apple Health ইমপোর্ট আপনার সার্ভারে থাকে, সেটিংসের ব্যায়াম ব্যাকআপ থেকে আলাদা।',
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'আপনার পুষ্টির তথ্য, স্বাস্থ্য ইমপোর্ট ও Apple Health টোকেন মুছে ফেলা হয়েছে।',
   '{0} entries added, {1} skipped.': '{0}টি এন্ট্রি যোগ হয়েছে, {1}টি বাদ গেছে।',
+  'From Apple Health': 'Apple Health থেকে',
 }
