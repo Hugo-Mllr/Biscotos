@@ -1,10 +1,12 @@
-name: opengym
+name: biscotos
 
 services:
   # Passkey auth + per-user data (Node, no framework).
-  # image: prebuilt (docker compose pull). build: from source (docker compose up --build).
+  # Biscotos is always built from this repository (pull_policy: build): the prebuilt openGym
+  # images on ghcr.io are not this code, and the web one carries the licensed exercise media.
   api:
-    image: ghcr.io/duartesantos8/opengym-api:latest
+    image: biscotos-api:local
+    pull_policy: build
     # Default target: no AI runtime, no AI dependency — the image every instance has always had.
     # To opt into the AI Coach, build the other target instead:
     #     API_TARGET=coach docker compose up --build api
@@ -35,10 +37,15 @@ services:
   # Builds the React frontend (multi-stage) and serves it, proxying /api → api
   # and the exercise animations, which are part of the image. Single origin for passkeys.
   web:
-    image: ghcr.io/duartesantos8/opengym-web:latest
+    image: biscotos-web:local
+    pull_policy: build
     build:
       context: .
       dockerfile: web/Dockerfile
+      args:
+        # Exercise stills/animations: licensed to openGym only (docs/QUESTIONS.md Q4). Off unless
+        # you hold your own licence from gymvisual.com.
+        EXERCISE_MEDIA: ${EXERCISE_MEDIA:-0}
     restart: unless-stopped
     depends_on:
       api:

@@ -18,7 +18,7 @@
 // bounded by the plan (a few MB for a typical one) and each file goes once.
 //
 // Not in the phone app: it has no service worker, and its media comes from the CDN.
-import { EXIDX, imgSrc, gifSrc, isCustomEx, figureOf } from './exercises.js'
+import { EXIDX, imgSrc, gifSrc, isCustomEx, figureOf, EXERCISE_MEDIA } from './exercises.js'
 
 // The worker's media cache, public/sw.js MEDIA. Duplicated because the worker is not bundled;
 // sw-media.test.js pins the two together.
@@ -32,7 +32,7 @@ const MAX_FAILURES = 3
 
 /** Every same-origin img/gif URL for the exercises in the plan and the active session. */
 export function planMediaUrls(S, base = globalThis.location?.href, index = EXIDX) {
-  if (!base) return []
+  if (!base || !EXERCISE_MEDIA) return []
   const ids = new Set()
   ;(S?.routines || []).forEach(r => (r?.ex || []).forEach(e => { if (e?.id) ids.add(e.id) }))
   ;(S?.active?.entries || []).forEach(en => { if (en?.id) ids.add(en.id) })

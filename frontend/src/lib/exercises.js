@@ -179,6 +179,11 @@ const ENV = import.meta.env || {}
 // Under their own folder since v1.4.0: a docker-compose.yml from before then still mounts the old
 // dataset's media over img/ and gif/, and would hide the catalogue's files if they lived there.
 const IMG_BASE = ENV.VITE_IMG_BASE || 'exercise-media/still/'
+// Biscotos: the built-in stills and animations are licensed to openGym only (catalogue/media/
+// NOTICE.md), so a Biscotos image is built without them (web/Dockerfile EXERCISE_MEDIA=0) and the
+// app then asks for none of them: an exercise shows like one without media. Unset (dev, tests)
+// keeps the upstream behaviour.
+export const EXERCISE_MEDIA = ENV.VITE_EXERCISE_MEDIA !== '0'
 const GIF_BASE = ENV.VITE_GIF_BASE || 'exercise-media/clip/'
 // The animations are MP4 loops, except in the Android release: there they are animated WebP
 // (VITE_CLIP_EXT=webp, staged from APP_MEDIA_DIR), shown as a plain image. The WebView's video

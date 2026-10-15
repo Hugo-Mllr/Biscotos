@@ -24,7 +24,18 @@ COPY frontend/ ./
 # image built between two releases calls itself the same thing, and "which build are you running?"
 # cannot be answered from the phone. Unset, the app reports package.json's version as before.
 ARG APP_BUILD=""
-RUN APP_BUILD="$APP_BUILD" npm run build
+# Biscotos: the exercise stills and animations are licensed to openGym only (catalogue/media/
+# NOTICE.md). Off by default: the app is built not to ask for them and the image does not carry
+# them. EXERCISE_MEDIA=1 (docker compose build --build-arg EXERCISE_MEDIA=1) puts both back, for
+# an instance whose owner holds a licence of their own.
+ARG EXERCISE_MEDIA=0
+RUN APP_BUILD="$APP_BUILD" VITE_EXERCISE_MEDIA="$EXERCISE_MEDIA" npm run build
+
+# The media, copied into the final image only when EXERCISE_MEDIA=1 (COPY cannot be conditional).
+FROM --platform=$BUILDPLATFORM alpine:3.20 AS media
+ARG EXERCISE_MEDIA=0
+COPY catalogue/media/ /src/
+RUN mkdir /out && if [ "$EXERCISE_MEDIA" = "1" ]; then cp -a /src/. /out/; fi
 
 FROM nginxinc/nginx-unprivileged:alpine
 # Same reason as in api/Dockerfile: alpine fixes land faster than the nginx image is rebuilt.
@@ -75,9 +86,9 @@ COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
 # before the template rendering at 20.
 COPY --chmod=755 web/05-check-base-path.sh /docker-entrypoint.d/
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
-# The exercise stills and animations, 180 px, licensed from Gym visual for openGym only: see
-# catalogue/media/NOTICE.md. They ship inside the image; nothing is downloaded at start-up.
-COPY catalogue/media/ /usr/share/nginx/html/exercise-media/
+# The exercise stills and animations (Gym visual, licensed to openGym only: catalogue/media/
+# NOTICE.md) — an empty folder unless the image was built with EXERCISE_MEDIA=1, see above.
+COPY --from=media /out/ /usr/share/nginx/html/exercise-media/
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80
