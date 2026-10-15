@@ -1,4 +1,21 @@
-# Biscotos — compte rendu de la session de nuit (14 → 15 octobre 2026)
+# Biscotos — compte rendu
+
+## Matin du 15 octobre — décisions appliquées (`docs/QUESTIONS.md`)
+
+- Q2 : les 10 tests hérités passent (fixtures datées par rapport à aujourd'hui) → **api 668 ✅, 0 échec**.
+- Q4 : image web **sans** les médias Gym visual (`EXERCISE_MEDIA=0`) ; `docker-compose.yml` construit
+  toujours Biscotos depuis ce dépôt au lieu de tirer les images openGym.
+- Q5 : textes visibles renommés dans les 18 langues ; mises à jour Android vérifiées sur les releases
+  de Biscotos (plus celles d'openGym) ; plus de lien vers l'APK openGym.
+- Q6 : export / import / effacement des données nutrition et santé (+ tests d'autorisation).
+- Q7 : poids Apple Santé proposé dans la carte « Poids corporel » de l'Accueil.
+- Q1 : branche publiée en `biscotos-dev`.
+- Frontend : **5 117 ✅**. Docker indisponible dans la session : l'image n'a pas été construite ici
+  (le build Vite avec le flag l'a été) → à vérifier avec `docker compose up -d --build`.
+
+---
+
+# Session de nuit (14 → 15 octobre 2026)
 
 Branche : `claude/tender-cannon-hq3si3` (voir `docs/QUESTIONS.md` Q1 pour `biscotos-dev`).
 Aucun push sur `main`, aucun `--force`, aucun `--no-verify`, aucune réécriture d'historique.
@@ -20,7 +37,7 @@ Aucun push sur `main`, aucun `--force`, aucun `--no-verify`, aucune réécriture
 | Suite | Avant | Après |
 |---|---|---|
 | frontend (vitest) | 5 060 ✅ | **5 100 ✅** (0 échec) |
-| api (`node --test`) | 583 ✅ / 10 ❌ | **647 ✅ / 10 ❌** — les **mêmes** 10 échecs, hérités (dates codées en dur, Q2) |
+| api (`node --test`) | 583 ✅ / 10 ❌ | 647 ✅ / 10 ❌ hérités — corrigés le matin (Q2) |
 | mcp | 94 ✅ | inchangé |
 | `check-locales`, `check-source-strings --strict`, `build-api-docs --check`, `npm run build` | — | ✅ |
 

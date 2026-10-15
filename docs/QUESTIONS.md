@@ -1,84 +1,21 @@
-# Questions ouvertes pour Hugo
+# Décisions
 
-Décisions ambiguës ou irréversibles que je n'ai **pas** prises seul. Chaque entrée : contexte,
-options, ce que j'ai fait en attendant.
+Questions ouvertes pendant la session de nuit, tranchées par Hugo le 15 octobre 2026.
 
-## Q1 — Nom de la branche de travail
+| # | Sujet | Décision | Fait |
+|---|---|---|---|
+| Q1 | Branche de travail | Publier en `biscotos-dev` | ✅ poussée |
+| Q2 | 10 tests api hérités en échec (dates figées) | Les corriger | ✅ dates relatives à aujourd'hui, 0 échec |
+| Q3 | Workflows GitHub hérités d'openGym | Désactivés par Hugo dans *Settings → Actions* | ⏳ à faire par Hugo |
+| Q4 | Licence des médias d'exercices (Gym visual, « openGym uniquement ») | Pas de médias pour l'instant | ✅ image web sans médias (`EXERCISE_MEDIA=0`), l'app n'en demande aucun |
+| Q5 | Mentions « openGym » restantes | Renommer les textes visibles, garder les identifiants techniques | ✅ 34 chaînes × 18 langues ; `Documents/openGym` et les formats de fichiers inchangés |
+| Q6 | Nutrition/santé hors de la sauvegarde de l'app | Export, import et effacement dédiés | ✅ Nutrition → « Mes données nutrition » |
+| Q7 | Poids Apple Santé → courbe de poids | Proposé, ajouté sur validation | ✅ Accueil, carte « Poids corporel » |
 
-Le brief demande `biscotos-dev`. La session cloud m'impose de développer et pousser sur
-`claude/tender-cannon-hq3si3` (et interdit de pousser ailleurs sans permission explicite de
-l'environnement). **En attendant** : tout le travail est sur `claude/tender-cannon-hq3si3`,
-jamais sur `main`. Pour la renommer côté GitHub :
+## Encore ouvert
 
-```bash
-git fetch origin claude/tender-cannon-hq3si3
-git push origin origin/claude/tender-cannon-hq3si3:refs/heads/biscotos-dev
-```
-
-## Q2 — 10 tests api pré-existants en échec (dates codées en dur)
-
-`api/test/helpers.mjs` → `sampleState()` date les séances au `2026-07-20`. Le coach IA ne
-regarde qu'une fenêtre récente : depuis mi-octobre 2026 ces fixtures sont « trop vieilles » et
-10 tests coach échouent (sur `main` aussi, avant toute modif Biscotos). Options :
-
-1. Rendre les dates relatives à aujourd'hui dans le helper (petit diff, mais touche des tests
-   upstream que je n'ai pas écrits — 2 des 10 restent rouges et demandent une analyse plus fine).
-2. Attendre/porter le correctif upstream openGym.
-
-**En attendant** : rien modifié ; règle « aucun nouvel échec » vs la liste de
-`docs/SECURITY_AUDIT.md`.
-
-## Q3 — Workflows GitHub hérités d'openGym
-
-`.github/workflows/` contient `mirror.yml` (push vers le GitLab **d'openGym**), `docker-publish.yml`,
-`pages.yml`, `cla.yml`, `cla-issue.yml`, `catalogue.yml`. Sans les secrets d'upstream ils échouent
-ou ne font rien d'utile, mais `cla*.yml` peut commenter sur les PR de ton dépôt. **Supprimer ou
-désactiver des workflows** est une décision qui t'appartient : je n'y ai pas touché. Suggestion :
-garder `test.yml`, désactiver les autres dans Settings → Actions (réversible, sans commit).
-
-## Q4 — ⚠️ Licence des médias d'exercices (Gym visual) — à trancher par toi
-
-`NOTICE.md` : les images/animations d'exercices sont licenciées **à openGym uniquement**
-(« provided strictly for use within the openGym application … Third parties have no rights to
-reuse … A commercial fork, or any other use, needs its own licence from gymvisual.com »).
-Biscotos est un fork non commercial, mais rebrandé : il n'est pas évident qu'il reste couvert.
-Le service `media` de `docker-compose.yml` télécharge ces médias depuis le jeu de données
-d'openGym au démarrage.
-
-Je n'ai **rien changé** (pas de suppression, texte d'attribution conservé mot pour mot dans
-Réglages). Options : (a) demander à Duarte Santos / Gym visual si un fork privé entre amis est
-couvert ; (b) désactiver le service `media` (l'app fonctionne sans images, cf. `MEDIA_*` dans
-`.env.example`) ; (c) acheter une licence. Je recommande (a) avant tout déploiement.
-
-## Q5 — Rebranding partiel (volontaire)
-
-Renommés : titre, manifest PWA, écran de connexion, accueil, onboarding mobile, footer
-(« Biscotos v… · basé sur openGym », lien source → ce dépôt, conformément à l'AGPL §13),
-`RP_NAME` par défaut (nom affiché par la passkey), README.
-
-**Non renommés** (≈ 600 occurrences) : les chaînes traduites qui mentionnent « openGym » dans
-18 langues, le dossier `Documents/openGym` (renommer casserait les sauvegardes auto existantes),
-le format des fichiers de sauvegarde / plans (`not an openGym backup`), l'ID Android
-`ch.duartesantos.opengym`, le vérificateur de mises à jour (pointe vers les releases d'openGym),
-le champ fabricant des exports `.fit`. Changer l'ID d'application Android ou le dossier de
-sauvegarde est **irréversible pour les utilisateurs existants** → à décider par toi, avec un plan
-de migration. Le reste des chaînes peut se faire dans la phase de polish.
-
-## Q6 — Nutrition et Santé hors de la sauvegarde intégrée à l'app
-
-Le journal alimentaire (`data/nutrition-<uid>.json`) et les mesures Apple Santé
-(`data/health-<uid>.json`) sont stockés côté serveur, à part du document openGym. Ils sont donc
-couverts par la sauvegarde du dossier `./data` (recommandée par `docs/SELF_HOSTING.md`), **mais
-pas** par « Exporter une sauvegarde » dans Réglages, ni effacés par « Tout réinitialiser » (qui
-ne touche que le document openGym). Ils sont bien supprimés quand un admin supprime le compte.
-
-Options : (a) ajouter un export/import JSON dédié à la nutrition (simple, recommandé) ;
-(b) les inclure dans le zip de sauvegarde existant (touche le code de sauvegarde d'openGym,
-plus risqué) ; (c) ajouter une route « supprimer mes données nutrition/santé » pour le RGPD.
-Je n'ai rien fait en attendant ta décision.
-
-## Q7 — Le poids reçu d'Apple Santé n'alimente pas encore la courbe de poids
-
-Volontaire (le brief s'arrêtait au webhook). Proposition dans `docs/ARCHITECTURE.md` § 3.2 : le
-client propose d'ajouter le poids reçu à `state.bodyweight`, pour que la fusion multi-appareils
-d'openGym reste la seule à écrire ce document.
+- **Médias d'exercices** : ils restent présents dans le dépôt (`catalogue/media/`, 216 Mo, hérités
+  d'openGym et dans tout l'historique). Biscotos ne les distribue plus, mais ne les a pas supprimés
+  du dépôt. Les retirer de l'arbre est possible (`git rm`) ; l'historique public les gardera.
+- **Licence** : si tu obtiens l'accord d'openGym / Gym visual, `EXERCISE_MEDIA=1` dans `.env` puis
+  `docker compose up -d --build` les remet.
