@@ -10,8 +10,11 @@
 // against its SHA-256 by the native Install plugin and handed to the system installer.
 
 import { MOBILE } from './mobile.js'
+import { SOURCE_URL } from './brand.js'
 
-const REPO = 'DuarteSantos8/openGym'
+// Biscotos' own releases, never openGym's: an update offered from upstream would install the
+// openGym APK over this app. No release published yet answers 404, read as "up to date".
+const REPO = SOURCE_URL.replace('https://github.com/', '')
 const LATEST_URL = `https://api.github.com/repos/${REPO}/releases/latest`
 export const RELEASES_PAGE = `https://github.com/${REPO}/releases/latest`
 

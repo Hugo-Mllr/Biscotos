@@ -189,7 +189,7 @@ describe('Settings — vibrate', () => {
     expect(row.querySelector('.lrow-s').textContent).toBe('Not on iPhone')
     expect(switchIn(row).disabled).toBe(true)
     expect(switchIn(row).getAttribute('aria-checked')).toBe('false')
-    expect(host.textContent).toContain('iPhone doesn’t let openGym vibrate. A sound or a flash does the job.')
+    expect(host.textContent).toContain('iPhone doesn’t let Biscotos vibrate. A sound or a flash does the job.')
   })
 
   it('a desktop browser without vibration shows it disabled as not supported, with no iPhone footer', () => {

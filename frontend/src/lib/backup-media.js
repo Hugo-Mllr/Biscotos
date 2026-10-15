@@ -91,7 +91,7 @@ const notBackup = () => Object.assign(new Error('not an openGym backup'), { code
  */
 export function backupImportError(e) {
   if (e?.code === 'compressed') return t('That zip was repacked. Import the original backup file.')
-  if (e?.code === 'not-backup' || e?.code === 'not-zip' || e?.code === 'encrypted' || e instanceof SyntaxError) return t('That file isn’t an openGym backup.')
+  if (e?.code === 'not-backup' || e?.code === 'not-zip' || e?.code === 'encrypted' || e instanceof SyntaxError) return t('That file isn’t a Biscotos backup.')
   return t('Couldn’t read that file.')
 }
 
