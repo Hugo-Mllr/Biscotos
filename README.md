@@ -36,6 +36,30 @@ docker compose up -d --build  # http://localhost:8080
 Déploiement réel derrière un tunnel HTTPS : [`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md).
 Le domaine, l'adresse et tout identifiant d'infrastructure viennent **uniquement** de `.env`.
 
+## Voir le site en local, sans Docker
+
+Il faut **Node 22** (`node -v`). Deux terminaux, depuis la racine du dépôt :
+
+```bash
+# Terminal 1 — l'API (données dans ./data, ignoré par git)
+cd api && npm ci --omit=optional
+DATA_DIR=../data ORIGIN=http://localhost:5173 RP_ID=localhost node server.js
+
+# Terminal 2 — l'interface, avec rechargement à chaud
+cd frontend && npm ci
+API_ORIGIN=http://localhost:5173 VITE_EXERCISE_MEDIA=0 npm run dev
+```
+
+Ouvre **http://localhost:5173** → « Créer un nouveau profil » → « Créer une passkey » (Touch ID,
+Windows Hello ou le gestionnaire de mots de passe de ton navigateur).
+
+- `ORIGIN` et `API_ORIGIN` doivent être **l'adresse exacte de la page** : une passkey est liée à
+  son origine, sinon l'inscription échoue.
+- `VITE_EXERCISE_MEDIA=0` montre l'app comme en production (sans les animations Gym visual) ;
+  sans ce réglage, le serveur de dev les sert depuis `catalogue/media`.
+- Sur ton téléphone, même réseau : les passkeys exigent HTTPS hors `localhost`, donc passe par
+  « Continuer sans compte » pour un aperçu, ou attends le déploiement sur le homelab.
+
 ## Développer
 
 ```bash

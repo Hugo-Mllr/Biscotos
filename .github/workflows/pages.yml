@@ -31,6 +31,8 @@ concurrency:
 
 jobs:
   build:
+    # Biscotos: upstream-only (it publishes openGym's images/demo, or runs openGym's CLA).
+    if: github.repository == 'DuarteSantos8/openGym'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -53,6 +55,8 @@ jobs:
           path: frontend/dist
 
   deploy:
+    # Biscotos: upstream-only (it publishes openGym's images/demo, or runs openGym's CLA).
+    if: github.repository == 'DuarteSantos8/openGym'
     needs: build
     runs-on: ubuntu-latest
     environment:

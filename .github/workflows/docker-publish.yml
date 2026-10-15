@@ -23,6 +23,8 @@ permissions:
 
 jobs:
   build:
+    # Biscotos: upstream-only (it publishes openGym's images/demo, or runs openGym's CLA).
+    if: github.repository == 'DuarteSantos8/openGym'
     runs-on: ubuntu-latest
     strategy:
       matrix:
