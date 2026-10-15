@@ -15,9 +15,13 @@ vi.mock('react-router-dom', () => ({
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-let host, root, originalS, originalUser
+let host, root, originalS, originalUser, wide = false
+const realMatchMedia = window.matchMedia
 
 beforeEach(() => {
+  // A phone unless a test says otherwise (TabBar's sidebar starts at DESKTOP_QUERY).
+  wide = false
+  window.matchMedia = () => ({ matches: wide, addEventListener() {}, removeEventListener() {} })
   const store = useStore.getState()
   originalS = store.S
   originalUser = store.user
@@ -31,6 +35,19 @@ afterEach(() => {
   act(() => root.unmount())
   host.remove()
   useStore.setState({ S: originalS, user: originalUser })
+  window.matchMedia = realMatchMedia
+})
+
+describe('the sidebar on a computer (Biscotos)', () => {
+  it('adds the brand, Nutrition and Settings to the five tabs', () => {
+    wide = true
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(host.querySelectorAll('#tabbar button')).toHaveLength(7)
+    expect(host.querySelector('.tab-brand').textContent).toContain('Biscotos')
+    const labels = [...host.querySelectorAll('#tabbar button')].map(b => b.textContent)
+    expect(labels).toContain('Nutrition')
+    expect(labels).toContain('Settings')
+  })
 })
 
 const tabs = () => [...host.querySelectorAll('#tabbar button')]

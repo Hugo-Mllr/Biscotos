@@ -1444,6 +1444,7 @@ export const PT_BR_OVERRIDES = {
   'This erases your food log, foods, goals, height, Apple Health imports and tokens, on the server, for good. Export first if you may want them back.': 'Isto apaga do servidor, de vez, seu diário, alimentos, metas, altura, importações e tokens da Saúde da Apple. Exporte antes se quiser recuperá-los.',
   'Your food log, foods, goals and Apple Health imports live on your server, apart from the training backup in Settings.': 'Seu diário, alimentos, metas e importações da Saúde da Apple ficam no seu servidor, à parte do backup de treinos nas Configurações.',
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'Seus dados de nutrição, importações de saúde e tokens da Saúde da Apple foram apagados.',
+  'Backgrounds and cards take a hint of your color.': 'Os fundos e os cartões ganham um toque da sua cor.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

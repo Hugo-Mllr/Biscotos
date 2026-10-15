@@ -729,6 +729,11 @@ export default function Settings({ page = null, find = null, via = null }) {
           <span className="lrow-v">{accentLabel(S)}</span>
           <AccentSwatches S={S} update={update} />
         </div>
+        {/* Biscotos: the page and card fills take a hint of the accent, in both themes (lib/tint.js). */}
+        <Row icon="palette" iconTint="var(--acc)" title={t('Tinted background')}
+          subtitle={t('Backgrounds and cards take a hint of your color.')}>
+          <Switch checked={S.tint !== false} onChange={v => update(s => { s.tint = v })} />
+        </Row>
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
           <Segmented

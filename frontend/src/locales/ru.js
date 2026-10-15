@@ -2344,4 +2344,6 @@ export default {
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'Ваши данные о питании, импорты здоровья и токены Apple Здоровья удалены.',
   '{0} entries added, {1} skipped.': 'Добавлено записей: {0}, пропущено: {1}.',
   'From Apple Health': 'Из Apple Здоровья',
+  'Tinted background': 'Тонированный фон',
+  'Backgrounds and cards take a hint of your color.': 'Фон и карточки получают оттенок твоего цвета.',
 }

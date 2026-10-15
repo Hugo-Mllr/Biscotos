@@ -2351,4 +2351,6 @@ export default {
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'ลบข้อมูลโภชนาการ ข้อมูลสุขภาพที่นำเข้า และโทเค็น Apple Health แล้ว',
   '{0} entries added, {1} skipped.': 'เพิ่ม {0} รายการ ข้าม {1} รายการ',
   'From Apple Health': 'จาก Apple Health',
+  'Tinted background': 'พื้นหลังโทนสี',
+  'Backgrounds and cards take a hint of your color.': 'พื้นหลังและการ์ดจะมีโทนสีที่คุณเลือก',
 }

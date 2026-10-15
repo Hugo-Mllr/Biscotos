@@ -2395,4 +2395,6 @@ export default {
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'تم مسح بيانات تغذيتك وبيانات الصحة المستوردة ورموز صحة Apple.',
   '{0} entries added, {1} skipped.': 'أُضيف {0} إدخال، وتم تخطي {1}.',
   'From Apple Health': 'من صحة Apple',
+  'Tinted background': 'خلفية ملوّنة',
+  'Backgrounds and cards take a hint of your color.': 'تأخذ الخلفيات والبطاقات لمسة من لونك.',
 }

@@ -2340,4 +2340,6 @@ export default {
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'Beslenme verilerin, sağlık içe aktarımların ve Apple Sağlık anahtarların silindi.',
   '{0} entries added, {1} skipped.': '{0} kayıt eklendi, {1} atlandı.',
   'From Apple Health': 'Apple Sağlık\'tan',
+  'Tinted background': 'Renkli arka plan',
+  'Backgrounds and cards take a hint of your color.': 'Arka planlar ve kartlar renginden bir dokunuş alır.',
 }

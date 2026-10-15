@@ -2340,4 +2340,6 @@ export default {
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'Twoje dane żywieniowe, importy zdrowotne i tokeny Zdrowia Apple zostały usunięte.',
   '{0} entries added, {1} skipped.': 'Dodano {0} wpisów, pominięto {1}.',
   'From Apple Health': 'Ze Zdrowia Apple',
+  'Tinted background': 'Barwione tło',
+  'Backgrounds and cards take a hint of your color.': 'Tła i karty nabierają odcienia twojego koloru.',
 }

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutineIds, effectiveRoutines } from '../lib/history.js'
@@ -6,6 +7,7 @@ import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import Elapsed from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
+import { APP_NAME } from '../lib/brand.js'
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
@@ -19,7 +21,23 @@ function Tab({ active, icon, label, onClick, dot }) {
   )
 }
 
+// Biscotos: from this width the bar is a sidebar (index.css) with room for Nutrition and Settings,
+// which a phone reaches from Home.
+export const DESKTOP_QUERY = '(min-width:1000px)'
+function useDesktop() {
+  const mql = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(DESKTOP_QUERY) : null
+  const [on, setOn] = useState(() => !!mql?.matches)
+  useEffect(() => {
+    if (!mql) return
+    const f = () => setOn(mql.matches)
+    mql.addEventListener?.('change', f)
+    return () => mql.removeEventListener?.('change', f)
+  }, [mql])
+  return on
+}
+
 export default function TabBar({ onStart }) {
+  const desk = useDesktop()
   const nav = useNavigate()
   const loc = useLocation()
   const S = useStore(s => s.S)
@@ -30,7 +48,11 @@ export default function TabBar({ onStart }) {
   const trouble = useConnectionTrouble()
   if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
-  const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'settings' && k === 'home') || (cur === 'muscles' && k === 'library') || (cur === 'structural-balance' && k === 'stats')
+  // On a phone, Settings and Nutrition are reached from Home, so Home stays lit there; the sidebar
+  // has tabs of their own.
+  const homeOwns = desk ? [] : ['settings', 'nutrition', 'measurements']
+  const on = k => cur === k || (cur === 'history' && k === 'stats') || (homeOwns.includes(cur) && k === 'home') || (cur === 'muscles' && k === 'library') || (cur === 'structural-balance' && k === 'stats')
+    || (desk && cur === 'measurements' && k === 'nutrition')
 
   const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
   const startWorkout = () => {
@@ -44,6 +66,7 @@ export default function TabBar({ onStart }) {
 
   return (
     <nav id="tabbar">
+      {desk && <div className="tab-brand" aria-hidden="true"><span className="tab-mark">{APP_NAME.charAt(0)}</span><span>{APP_NAME}</span></div>}
       <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => nav('/home')} />
       <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} />
       {/* On the workout screen itself there is nothing to resume, so the button reads as the
@@ -61,6 +84,9 @@ export default function TabBar({ onStart }) {
       </button>
       <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
       <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />
+      {desk && user && <Tab active={on('nutrition')} icon="flame" label={t('Nutrition')} onClick={() => nav('/nutrition')} />}
+      {desk && <span className="tab-spacer" />}
+      {desk && <Tab active={on('settings')} icon="gear" label={t('Settings')} onClick={() => nav('/settings')} />}
     </nav>
   )
 }

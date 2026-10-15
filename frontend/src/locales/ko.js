@@ -2340,4 +2340,6 @@ export default {
   'Your nutrition data, health imports and Apple Health tokens are erased.': '영양 데이터, 건강 가져오기, Apple 건강 토큰이 삭제되었습니다.',
   '{0} entries added, {1} skipped.': '{0}개 추가, {1}개 건너뜀.',
   'From Apple Health': 'Apple 건강에서',
+  'Tinted background': '색조 배경',
+  'Backgrounds and cards take a hint of your color.': '배경과 카드에 선택한 색이 은은하게 들어갑니다.',
 }

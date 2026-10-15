@@ -17,6 +17,7 @@ import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
 import HealthWeightPrompt from '../components/HealthWeightPrompt.jsx'
+import NutritionToday from '../components/NutritionToday.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -102,7 +103,7 @@ export default function Home() {
   // already in progress wins, as on the today row — starting another would overwrite it.
   const onQueueStart = id => { if (S.active) nav('/workout'); else startFlow([id]) }
 
-  return <div className="narrow">
+  return <div className="narrow home-grid">
     <div className="hdr">
       <div><h1>{user ? t('Hi {0}', user.name) : APP_NAME}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
@@ -189,21 +190,9 @@ export default function Home() {
       </div>
     )}
 
-    {/* Biscotos: the way into the food log. Signed in only — the log is stored on the server. */}
-    {user && (
-      <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => nav('/nutrition'))}>
-        <div className="row between">
-          <div className="row" style={{ gap: 9 }}>
-            <span className="lrow-i" style={{ background: 'var(--green)' }}><Icon name="flame" /></span>
-            <div>
-              <div className="lbl2">{t('Food log, macros, goals')}</div>
-              <div className="ttl">{t('Nutrition')}</div>
-            </div>
-          </div>
-          <Icon name="chevronRight" className="chev" />
-        </div>
-      </div>
-    )}
+    {/* Biscotos: today's food log at a glance, and the way into it (signed in only: the log is
+        stored on the server). */}
+    {user && <NutritionToday />}
 
     {S.showWeightCard !== false && <div className="card">
       <div className="row between bw-head" style={{ marginBottom: 6 }}>

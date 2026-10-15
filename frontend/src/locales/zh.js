@@ -2340,4 +2340,6 @@ export default {
   'Your nutrition data, health imports and Apple Health tokens are erased.': '你的营养数据、健康导入数据和 Apple 健康令牌已删除。',
   '{0} entries added, {1} skipped.': '已添加 {0} 条，跳过 {1} 条。',
   'From Apple Health': '来自 Apple 健康',
+  'Tinted background': '着色背景',
+  'Backgrounds and cards take a hint of your color.': '背景和卡片会带上一点你选的颜色。',
 }

@@ -10,22 +10,25 @@
 /* ---------------------------------------------------------------- tokens -- */
 :root {
   /* surfaces — dark is the default: an unlit stadium, ink not pure black */
-  --bx-bg:        #0a0b0d;
-  --bx-surface:   #14161a;
-  --bx-surface-2: #1d2026;
-  --bx-surface-3: #282c34;
+  /* Biscotos screens share the app's fills, so the chosen colour and tint (Settings →
+     Appearance, lib/tint.js) reach them too */
+  --bx-bg:        var(--bg);
+  --bx-surface:   var(--surface);
+  --bx-surface-2: var(--surface-2);
+  --bx-surface-3: var(--surface-3);
   --bx-line:      rgba(255,255,255,.08);
   --bx-line-2:    rgba(255,255,255,.14);
 
   /* text */
-  --bx-ink:   #f4f5f1;
-  --bx-ink-2: rgba(244,245,241,.64);
-  --bx-ink-3: rgba(244,245,241,.38);
+  --bx-ink:   var(--label);
+  --bx-ink-2: rgba(235,235,245,.64);
+  --bx-ink-3: rgba(235,235,245,.38);
 
   /* brand — one electric accent, one warm signal; nothing else is saturated */
-  --bx-volt:      #d4ff3a;            /* primary: scores, CTAs, progress */
-  --bx-volt-ink:  #0a0b0d;            /* text on a volt fill (15.9:1) */
-  --bx-volt-soft: rgba(212,255,58,.14);
+  /* primary (scores, CTAs, progress) is the user's accent, violet by default */
+  --bx-volt:      var(--acc);
+  --bx-volt-ink:  var(--on-acc);
+  --bx-volt-soft: var(--acc-soft);
   --bx-ember:     #ff6b2c;            /* PRs, streaks, over-target */
   --bx-ember-soft:rgba(255,107,44,.16);
 
@@ -55,7 +58,7 @@
   /* elevation — dark UIs show depth with light edges, not drop shadows */
   --bx-shadow-1: 0 1px 0 rgba(255,255,255,.04) inset, 0 1px 2px rgba(0,0,0,.4);
   --bx-shadow-2: 0 1px 0 rgba(255,255,255,.06) inset, 0 8px 24px rgba(0,0,0,.45);
-  --bx-glow:     0 0 0 1px var(--bx-volt), 0 0 24px rgba(212,255,58,.35);
+  --bx-glow:     0 0 0 1px var(--bx-volt), 0 0 24px color-mix(in srgb, var(--acc) 35%, transparent);
 
   /* motion — the single source of truth (mirrored in lib/motion.js) */
   --bx-dur-instant: 90ms;
@@ -69,18 +72,12 @@
 }
 
 :root[data-theme="light"] {
-  /* daylight: warm paper, ink stays near-black; volt is too light for text on paper,
-     so it is used as a FILL with dark ink, and --bx-volt-text carries text/lines */
-  --bx-bg:        #f4f3ee;
-  --bx-surface:   #ffffff;
-  --bx-surface-2: #ecebe5;
-  --bx-surface-3: #e0dfd8;
+  /* daylight: the fills come from the app's light theme; a light accent (yellow, green) is too
+     pale for text on it, so it stays a FILL and --bx-volt-text (its pressed shade) carries text */
   --bx-line:      rgba(10,11,13,.08);
   --bx-line-2:    rgba(10,11,13,.16);
-  --bx-ink:   #0a0b0d;
   --bx-ink-2: rgba(10,11,13,.62);
   --bx-ink-3: rgba(10,11,13,.40);
-  --bx-volt-soft: rgba(140,180,0,.16);
   --bx-ember:     #e5541b;
   --bx-protein:   #0a84c6;
   --bx-carbs:     #c98a00;
@@ -90,8 +87,9 @@
   --bx-shadow-1: 0 1px 2px rgba(10,11,13,.06);
   --bx-shadow-2: 0 8px 24px rgba(10,11,13,.10);
 }
-:root           { --bx-volt-text: var(--bx-volt) }
-:root[data-theme="light"] { --bx-volt-text: #4d6600; --bx-kcal: #4d6600 } /* 6.9:1 on paper */
+:root           { --bx-volt-text: var(--acc) }
+/* light: the pressed shade carries accent text and the kcal ring (darker, readable on the tint) */
+:root[data-theme="light"] { --bx-volt-text: var(--acc-2); --bx-kcal: var(--acc-2) }
 
 /* Reduced motion: every duration collapses; JS reads the same media query (lib/motion.js). */
 @media (prefers-reduced-motion: reduce) {
@@ -127,6 +125,13 @@
 .bx-page { padding-bottom: var(--bx-s4); animation: bx-page-in var(--bx-dur-slow) var(--bx-ease-out) both }
 :root:has(.bx-page), :root:has(.bx-page) body { background: var(--bx-bg) }
 .bx-wrap { max-width: 640px; margin: 0 auto }
+/* A computer: the wrap widens and the page splits in two columns (views/Nutrition.jsx) */
+.bx-col + .bx-col { margin-top: var(--bx-s3) }
+@media (min-width: 1000px) {
+  .bx-wrap { max-width: 1080px }
+  .bx-col + .bx-col { margin-top: 0 }
+  .bx-cols { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: var(--bx-s4); align-items: start }
+}
 
 /* page header: small caps kicker over a massive condensed title */
 .bx-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--bx-s3); margin-bottom: var(--bx-s5) }

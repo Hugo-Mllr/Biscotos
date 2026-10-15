@@ -2343,4 +2343,6 @@ export default {
   'Your nutrition data, health imports and Apple Health tokens are erased.': 'A táplálkozási adataid, egészségimportjaid és Apple Egészség tokenjeid törölve.',
   '{0} entries added, {1} skipped.': '{0} bejegyzés hozzáadva, {1} kihagyva.',
   'From Apple Health': 'Az Apple Egészségből',
+  'Tinted background': 'Színezett háttér',
+  'Backgrounds and cards take a hint of your color.': 'A hátterek és a kártyák a színed árnyalatát kapják.',
 }

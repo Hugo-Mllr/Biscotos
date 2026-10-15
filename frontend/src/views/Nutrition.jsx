@@ -103,6 +103,8 @@ export default function Nutrition() {
         <button className="bx-chip bx-tap" onClick={reload}>{t('Try again')}</button>
       </div>}
 
+      {/* Two columns on a computer: the day (score, meals) and the trends (week, body) */}
+      <div className="bx-cols"><div className="bx-col">
       {/* The score of the day */}
       <section className="bx-card" aria-label={t('Today’s total')}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--bx-s5)', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -160,6 +162,7 @@ export default function Nutrition() {
           </section>
         ))}
 
+      </div><div className="bx-col">
       {/* Seven days */}
       {data && <WeekChart week={week} goal={goals.kcal} day={day} onPick={setDay} />}
 
@@ -181,6 +184,7 @@ export default function Nutrition() {
           <button className="bx-chip bx-tap" onClick={() => setSheet('health')}><Icon name="heart" /> {t('Apple Health')}</button>
         </div>
       </section>
+      </div></div>
 
       {sheet === 'add' && <AddFoodSheet day={day} foods={data?.foods || []} onClose={() => setSheet(null)} onLogged={onLogged}
         onFoodSaved={f => setData(d => ({ ...d, foods: [...(d?.foods || []), f] }))} />}
