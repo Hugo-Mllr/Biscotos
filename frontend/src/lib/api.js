@@ -24,6 +24,12 @@ export const webauthnOK = () => typeof window.PublicKeyCredential !== 'undefined
 let remoteBase = ''
 let remoteToken = null
 export function setRemoteAuth(base, token) { remoteBase = base || ''; remoteToken = token || null }
+/** The absolute URL of an API path, as another device must call it (a paired phone's server, or
+ *  this page's own origin and subpath). For showing to people, e.g. the Apple Health webhook. */
+export function apiUrl(path) {
+  if (remoteBase) return remoteBase + path
+  return new URL(appBase().replace(/\/$/, '') + path, location.origin).href
+}
 // A Cloudflare Access service token (lib/cf-access.js): sent only to the origin it was entered
 // for, never on a same-origin request, where the browser's own Access session cookie already
 // does the job, and never to a server that merely happens to be paired or typed in.

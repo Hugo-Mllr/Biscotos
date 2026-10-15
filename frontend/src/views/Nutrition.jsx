@@ -17,6 +17,7 @@ import * as napi from '../lib/nutrition-api.js'
 import { CountUp, Ring, Bar, Sheet } from '../components/bx/index.jsx'
 import FoodScanner, { canScanInBrowser } from '../components/bx/FoodScanner.jsx'
 import Icon from '../components/Icon.jsx'
+import HealthImportSheet from '../components/bx/HealthImportSheet.jsx'
 
 const MEAL_LABEL = { breakfast: () => t('Breakfast'), lunch: () => t('Lunch'), dinner: () => t('Dinner'), snack: () => t('Snack') }
 const MACRO_LABEL = { protein: () => t('Protein'), carbs: () => t('Carbs'), fat: () => t('Fat') }
@@ -176,11 +177,13 @@ export default function Nutrition() {
         <div style={{ display: 'flex', gap: 'var(--bx-s2)', marginTop: 'var(--bx-s4)', flexWrap: 'wrap' }}>
           {!heightCm && <button className="bx-chip bx-tap" onClick={() => setSheet('goals')}>{t('Add your height')}</button>}
           <button className="bx-chip bx-tap" onClick={() => nav('/measurements')}>{t('Body measurements')} <Icon name="chevronRight" /></button>
+          <button className="bx-chip bx-tap" onClick={() => setSheet('health')}><Icon name="heart" /> {t('Apple Health')}</button>
         </div>
       </section>
 
       {sheet === 'add' && <AddFoodSheet day={day} foods={data?.foods || []} onClose={() => setSheet(null)} onLogged={onLogged}
         onFoodSaved={f => setData(d => ({ ...d, foods: [...(d?.foods || []), f] }))} />}
+      {sheet === 'health' && <HealthImportSheet onClose={() => setSheet(null)} />}
       {sheet === 'goals' && <GoalsSheet data={data} onClose={() => setSheet(null)}
         onSaved={r => { setData(d => ({ ...d, ...r })); setSheet(null) }} />}
       {sheet?.edit && <EditEntrySheet entry={sheet.edit} onClose={() => setSheet(null)}

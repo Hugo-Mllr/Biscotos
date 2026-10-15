@@ -25,3 +25,9 @@ export function lookupProblem(e) {
   if (e.status === 401) return 'signed-out'
   return 'unavailable'
 }
+
+// Apple Health import (api/health/routes.js, docs/APPLE_HEALTH.md)
+export const listHookTokens = () => api('/api/hooks/tokens')
+export const createHookToken = label => post('/api/hooks/tokens', { label })
+export const revokeHookToken = id => post('/api/hooks/tokens/revoke', { id }).then(r => r.hook)
+export const loadHealthSamples = (from, to) => api('/api/health-samples?' + qs({ from, to })).then(r => r.samples || [])

@@ -1429,6 +1429,12 @@ export const PT_BR_OVERRIDES = {
   'This product is not in Open Food Facts yet. Enter it by hand below.': 'Este produto ainda não está no Open Food Facts. Insira à mão abaixo.',
   'Too many lookups right now. Try again in a minute.': 'Muitas buscas agora. Tente de novo em um minuto.',
   'Your session has expired. Sign in again.': 'Sua sessão expirou. Entre novamente.',
+  'An iOS Shortcut sends your weight, steps, sleep and resting heart rate here. Each Shortcut gets its own token, which you can revoke at any time.': 'Um Atalho do iOS envia para cá seu peso, passos, sono e frequência cardíaca em repouso. Cada Atalho tem seu próprio token, que você pode revogar a qualquer momento.',
+  'Copy it now: it will not be shown again.': 'Copie agora: ele não será mostrado de novo.',
+  'Five tokens at most: revoke one first.': 'No máximo cinco tokens: revogue um primeiro.',
+  'Last used: {0}': 'Último uso: {0}',
+  'No token yet.': 'Nenhum token ainda.',
+  'Paste both into the Shortcut, as described in the guide. Treat the token like a password.': 'Cole os dois no Atalho, como descrito no guia. Trate o token como uma senha.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
