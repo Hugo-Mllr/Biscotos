@@ -6,10 +6,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { t, tn } from '../lib/i18n.js'
+import { t, tn, dateLocale } from '../lib/i18n.js'
 import { fmtNum } from '../lib/format.js'
 import * as sapi from '../lib/social-api.js'
-import { RULES, podium, myRow, gapToNext, initials, hueOf } from '../lib/league.js'
+import { RULES, podium, myRow, gapToNext, initials, hueOf, ago } from '../lib/league.js'
 import { CountUp, Sheet } from '../components/bx/index.jsx'
 import Icon from '../components/Icon.jsx'
 
@@ -118,6 +118,7 @@ export default function League() {
             </ul>
           </section>
         </>}
+        <Feed circle={circle} />
       </div><div className="bx-col">
         {mine && <MyWeek row={mine} rows={board.week.rows} />}
         <section className="bx-card">
@@ -264,6 +265,7 @@ function Toggles({ value, onChange }) {
     ['training', t('Points, workouts and streak'), t('Never the weights you lift.')],
     ['prs', t('Personal records'), t('How many, not which loads.')],
     ['nutrition', t('Days on my calorie goal'), t('Never what you eat.')],
+    ['notify', t('Notifications'), t('Reactions, friends’ records and the Monday recap.')],
   ]
   return <div className="bx-toggles">
     {items.map(([k, title, sub]) => <label key={k} className="bx-toggle">
@@ -278,7 +280,7 @@ function StartSheet({ prefs, onClose, onDone }) {
   const [mode, setMode] = useState('join')
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
-  const [share, setShare] = useState(prefs || { training: true, prs: true, nutrition: false })
+  const [share, setShare] = useState(prefs || { training: true, prs: true, nutrition: false, notify: true })
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState(null)
   const submit = async e => {
@@ -343,6 +345,11 @@ function CircleSheet({ circle, onClose, onChanged, onGone }) {
       </div>
       <p className="bx-small bx-dim" style={{ marginTop: 6 }}>{t('A new code stops the old one at once.')}</p>
     </form>}
+    {circle.owner && <label className="bx-toggle" style={{ marginBottom: 'var(--bx-s4)' }}>
+      <span><b>{t('Wall of shame')}</b><small>{t('The Monday recap names those on 0 points.')}</small></span>
+      <input type="checkbox" role="switch" checked={circle.shame !== false}
+        onChange={e => run(() => sapi.setShame(circle.id, e.target.checked), onChanged)} />
+    </label>}
     <h3 className="bx-label" style={{ marginBottom: 'var(--bx-s2)' }}>{t('Members')}</h3>
     <ul className="bx-list" style={{ marginBottom: 'var(--bx-s4)' }}>
       {circle.members.map(m => <li key={m.member} className="bx-item">
@@ -364,4 +371,56 @@ function CircleSheet({ circle, onClose, onChanged, onGone }) {
         : <button className="bx-btn bx-btn-ghost bx-tap" onClick={() => setConfirm('delete')}>{t('Delete the circle')}</button>)}
     </div>
   </Sheet>
+}
+
+// What happened in the circle these two weeks, with one-tap reactions.
+function Feed({ circle }) {
+  const [feed, setFeed] = useState(null)
+  useEffect(() => {
+    let live = true
+    setFeed(null)
+    sapi.loadFeed(circle.id).then(f => { if (live) setFeed(f) }).catch(() => { if (live) setFeed({ events: [], choices: [] }) })
+    return () => { live = false }
+  }, [circle.id])
+  const onReact = async (ev, emoji) => {
+    const next = ev.reactions.mine === emoji ? null : emoji
+    try {
+      const r = await sapi.react(circle.id, ev.id, next)
+      setFeed(f => ({ ...f, events: f.events.map(e => (e.id === ev.id ? { ...e, reactions: r.reactions } : e)) }))
+    } catch { /* keeps the old state */ }
+  }
+  return <section className="bx-card" aria-label={t('Activity')} style={{ marginTop: 'var(--bx-s3)' }}>
+    <div className="bx-card-hd"><h2 className="bx-label" style={{ color: 'var(--bx-ink)' }}>{t('Activity')}</h2></div>
+    {!feed ? <div className="bx-skeleton" style={{ height: 80 }} />
+      : !feed.events.length ? <p className="bx-small bx-dim">{t('Nothing yet these two weeks.')}</p>
+      : <ul className="bx-list bx-feed">{feed.events.map(ev => <FeedItem key={ev.id} ev={ev} choices={feed.choices} onReact={onReact} />)}</ul>}
+  </section>
+}
+
+function FeedItem({ ev, choices, onReact }) {
+  const who = ev.me ? t('You') : ev.name
+  const line = ev.kind === 'joined' ? t('{0} joined the circle', who)
+    : ev.title ? t('{0} finished “{1}”', who, ev.title) : t('{0} finished a workout', who)
+  const meta = ev.kind === 'workout' ? [
+    ev.minutes ? t('{0} min', ev.minutes) : null,
+    ev.exercises ? tn('{0} exercise', '{0} exercises', ev.exercises) : null,
+  ].filter(Boolean).join(' · ') : ''
+  return <li className="bx-item bx-feed-item">
+    <Avatar name={ev.name} size={34} me={ev.me} />
+    <div className="bx-item-main">
+      <div className="bx-feed-line">{line}</div>
+      <div className="bx-item-sub">
+        {ago(ev.at, Date.now(), dateLocale())}{meta ? ' · ' + meta : ''}
+        {ev.records > 0 && <span className="bx-feed-pr"><Icon name="trophy" /> {tn('{0} record', '{0} records', ev.records)}</span>}
+      </div>
+      {ev.kind === 'workout' && <div className="bx-reacts">
+        {choices.map(e => {
+          const n = ev.reactions.counts[e] || 0
+          const mine = ev.reactions.mine === e
+          return <button key={e} className={'bx-react bx-tap' + (mine ? ' is-mine' : '') + (n ? ' has' : '')} aria-pressed={mine}
+            aria-label={t('React {0}', e)} onClick={() => onReact(ev, e)}>{e}{n > 0 && <span>{n}</span>}</button>
+        })}
+      </div>}
+    </div>
+  </li>
 }

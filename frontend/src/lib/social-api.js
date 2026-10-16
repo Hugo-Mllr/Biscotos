@@ -27,3 +27,6 @@ export function socialProblem(e) {
   if (e.status === 404) return 'gone'
   return 'unavailable'
 }
+export const loadFeed = circle => api('/api/social/feed?' + new URLSearchParams({ circle }))
+export const react = (circle, event, emoji) => post('/api/social/react', { circle, event, emoji })
+export const setShame = (circle, shame) => post('/api/social/circles/update', { circle, shame }).then(r => r.circle)

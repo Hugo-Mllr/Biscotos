@@ -41,7 +41,7 @@ import { createOff, DEFAULT_BASE as OFF_DEFAULT_BASE, DEFAULT_SEARCH_BASE as OFF
 import { removeDoc as removeNutrition } from './nutrition/store.js';
 import { healthRoutes, forgetHealthUser } from './health/routes.js';
 import { removeHealth } from './health/store.js';
-import { socialRoutes } from './social/routes.js';
+import { createSocial } from './social/routes.js';
 import { forgetSocialUser } from './social/store.js';
 import { readDoc as readNutritionDoc } from './nutrition/store.js';
 
@@ -1926,6 +1926,20 @@ function dataWritable() {
   return ok;
 }
 
+// Biscotos circles, weekly league and feed (docs/SOCIAL.md). Days are the server's local
+// calendar: set TZ in .env (e.g. Europe/Paris) so a week turns over at the friends' midnight.
+const social = createSocial({
+  json, readBody, readSession, tooMany, createWindow, limitAddress, audit, dataDir: DATA, atomicWrite,
+  secret: SECRET,
+  userById: uid => db.users.find(u => u.id === uid && !u.disabled) || null,
+  readState: uid => readStateCached(uid),
+  readNutrition: uid => readNutritionDoc(DATA, uid),
+  today: () => localDay(),
+  sendPush: (uid, payload) => sendPush(uid, payload),
+});
+// The Monday recap: checked every ten minutes, sent once per circle and week.
+setInterval(() => { try { social.tick(); } catch (e) { console.error('social: recap failed', e.message); } }, 10 * 60 * 1000).unref();
+
 const routes = {
   // 503 rather than a flag in a 200: the container healthcheck is `wget --spider`, which reads
   // the status and nothing else, and an instance that cannot write its data directory is exactly
@@ -2310,6 +2324,8 @@ const routes = {
       try { MEDIA.noteState(user.id, body.state); } catch (e) { console.error('media noteState', e); }
     }
     json(res, 200, { ok: true, ts: body.state._ts || null, rev: curRev + 1, wid: body.state._wid });
+    // Friends hear about new records (social/routes.js). After the answer, and never its failure.
+    try { social.onStateSaved(user.id, cur === UNREADABLE ? null : cur, body.state); } catch (e) { console.error('social: state hook failed', e.message); }
   },
 
   'GET /api/push/public-key': async (req, res) => json(res, 200, { key: vapid.publicKey }),
@@ -2605,16 +2621,8 @@ const routes = {
     todayISO: () => new Date().toISOString().slice(0, 10)
   }),
   ...portabilityRoutes({ json, readBody, readSession, tooMany, createWindow, audit, dataDir: DATA, atomicWrite }),
-  // Biscotos circles and weekly league (docs/SOCIAL.md). Days are the server's local calendar:
-  // set TZ in .env (e.g. Europe/Paris) so a week turns over at the friends' midnight.
-  ...socialRoutes({
-    json, readBody, readSession, tooMany, createWindow, limitAddress, audit, dataDir: DATA, atomicWrite,
-    secret: SECRET,
-    userById: uid => db.users.find(u => u.id === uid && !u.disabled) || null,
-    readState: uid => readStateCached(uid),
-    readNutrition: uid => readNutritionDoc(DATA, uid),
-    today: () => localDay()
-  }),
+  // Biscotos circles, weekly league and feed (docs/SOCIAL.md), built below.
+  ...social.routes,
   ...nutritionRoutes({
     json, readBody, readSession, tooMany, createWindow, dataDir: DATA, atomicWrite,
     off: FOOD_SEARCH ? createOff({

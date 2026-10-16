@@ -3414,12 +3414,12 @@ paths:
     post:
       tags: [social]
       operationId: updateCircle
-      summary: Owner only — rename, or replace the join code
+      summary: Owner only — rename, replace the join code, or turn the wall of shame on or off
       requestBody:
         required: true
         content:
           application/json:
-            schema: { type: object, required: [circle], properties: { circle: { type: string }, name: { type: string }, rotateCode: { type: boolean } } }
+            schema: { type: object, required: [circle], properties: { circle: { type: string }, name: { type: string }, rotateCode: { type: boolean }, shame: { type: boolean, description: Name members on 0 points in the Monday recap. } } }
       responses:
         '200': { description: "`circle`." }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -3466,6 +3466,39 @@ paths:
         '200': { description: "`week`, `lastWeek`, `season`, each with ranked `rows`." }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { description: Not a circle of the caller. }
+
+  /api/social/feed:
+    get:
+      tags: [social]
+      operationId: getSocialFeed
+      summary: What happened in a circle these two weeks, with reactions
+      description: >-
+        Derived on demand from each member's own data and sharing choices: finished workouts
+        (name, length, number of exercises, number of records when records are shared — never a
+        load or an exercise) and arrivals. Event ids are opaque.
+      parameters:
+        - { name: circle, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: "`events` newest first, each with `reactions` ({ counts, mine }); `choices`." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Not a circle of the caller. }
+  /api/social/react:
+    post:
+      tags: [social]
+      operationId: reactSocial
+      summary: React to an event of the feed (the same emoji again, or null, takes it back)
+      description: Only an event the caller can see right now. A new reaction to someone else's workout notifies them if they left notifications on.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [circle, event], properties: { circle: { type: string }, event: { type: string }, emoji: { type: string, nullable: true, enum: ['💪', '🔥', '🍪', '👏', '😮', null] } } }
+      responses:
+        '200': { description: The event's reactions. }
+        '400': { description: Unknown emoji. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Not a circle of the caller, or no such event. }
+        '429': { description: Over the per-profile budget. }
 
 components:
   securitySchemes:
@@ -3635,6 +3668,7 @@ components:
         training: { type: boolean, description: Points, workouts count and streak visible to circles. }
         prs: { type: boolean, description: Records count visible (and counted). }
         nutrition: { type: boolean, description: Days on the calorie goal counted (never what was eaten). }
+        notify: { type: boolean, description: Push notifications for reactions, friends' records and the Monday recap. }
     Circle:
       type: object
       properties:

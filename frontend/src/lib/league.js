@@ -40,3 +40,14 @@ export function hueOf(name) {
   for (const ch of String(name || '')) h = (h * 31 + ch.codePointAt(0)) % 360
   return h
 }
+
+/** '2 h ago' style, in the app's language: seconds → minutes → hours → days. */
+export function ago(at, now = Date.now(), locale = 'en') {
+  const s = Math.round((at - now) / 1000)
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' })
+  const a = Math.abs(s)
+  if (a < 60) return rtf.format(0, 'minute')
+  if (a < 3600) return rtf.format(Math.round(s / 60), 'minute')
+  if (a < 86400) return rtf.format(Math.round(s / 3600), 'hour')
+  return rtf.format(Math.round(s / 86400), 'day')
+}

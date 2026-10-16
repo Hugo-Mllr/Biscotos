@@ -249,7 +249,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>96 endpoints</span>
+    <span>98 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3011,7 +3011,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="m post">POST</span>
     <span class="ep-path"><code>/api/social/circles/update</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum">Owner only — rename, or replace the join code</span>
+    <span class="ep-sum">Owner only — rename, replace the join code, or turn the wall of shame on or off</span>
   </summary>
   <div class="ep-body">
 
@@ -3032,6 +3032,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">rotateCode</span>
     <span class="p-type">boolean</span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">shame</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Name members on 0 points in the Monday recap.</span>
   </div>
 </div>
     <p class="ep-h">Responses</p>
@@ -3172,6 +3177,96 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">404</span>
     <span class="p-desc">Not a circle of the caller.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getSocialFeed">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/social/feed</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">What happened in a circle these two weeks, with reactions</span>
+  </summary>
+  <div class="ep-body">
+<p>Derived on demand from each member's own data and sharing choices: finished workouts (name, length, number of exercises, number of records when records are shared — never a load or an exercise) and arrivals. Event ids are opaque.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">circle<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>events</code> newest first, each with <code>reactions</code> ({ counts, mine }); <code>choices</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not a circle of the caller.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-reactSocial">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/react</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">React to an event of the feed (the same emoji again, or null, takes it back)</span>
+  </summary>
+  <div class="ep-body">
+<p>Only an event the caller can see right now. A new reaction to someone else's workout notifies them if they left notifications on.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">circle<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">event<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">emoji</span>
+    <span class="p-type">&quot;💪&quot; | &quot;🔥&quot; | &quot;🍪&quot; | &quot;👏&quot; | &quot;😮&quot; | null</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The event's reactions.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Unknown emoji.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not a circle of the caller</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the per-profile budget.</span>
   </div>
     </div>
   </div>
@@ -4303,6 +4398,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">nutrition</span>
     <span class="p-type">boolean</span>
     <span class="p-desc">Days on the calorie goal counted (never what was eaten).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">notify</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Push notifications for reactions</span>
   </div>
 </div>
   </div>

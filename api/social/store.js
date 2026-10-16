@@ -4,7 +4,9 @@
  *
  *   { v: 1,
  *     circles: [ { id, name, ownerUid, code, createdAt, members: [ { uid, joinedAt } ] } ],
- *     prefs:   { [uid]: { training, prs, nutrition } } }
+ *     prefs:   { [uid]: { training, prs, nutrition, notify } },
+ *     reactions: { [eventId]: { at, owner, circle, by: { [uid]: emoji } } },   (feed.js)
+ *     recaps:  { [circleId]: 'YYYY-MM-DD' } }       (the Monday of the last recap sent)
  *
  * A circle's join code is kept as is, not hashed: every member is shown it so they can invite
  * the next friend. It only lets someone join (never read anything by itself), joins are
@@ -17,14 +19,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export const LIMITS = Object.freeze({ CIRCLES_PER_USER: 5, MEMBERS_MAX: 30, NAME_MAX: 40 });
-export const DEFAULT_PREFS = Object.freeze({ training: true, prs: true, nutrition: false });
+export const DEFAULT_PREFS = Object.freeze({ training: true, prs: true, nutrition: false, notify: true });
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';    // no 0/O, 1/I/L
 
 export class UnreadableError extends Error {}
 const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const file = dataDir => path.join(dataDir, 'social.json');
 
-export function emptyDoc() { return { v: 1, circles: [], prefs: {} }; }
+export function emptyDoc() { return { v: 1, circles: [], prefs: {}, reactions: {}, recaps: {} }; }
 
 export function readSocial(dataDir) {
   let raw;
@@ -38,6 +40,8 @@ export function readSocial(dataDir) {
     v: 1,
     circles: Array.isArray(doc.circles) ? doc.circles.filter(c => isObj(c) && Array.isArray(c.members)) : [],
     prefs: isObj(doc.prefs) ? doc.prefs : {},
+    reactions: isObj(doc.reactions) ? doc.reactions : {},
+    recaps: isObj(doc.recaps) ? doc.recaps : {},
   };
 }
 
@@ -77,6 +81,7 @@ export function prefsOf(doc, uid) {
     training: typeof p.training === 'boolean' ? p.training : DEFAULT_PREFS.training,
     prs: typeof p.prs === 'boolean' ? p.prs : DEFAULT_PREFS.prs,
     nutrition: typeof p.nutrition === 'boolean' ? p.nutrition : DEFAULT_PREFS.nutrition,
+    notify: typeof p.notify === 'boolean' ? p.notify : DEFAULT_PREFS.notify,
   };
 }
 /** Only the three known switches, only booleans; null when the body has none of them right. */
@@ -123,5 +128,9 @@ export function forgetSocialUser(dataDir, uid, atomicWrite) {
   const doc = readSocial(dataDir);
   const had = uid in doc.prefs;
   delete doc.prefs[uid];
+  for (const [id, r] of Object.entries(doc.reactions)) {
+    if (r?.owner === uid) delete doc.reactions[id];
+    else if (r?.by && uid in r.by) delete r.by[uid];
+  }
   if (removeMember(doc, uid) || had) writeSocial(dataDir, doc, atomicWrite);
 }

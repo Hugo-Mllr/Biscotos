@@ -53,6 +53,15 @@ dès la première séance ; tant qu'elle est vide, la série de la semaine d'ava
 Un **joker par mois** comble automatiquement **une** semaine ratée isolée (le mois du lundi de
 cette semaine). Deux semaines ratées de suite cassent la série.
 
+## Fil d'activité, réactions, notifications (PR 2, en cours)
+
+- **Fil** (écran Ligue) : séances des 14 derniers jours des membres qui partagent l'entraînement
+  (nom, durée, nombre d'exercices, nombre de records si partagés — jamais de charge), arrivées.
+- **Réactions** 💪 🔥 🍪 👏 😮 : une par personne et par séance ; gardées 30 jours dans `social.json`.
+- **Notifications** (interrupteur « Notifications », activé par défaut) : réaction à ta séance,
+  record d'un pote, **bilan du lundi** à 9 h (podium de la semaine passée ; « mur de la honte »
+  des 0 point, désactivable par le propriétaire du cercle).
+
 ## Technique
 
 - `api/social/score.js` : règles pures, testées (`api/test/social-score.test.js`).

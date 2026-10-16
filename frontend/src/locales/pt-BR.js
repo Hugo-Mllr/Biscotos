@@ -1480,6 +1480,8 @@ export const PT_BR_OVERRIDES = {
   'Up to 30: your week against your own last four, +1 % = 10 points.': 'Até 30: sua semana comparada às suas quatro anteriores, +1 % = 10 pontos.',
   'Day on target': 'Dia na meta',
   'Calories within 10 % of your goal, if you share nutrition.': 'Calorias a até 10 % da sua meta, se você compartilhar a nutrição.',
+  'Reactions, friends’ records and the Monday recap.': 'Reações, recordes dos amigos e o resumo de segunda-feira.',
+  '{0} finished “{1}”': '{0} terminou “{1}”',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

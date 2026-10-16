@@ -216,15 +216,22 @@ self.addEventListener('push', e => {
       icon: 'icon-512.png',
       badge: 'icon-180.png',
       tag,
-      renotify: true
+      renotify: true,
+      // Biscotos: where a tap takes you (a friend's reaction → the league). Only a path of this
+      // app, relative to the scope: anything else opens the app's start page.
+      data: { url: typeof data.url === 'string' && /^\.\/[a-z][a-z0-9/-]*$/.test(data.url) ? data.url : './' }
     })
   })())
 })
 self.addEventListener('notificationclick', e => {
   e.notification.close()
+  const url = e.notification.data?.url || './'
   e.waitUntil(self.clients.matchAll({ type: 'window' }).then(clients => {
     const c = clients.find(c => 'focus' in c)
-    return c ? c.focus() : self.clients.openWindow('./')
+    if (!c) return self.clients.openWindow(url)
+    // An open app goes to the page the notification is about, then comes to the front.
+    return (url !== './' && 'navigate' in c ? c.navigate(new URL(url, self.registration.scope).href).catch(() => c) : Promise.resolve(c))
+      .then(w => (w || c).focus())
   }))
 })
 // The push service rotated the subscription (key change, expiry): subscribe again with the same

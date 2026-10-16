@@ -181,3 +181,48 @@ test('limits: names are checked, five circles at most', async () => {
 test('nothing private reaches the server log', () => {
   for (const secret of ['Secret snack', '81.3']) assert.ok(!h.log.includes(secret));
 });
+
+test('the feed: friends’ workouts with name, length and record count — never a load — and reactions', async () => {
+  // a fresh circle: Alex owns it, Sam joins (Lou stays out)
+  const made = (await call('POST', '/api/social/circles', as(A), { name: 'Feed demo' })).body.circle;
+  await call('POST', '/api/social/join', as(B), { code: made.code });
+  let r = await call('GET', `/api/social/feed?circle=${made.id}`, as(B));
+  assert.equal(r.status, 200);
+  const alexToday = r.body.events.find(e => e.kind === 'workout' && e.name === 'Alex Demo' && e.d === TODAY);
+  assert.ok(alexToday, 'Alex’s workout of today is there');
+  assert.equal(alexToday.records, 1);
+  const raw = JSON.stringify(r.body);
+  for (const secret of ['bench', '81.3', '"w":', '"sets"', A, B, 'Secret snack']) assert.ok(!raw.includes(secret), `leaks ${secret}`);
+  assert.deepEqual(alexToday.reactions, { counts: {}, mine: null });
+
+  // Sam reacts, changes their mind, takes it back
+  r = await call('POST', '/api/social/react', as(B), { circle: made.id, event: alexToday.id, emoji: '🔥' });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.body.reactions, { counts: { '🔥': 1 }, mine: '🔥' });
+  r = await call('POST', '/api/social/react', as(A), { circle: made.id, event: alexToday.id, emoji: '💪' });
+  assert.deepEqual(r.body.reactions.counts, { '🔥': 1, '💪': 1 });
+  r = await call('POST', '/api/social/react', as(B), { circle: made.id, event: alexToday.id, emoji: '🔥' });
+  assert.deepEqual(r.body.reactions, { counts: { '💪': 1 }, mine: null });
+  assert.equal((await call('POST', '/api/social/react', as(B), { circle: made.id, event: alexToday.id, emoji: '<script>' })).status, 400);
+  assert.equal((await call('POST', '/api/social/react', as(B), { circle: made.id, event: 'made-up-event-id', emoji: '🔥' })).status, 404);
+
+  // feed and react: no session 401, outsider 404 with nothing stored
+  assert.equal((await call('GET', `/api/social/feed?circle=${made.id}`, anon)).status, 401);
+  assert.equal((await call('POST', '/api/social/react', anon, { circle: made.id, event: alexToday.id, emoji: '🔥' })).status, 401);
+  const before = snap();
+  assert.equal((await call('GET', `/api/social/feed?circle=${made.id}`, as(C))).status, 404);
+  assert.equal((await call('POST', '/api/social/react', as(C), { circle: made.id, event: alexToday.id, emoji: '🔥' })).status, 404);
+  assert.equal(snap(), before);
+
+  // a member who stops sharing training leaves the feed but for their arrival
+  await call('PUT', '/api/social/prefs', as(A), { training: false });
+  r = await call('GET', `/api/social/feed?circle=${made.id}`, as(B));
+  assert.ok(!r.body.events.some(e => e.name === 'Alex Demo' && e.kind === 'workout'));
+  assert.ok(r.body.events.some(e => e.name === 'Alex Demo' && e.kind === 'joined'));
+  await call('PUT', '/api/social/prefs', as(A), { training: true });
+
+  // the owner turns the wall of shame off; a member cannot
+  assert.equal((await call('POST', '/api/social/circles/update', as(B), { circle: made.id, shame: false })).status, 403);
+  r = await call('POST', '/api/social/circles/update', as(A), { circle: made.id, shame: false });
+  assert.equal(r.body.circle.shame, false);
+});
