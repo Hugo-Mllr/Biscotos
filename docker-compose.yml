@@ -16,7 +16,9 @@ services:
       context: ./api
       target: ${API_TARGET:-default}
     restart: unless-stopped
-    env_file: .env
+    env_file:                  # 👈 .env devient facultatif (il n'existe pas sur GitHub)
+      - path: .env
+        required: false
     environment:
       # The port the API listens on. web proxies to this same value, so the two
       # cannot drift — change it in .env and both follow.
@@ -26,13 +28,16 @@ services:
       # X-Forwarded-For / X-Real-IP with the real peer — so the sign-in throttle may count
       # requests by those headers instead of lumping everyone in as "the web container".
       - TRUST_PROXY=${TRUST_PROXY:-1}
+      # 👇 Ajoute ici les variables de ton .env dont l'app a besoin (voir plus bas)
+      # - NOM_VARIABLE=${NOM_VARIABLE}
     volumes:
-      - ./data:/data         # users, passkeys, per-user state, session secret — BACK THIS UP
+      # 👈 volumes nommés au lieu de ./data et ./coach-auth (les chemins relatifs
+      #    ne marchent pas avec les stacks Git de Portainer)
+      - data:/data           # users, passkeys, per-user state, session secret — BACK THIS UP
                              # (and uploads/: the photos and videos of custom exercises)
-      # Provider credential cache (Codex). A sibling of ./data on purpose: the documented backup
-      # is `tar czf … data/`, and a live refresh token must not end up inside it. Nothing here
-      # needs backing up — if you lose it, sign the provider in again.
-      - ./coach-auth:/coach-auth
+      # Provider credential cache (Codex). Nothing here needs backing up —
+      # if you lose it, sign the provider in again.
+      - coach-auth:/coach-auth
 
   # Builds the React frontend (multi-stage) and serves it, proxying /api → api
   # and the exercise animations, which are part of the image. Single origin for passkeys.
@@ -50,8 +55,13 @@ services:
     depends_on:
       api:
         condition: service_started
+    networks:                  # 👈 seul `web` rejoint le réseau du tunnel, pas `api`
+      default:
+      web:
+        aliases:
+          - biscotos           # 👈 nom utilisé par Cloudflare : http://biscotos:80
     ports:
-      - "${WEB_PORT:-8080}:${NGINX_PORT:-80}"
+      - "127.0.0.1:${WEB_PORT:-8080}:${NGINX_PORT:-80}"   # 👈 plus exposé sur tout le LAN
     # nginx renders its config at start-up from these (web/nginx.conf.template),
     # so the API service does not have to be called `api`. Defaults are the old
     # hardcoded values, so an existing .env and an existing stack are unaffected.
@@ -71,3 +81,11 @@ services:
       # The largest photo or video upload nginx passes to the API. Keep it above
       # MEDIA_VIDEO_MAX_MB (40 by default), which the api service reads from .env.
       - MEDIA_UPLOAD_MAX=${MEDIA_UPLOAD_MAX:-48m}
+
+volumes:                       # 👈 ajout
+  data:
+  coach-auth:
+
+networks:                      # 👈 ajout
+  web:
+    external: true
