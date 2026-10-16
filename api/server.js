@@ -41,6 +41,9 @@ import { createOff, DEFAULT_BASE as OFF_DEFAULT_BASE, DEFAULT_SEARCH_BASE as OFF
 import { removeDoc as removeNutrition } from './nutrition/store.js';
 import { healthRoutes, forgetHealthUser } from './health/routes.js';
 import { removeHealth } from './health/store.js';
+import { socialRoutes } from './social/routes.js';
+import { forgetSocialUser } from './social/store.js';
+import { readDoc as readNutritionDoc } from './nutrition/store.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -98,6 +101,8 @@ const FOOD_SEARCH = !/^(0|false|no|off)$/i.test(process.env.FOOD_SEARCH || '');
 const OFF_BASE_URL = process.env.OFF_BASE_URL || OFF_DEFAULT_BASE;
 // OFF_SEARCH_URL: OFF's search-a-licious service; '0' skips it (the historical search only).
 const OFF_SEARCH_URL = /^(0|false|no|off)$/i.test(process.env.OFF_SEARCH_URL || '') ? '' : (process.env.OFF_SEARCH_URL || OFF_DEFAULT_SEARCH);
+// Today on the server's clock ('YYYY-MM-DD' in its TZ), for the league's weeks.
+const localDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const API_VERSION = (() => {
   try { return JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version || '0'; }
   catch { return '0'; }
@@ -2507,6 +2512,7 @@ const routes = {
     removeNutrition(DATA, u.id);
     removeHealth(DATA, u.id);
     try { forgetHealthUser(DATA, u.id, atomicWrite); } catch (e) { console.error('health: could not drop the tokens of a deleted profile', e.message); }
+    try { forgetSocialUser(DATA, u.id, atomicWrite); } catch (e) { console.error('social: could not take a deleted profile out of its circles', e.message); }
     try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
     // Their photos and videos — the one place a profile's folder under uploads/ is removed.
     try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
@@ -2599,6 +2605,16 @@ const routes = {
     todayISO: () => new Date().toISOString().slice(0, 10)
   }),
   ...portabilityRoutes({ json, readBody, readSession, tooMany, createWindow, audit, dataDir: DATA, atomicWrite }),
+  // Biscotos circles and weekly league (docs/SOCIAL.md). Days are the server's local calendar:
+  // set TZ in .env (e.g. Europe/Paris) so a week turns over at the friends' midnight.
+  ...socialRoutes({
+    json, readBody, readSession, tooMany, createWindow, limitAddress, audit, dataDir: DATA, atomicWrite,
+    secret: SECRET,
+    userById: uid => db.users.find(u => u.id === uid && !u.disabled) || null,
+    readState: uid => readStateCached(uid),
+    readNutrition: uid => readNutritionDoc(DATA, uid),
+    today: () => localDay()
+  }),
   ...nutritionRoutes({
     json, readBody, readSession, tooMany, createWindow, dataDir: DATA, atomicWrite,
     off: FOOD_SEARCH ? createOff({

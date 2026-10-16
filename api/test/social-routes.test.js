@@ -1,0 +1,183 @@
+/* Biscotos circles and league against the real server.js in a child process.
+ *
+ * One authorization test per route: no session → 401; a circle the caller is not in → 404, the
+ * same answer as an id that does not exist, with social.json unchanged; owner-only actions → 403
+ * for a member. Plus what friends may see: never a uid, a weight or a food. Synthetic users only. */
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { boundPort } from './helpers.mjs';
+
+const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SECRET = crypto.randomBytes(32).toString('hex');
+const A = 'u_alex_demo', B = 'u_sam_demo', C = 'u_lou_demo';
+const localDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const TODAY = localDay();
+const daysAgo = n => localDay(new Date(Date.now() - n * 86400000));
+
+function mintSession(uid) {
+  const payload = `${uid}:${Date.now() + 86400000}:0`;
+  return payload + '.' + crypto.createHmac('sha256', SECRET).update(payload).digest('base64url');
+}
+const as = uid => ({ Cookie: `gymsid=${mintSession(uid)}`, 'Content-Type': 'application/json', Origin: 'http://localhost:8080' });
+const anon = { 'Content-Type': 'application/json', Origin: 'http://localhost:8080' };
+const lift = (d, w) => ({ id: 'w' + d + w, d, start: Date.now(), entries: [{ id: 'bench', sets: [{ w, r: 5, done: true }] }] });
+
+let h;
+before(async () => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bx-social-'));
+  fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
+  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({
+    users: [A, B, C].map((id, i) => ({ id, name: ['Alex Demo', 'Sam Demo', 'Lou Demo'][i], created: new Date().toISOString() })),
+    creds: [], subs: [], invites: []
+  }));
+  // Alex: an older bench and a heavier one today (a record); body weight that must never leak.
+  fs.writeFileSync(path.join(dataDir, `state-${A}.json`), JSON.stringify({
+    unit: 'kg', bodyweight: [{ d: TODAY, w: 81.3 }], workouts: [lift(daysAgo(40), 80), lift(TODAY, 84)]
+  }));
+  fs.writeFileSync(path.join(dataDir, `state-${B}.json`), JSON.stringify({ unit: 'kg', workouts: [lift(TODAY, 50)] }));
+  fs.writeFileSync(path.join(dataDir, `nutrition-${B}.json`), JSON.stringify({ v: 1, goals: { kcal: 2000 }, log: [{ id: 'f1', d: TODAY, name: 'Secret snack', grams: 1000, per100: { kcal: 200 } }] }));
+  const child = spawn(process.execPath, ['server.js'], {
+    cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', FOOD_SEARCH: '0' }
+  });
+  h = { log: '', dataDir, child };
+  child.stdout.on('data', d => h.log += d);
+  child.stderr.on('data', d => h.log += d);
+  h.port = await boundPort(child, () => h.log);
+  h.api = `http://127.0.0.1:${h.port}`;
+});
+after(() => { h?.child.kill('SIGKILL'); if (h) fs.rmSync(h.dataDir, { recursive: true, force: true }); });
+
+async function call(method, route, headers, body) {
+  const r = await fetch(h.api + route, { method, headers, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) });
+  let json = null; try { json = await r.json(); } catch { /* empty */ }
+  return { status: r.status, body: json };
+}
+const socialFile = () => path.join(h.dataDir, 'social.json');
+const snap = () => (fs.existsSync(socialFile()) ? fs.readFileSync(socialFile(), 'utf8') : null);
+
+let circle;
+test('Alex creates a circle, Sam joins with the code, Lou is not in it', async () => {
+  let r = await call('POST', '/api/social/circles', as(A), { name: '  Les Biscotos  ' });
+  assert.equal(r.status, 201);
+  circle = r.body.circle;
+  assert.equal(circle.name, 'Les Biscotos');
+  assert.match(circle.code, /^[A-Z2-9]{4}-[A-Z2-9]{4}$/);
+  assert.equal(fs.statSync(socialFile()).mode & 0o777, 0o600);
+
+  r = await call('POST', '/api/social/join', as(B), { code: circle.code.toLowerCase().replace('-', ' '), prefs: { nutrition: true } });
+  assert.equal(r.status, 200);
+  assert.equal(r.body.circle.members.length, 2);
+  assert.equal(r.body.circle.owner, false);
+  const raw = JSON.stringify(r.body);
+  assert.ok(!raw.includes(A) && !raw.includes(B), 'members are named by key, never by uid');
+
+  r = await call('GET', '/api/social', as(C));
+  assert.deepEqual(r.body.circles, []);
+});
+
+test('a wrong or malformed code gets one answer', async () => {
+  for (const code of ['ZZZZ-ZZZZ', 'nope', 42]) {
+    const r = await call('POST', '/api/social/join', as(C), { code });
+    assert.equal(r.status, 404);
+    assert.equal(r.body.code, 'bad-code');
+  }
+});
+
+test('the league: points from each member’s own data, and nothing private', async () => {
+  const r = await call('GET', `/api/social/leaderboard?circle=${circle.id}`, as(B));
+  assert.equal(r.status, 200);
+  const alex = r.body.week.rows.find(x => x.name === 'Alex Demo');
+  const sam = r.body.week.rows.find(x => x.name === 'Sam Demo');
+  assert.equal(alex.breakdown.sessions, 10);
+  assert.equal(alex.breakdown.records, 25);
+  assert.equal(alex.breakdown.nutrition, null, 'Alex does not share nutrition');
+  assert.equal(sam.breakdown.nutrition, 5, 'Sam shares it and hit the goal');
+  assert.equal(alex.rank, 1);
+  assert.equal(sam.me, true);
+  const raw = JSON.stringify(r.body);
+  for (const secret of ['81.3', 'Secret snack', 'bench', A, B]) assert.ok(!raw.includes(secret), `leaks ${secret}`);
+  assert.ok(r.body.season.rows.every(x => typeof x.points === 'number'));
+});
+
+test('a member who stops sharing training shows no points at all', async () => {
+  let r = await call('PUT', '/api/social/prefs', as(A), { training: false });
+  assert.equal(r.status, 200);
+  r = await call('GET', `/api/social/leaderboard?circle=${circle.id}`, as(B));
+  const alex = r.body.week.rows.find(x => x.name === 'Alex Demo');
+  assert.equal(alex.points, null);
+  assert.equal(alex.breakdown, undefined);
+  assert.equal(alex.streak, undefined);
+  assert.equal((await call('PUT', '/api/social/prefs', as(A), { training: 'yes' })).status, 400);
+  await call('PUT', '/api/social/prefs', as(A), { training: true });
+});
+
+test('every route: no session → 401', async () => {
+  const routes = [['GET', '/api/social'], ['PUT', '/api/social/prefs'], ['POST', '/api/social/circles'], ['POST', '/api/social/join'],
+    ['POST', '/api/social/leave'], ['POST', '/api/social/circles/update'], ['POST', '/api/social/circles/remove'],
+    ['POST', '/api/social/circles/delete'], ['GET', `/api/social/leaderboard?circle=${circle.id}`]];
+  for (const [m, route] of routes) {
+    const r = await call(m, route, anon, m === 'GET' ? undefined : { circle: circle.id, code: circle.code, name: 'x', training: true });
+    assert.equal(r.status, 401, `${m} ${route}`);
+  }
+});
+
+test('every circle route: a circle you are not in is 404, like one that does not exist, and nothing changes', async () => {
+  const before = snap();
+  for (const id of [circle.id, 'does-not-exist']) {
+    assert.equal((await call('GET', `/api/social/leaderboard?circle=${id}`, as(C))).status, 404);
+    for (const route of ['/api/social/leave', '/api/social/circles/update', '/api/social/circles/remove', '/api/social/circles/delete']) {
+      const r = await call('POST', route, as(C), { circle: id, name: 'Pwned', rotateCode: true, member: 'x' });
+      assert.equal(r.status, 404, `${route} ${id}`);
+    }
+  }
+  assert.equal(snap(), before);
+});
+
+test('owner-only actions are refused to a member (403), allowed to the owner', async () => {
+  const members = (await call('GET', '/api/social', as(B))).body.circles[0].members;
+  const alexKey = members.find(m => m.name === 'Alex Demo').member;
+  const before = snap();
+  for (const [route, body] of [['/api/social/circles/update', { name: 'Pwned' }], ['/api/social/circles/remove', { member: alexKey }], ['/api/social/circles/delete', {}]]) {
+    assert.equal((await call('POST', route, as(B), { circle: circle.id, ...body })).status, 403, route);
+  }
+  assert.equal(snap(), before);
+  const r = await call('POST', '/api/social/circles/update', as(A), { circle: circle.id, rotateCode: true });
+  assert.equal(r.status, 200);
+  assert.notEqual(r.body.circle.code, circle.code);
+  assert.equal((await call('POST', '/api/social/join', as(C), { code: circle.code })).status, 404, 'the old code stopped working');
+  circle = r.body.circle;
+});
+
+test('the owner removes a member; a member leaves; the last one out deletes the circle', async () => {
+  const sam = circle.members.find(m => m.name === 'Sam Demo').member;
+  let r = await call('POST', '/api/social/circles/remove', as(A), { circle: circle.id, member: sam });
+  assert.equal(r.status, 200);
+  assert.equal(r.body.circle.members.length, 1);
+  assert.equal((await call('GET', `/api/social/leaderboard?circle=${circle.id}`, as(B))).status, 404);
+  r = await call('POST', '/api/social/join', as(B), { code: circle.code });
+  assert.equal(r.status, 200);
+  // the owner leaves: Sam inherits the circle
+  assert.equal((await call('POST', '/api/social/leave', as(A), { circle: circle.id })).status, 200);
+  r = await call('GET', '/api/social', as(B));
+  assert.equal(r.body.circles[0].owner, true);
+  assert.equal((await call('POST', '/api/social/leave', as(B), { circle: circle.id })).status, 200);
+  assert.deepEqual(JSON.parse(snap()).circles, []);
+});
+
+test('limits: names are checked, five circles at most', async () => {
+  assert.equal((await call('POST', '/api/social/circles', as(C), { name: '' })).status, 400);
+  assert.equal((await call('POST', '/api/social/circles', as(C), { name: 'x'.repeat(41) })).status, 400);
+  for (let i = 0; i < 5; i++) assert.equal((await call('POST', '/api/social/circles', as(C), { name: 'C' + i })).status, 201);
+  assert.equal((await call('POST', '/api/social/circles', as(C), { name: 'one too many' })).status, 409);
+});
+
+test('nothing private reaches the server log', () => {
+  for (const secret of ['Secret snack', '81.3']) assert.ok(!h.log.includes(secret));
+});

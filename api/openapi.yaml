@@ -161,6 +161,11 @@ tags:
     description: >-
       Biscotos nutrition: food log, own foods, daily goals and height, stored per profile
       (nutrition-<uid>.json), plus Open Food Facts search and barcode lookup through the server.
+  - name: social
+    description: >-
+      Biscotos circles of friends and the weekly league (docs/SOCIAL.md): points computed by the
+      server from each member's own data, limited to what that member shares. A circle the
+      caller is not in answers 404; members are named by an opaque member key, never by uid.
   - name: coach
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
@@ -3336,6 +3341,132 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '429': { description: Over the per-profile budget. }
 
+  /api/social:
+    get:
+      tags: [social]
+      operationId: getSocial
+      summary: The caller's sharing choices and circles
+      responses:
+        '200':
+          description: "`prefs`, `circles` (with members, join code, `owner`), `limits`."
+          content:
+            application/json:
+              schema: { type: object, properties: { prefs: { $ref: '#/components/schemas/SocialPrefs' }, circles: { type: array, items: { $ref: '#/components/schemas/Circle' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { description: Over the per-profile budget. }
+  /api/social/prefs:
+    put:
+      tags: [social]
+      operationId: putSocialPrefs
+      summary: Choose what friends see (training points, records, nutrition days)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SocialPrefs' }
+      responses:
+        '200': { description: The saved choices. }
+        '400': { description: Not booleans. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/social/circles:
+    post:
+      tags: [social]
+      operationId: createCircle
+      summary: Create a circle; the caller owns it
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [name], properties: { name: { type: string, maxLength: 40 }, prefs: { $ref: '#/components/schemas/SocialPrefs' } } }
+      responses:
+        '201': { description: "`circle`, with its join code." }
+        '400': { description: Bad name. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: Already in 5 circles. }
+  /api/social/join:
+    post:
+      tags: [social]
+      operationId: joinCircle
+      summary: Join a circle with its code
+      description: 10 tries a minute per profile and 20 per address. A wrong and a malformed code get the same 404.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [code], properties: { code: { type: string, example: ABCD-EFGH }, prefs: { $ref: '#/components/schemas/SocialPrefs' } } }
+      responses:
+        '200': { description: "`circle`." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: No circle with this code. }
+        '409': { description: The caller or the circle is full. }
+        '429': { description: Too many tries. }
+  /api/social/leave:
+    post:
+      tags: [social]
+      operationId: leaveCircle
+      summary: Leave a circle (an owner hands it to the longest-standing member; the last one out deletes it)
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [circle], properties: { circle: { type: string } } } } } }
+      responses:
+        '200': { description: Left. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Not a circle of the caller. }
+  /api/social/circles/update:
+    post:
+      tags: [social]
+      operationId: updateCircle
+      summary: Owner only — rename, or replace the join code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [circle], properties: { circle: { type: string }, name: { type: string }, rotateCode: { type: boolean } } }
+      responses:
+        '200': { description: "`circle`." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Not the owner. }
+        '404': { description: Not a circle of the caller. }
+  /api/social/circles/remove:
+    post:
+      tags: [social]
+      operationId: removeCircleMember
+      summary: Owner only — take a member out
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [circle, member], properties: { circle: { type: string }, member: { type: string } } }
+      responses:
+        '200': { description: "`circle`." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Not the owner. }
+        '404': { description: Not a circle of the caller, or no such member. }
+  /api/social/circles/delete:
+    post:
+      tags: [social]
+      operationId: deleteCircle
+      summary: Owner only — delete the circle
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [circle], properties: { circle: { type: string } } } } } }
+      responses:
+        '200': { description: Deleted. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Not the owner. }
+        '404': { description: Not a circle of the caller. }
+  /api/social/leaderboard:
+    get:
+      tags: [social]
+      operationId: getLeaderboard
+      summary: This week, last week and the season of a circle
+      description: >-
+        Points per member (sessions, records, progress against their own last four weeks, plan,
+        nutrition days), streak in weeks with the monthly joker. A member who does not share
+        training has `points: null` and nothing else. Never a weight, a food or a uid.
+      parameters:
+        - { name: circle, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: "`week`, `lastWeek`, `season`, each with ranked `rows`." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Not a circle of the caller. }
+
 components:
   securitySchemes:
     webhookToken:
@@ -3498,6 +3629,22 @@ components:
           example: { error: "that code is wrong, used or expired", code: "link-invalid" }
 
   schemas:
+    SocialPrefs:
+      type: object
+      properties:
+        training: { type: boolean, description: Points, workouts count and streak visible to circles. }
+        prs: { type: boolean, description: Records count visible (and counted). }
+        nutrition: { type: boolean, description: Days on the calorie goal counted (never what was eaten). }
+    Circle:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        code: { type: string, description: The join code, shown to members. }
+        owner: { type: boolean }
+        members:
+          type: array
+          items: { type: object, properties: { member: { type: string }, name: { type: string }, me: { type: boolean }, owner: { type: boolean }, joinedAt: { type: integer } } }
     HookToken:
       type: object
       properties:

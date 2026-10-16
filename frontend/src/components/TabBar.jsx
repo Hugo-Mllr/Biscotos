@@ -50,7 +50,7 @@ export default function TabBar({ onStart }) {
   const cur = loc.pathname.split('/')[1] || 'home'
   // On a phone, Settings and Nutrition are reached from Home, so Home stays lit there; the sidebar
   // has tabs of their own.
-  const homeOwns = desk ? [] : ['settings', 'nutrition', 'measurements']
+  const homeOwns = desk ? [] : ['settings', 'nutrition', 'measurements', 'league']
   const on = k => cur === k || (cur === 'history' && k === 'stats') || (homeOwns.includes(cur) && k === 'home') || (cur === 'muscles' && k === 'library') || (cur === 'structural-balance' && k === 'stats')
     || (desk && cur === 'measurements' && k === 'nutrition')
 
@@ -85,6 +85,7 @@ export default function TabBar({ onStart }) {
       <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
       <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />
       {desk && user && <Tab active={on('nutrition')} icon="flame" label={t('Nutrition')} onClick={() => nav('/nutrition')} />}
+      {desk && user && <Tab active={on('league')} icon="trophy" label={t('League')} onClick={() => nav('/league')} />}
       {desk && <span className="tab-spacer" />}
       {desk && <Tab active={on('settings')} icon="gear" label={t('Settings')} onClick={() => nav('/settings')} />}
     </nav>

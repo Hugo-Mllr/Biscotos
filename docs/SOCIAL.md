@@ -1,0 +1,65 @@
+# Biscotos — amis, ligue et points
+
+## Les cercles
+
+Un **cercle** est un groupe d'amis (jusqu'à 30 personnes ; chaque profil peut être dans 5 cercles).
+
+- On le crée depuis **Ligue → Créer ou rejoindre un cercle**. Il reçoit un **code** (`ABCD-EFGH`)
+  que chaque membre voit et peut partager.
+- Rejoindre = taper le code. Un code faux et un code mal formé reçoivent la même réponse ;
+  10 essais par minute et par profil, 20 par adresse.
+- Le **propriétaire** peut renommer le cercle, changer le code (l'ancien cesse aussitôt de
+  marcher), retirer un membre ou supprimer le cercle. S'il quitte le cercle, celui-ci passe au
+  membre le plus ancien ; le dernier à partir supprime le cercle.
+
+## Ce que chacun partage
+
+Un seul réglage pour tous ses cercles (**Ligue → bouclier**), choisi aussi au moment de rejoindre :
+
+| Interrupteur | Ce que les amis voient | Jamais |
+|---|---|---|
+| Points, séances et série (activé) | points et leur détail, nombre de séances, série | les charges, les exercices, les notes |
+| Records personnels (activé) | le **nombre** de records de la semaine | quels exercices, quelles charges |
+| Jours dans mon objectif calorique (désactivé) | des points « journée dans l'objectif » | ce qui a été mangé, l'objectif lui-même |
+
+Le **poids corporel et les mensurations ne sont jamais partagés**. Un membre qui désactive le
+premier interrupteur apparaît sans aucun chiffre.
+
+## Les points (calculés par le serveur)
+
+Ils récompensent l'effort **par rapport à son propre niveau**, jamais la charge brute.
+
+| Action | Points | Limite |
+|---|---|---|
+| Séance enregistrée (au moins une série de travail validée) | 10 | 2 par jour |
+| Record personnel : meilleur 1RM estimé (Epley, séries ≤ 12 reps) jamais atteint sur un exercice | 25 | 5 par semaine ; la toute première fois sur un exercice ne compte pas |
+| Progression : 1RM estimé de la semaine contre les 4 semaines d'avant, moyenne des exercices | +1 % = 10 | 30 |
+| Plan respecté : autant de séances que de jours d'entraînement dans le plan hebdo | 40 | — (pas de plan hebdo ou rotation : 0) |
+| Journée dans l'objectif : calories à ±10 % de l'objectif (si partagé) | 5 | 7 jours |
+
+Garde-fous : séances datées dans le futur ignorées, 1RM estimé > 1000 ignoré, échauffements
+ignorés, et **toute donnée `source: 'strava'` est exclue** (les conditions de Strava interdisent
+les classements) — un seul point d'entrée, `usableWorkouts`, testé.
+
+**Ligue hebdo** : la semaine va du lundi au dimanche, à minuit sur l'horloge du serveur
+(`TZ=Europe/Paris` dans `.env`). L'écran montre cette semaine, la semaine dernière et la
+**saison** (total depuis l'arrivée dans le cercle, 52 semaines au plus).
+
+## La série et le joker
+
+La **série** compte les semaines d'affilée avec au moins une séance. La semaine en cours compte
+dès la première séance ; tant qu'elle est vide, la série de la semaine d'avant tient toujours.
+
+Un **joker par mois** comble automatiquement **une** semaine ratée isolée (le mois du lundi de
+cette semaine). Deux semaines ratées de suite cassent la série.
+
+## Technique
+
+- `api/social/score.js` : règles pures, testées (`api/test/social-score.test.js`).
+- `api/social/store.js` : `data/social.json` (0600) — cercles, membres, préférences.
+- `api/social/routes.js` : routes `/api/social/*`, documentées dans `api/openapi.yaml`.
+  Un cercle dont on n'est pas membre répond 404 comme un cercle inexistant ; les membres sont
+  désignés par une clé opaque (HMAC du cercle et du profil), jamais par leur uid.
+  Tests d'autorisation de chaque route : `api/test/social-routes.test.js`.
+- Un profil supprimé par l'admin quitte tous ses cercles et ses préférences sont oubliées.
+- Écrans : `frontend/src/views/League.jsx`, carte d'accueil `components/LeagueToday.jsx`.

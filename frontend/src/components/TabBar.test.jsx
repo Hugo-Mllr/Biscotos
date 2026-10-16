@@ -39,14 +39,15 @@ afterEach(() => {
 })
 
 describe('the sidebar on a computer (Biscotos)', () => {
-  it('adds the brand, Nutrition and Settings to the five tabs', () => {
+  it('adds the brand, Nutrition, League and Settings to the five tabs', () => {
     wide = true
     act(() => { root.render(<TabBar onStart={() => {}} />) })
-    expect(host.querySelectorAll('#tabbar button')).toHaveLength(7)
+    expect(host.querySelectorAll('#tabbar button')).toHaveLength(8)
     expect(host.querySelector('.tab-brand').textContent).toContain('Biscotos')
     const labels = [...host.querySelectorAll('#tabbar button')].map(b => b.textContent)
     expect(labels).toContain('Nutrition')
     expect(labels).toContain('Settings')
+    expect(labels).toContain('League')
   })
 })
 

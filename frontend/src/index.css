@@ -1979,6 +1979,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Biscotos: today's nutrition on Home (components/NutritionToday.jsx) */
 .nt-body{display:flex;align-items:center;gap:18px}
+.lg-card .ss,.nt-card .ss{color:var(--label-2);font-size:13px;margin-top:2px}
+.lg-card .tag .icn{font-size:12px}
 .nt-macros{flex:1;min-width:0;display:grid;gap:9px}
 /* Home on a computer: two columns of cards under a full-width greeting */
 @media (min-width:1000px){

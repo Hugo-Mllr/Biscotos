@@ -156,7 +156,7 @@ l'uid, ni nom ni e-mail). À ajouter :
 | 0 | Sécurité du dépôt, audit, rebranding, fondations design | cette nuit |
 | **1** | **Nutrition** (journal, macros, objectifs, OFF recherche + code-barres, taille/IMC) | cette nuit |
 | 2 | Webhook Apple Santé + `APPLE_HEALTH.md` ; puis Health Connect (plugin Capacitor), import `.fit`/`.gpx` | webhook si la phase 1 est stable |
-| 3 | Social : groupes, invitations, opt-in, leaderboards | à venir |
+| 3 | Social : cercles, codes, partage au choix, ligue hebdo, série + joker (`docs/SOCIAL.md`) | ✅ PR 1 ; fil, présence, défis : PR suivantes |
 | 4 | Coach IA : nutrition dans le payload, bilan hebdo, Gemini par défaut, filtre Strava | à venir |
 | 5 | Strava (optionnel, isolé, jamais leaderboard ni IA) | à venir |
 | 6 | Polish design global de l'existant, CSP stricte | à venir |

@@ -36,6 +36,7 @@ ORIGIN=https://biscotos.example.com
 RP_NAME=Biscotos
 DEFAULT_LANG=fr
 FIRST_USER_ADMIN=1
+TZ=Europe/Paris
 ```
 
 Puis crée `.env.tunnel` avec une seule ligne, le jeton copié à l'étape 1 :

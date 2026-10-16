@@ -135,6 +135,7 @@ const TAGS = {
   // spec needs a line here.
   nutrition: { title: 'Nutrition', side: 'Food log, goals, Open Food Facts' },
   health: { title: 'Health import', side: 'Apple Health webhook &amp; tokens' },
+  social: { title: 'Friends &amp; league', side: 'Circles, sharing, weekly points' },
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
 }
