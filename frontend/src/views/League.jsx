@@ -119,6 +119,7 @@ export default function League() {
           </section>
         </>}
         <Gym circle={circle} />
+        <Challenge circle={circle} />
         <Feed circle={circle} />
       </div><div className="bx-col">
         {mine && <MyWeek row={mine} rows={board.week.rows} />}
@@ -372,6 +373,40 @@ function CircleSheet({ circle, onClose, onChanged, onGone }) {
         : <button className="bx-btn bx-btn-ghost bx-tap" onClick={() => setConfirm('delete')}>{t('Delete the circle')}</button>)}
     </div>
   </Sheet>
+}
+
+// One goal a week for the whole circle, and the milestones each member has reached.
+const CHALLENGE_TITLES = { sessions: 'Sessions together', records: 'Records together', plan: 'Weekly plans met' }
+function badgeLabel(b) {
+  return b.id === 'sessions' ? tn('{0} session', '{0} sessions', b.tier)
+    : b.id === 'streak' ? tn('{0} week', '{0} weeks', b.tier)
+    : tn('{0} record', '{0} records', b.tier)
+}
+function Challenge({ circle }) {
+  const [data, setData] = useState(null)
+  useEffect(() => {
+    let live = true
+    setData(null)
+    sapi.loadChallenge(circle.id).then(d => { if (live) setData(d) }).catch(() => { if (live) setData({ challenge: null, members: [] }) })
+    return () => { live = false }
+  }, [circle.id])
+  if (data && !data.challenge && !data.members.some(m => m.badges.length)) return null
+  const c = data?.challenge
+  return <section className="bx-card" aria-label={t('Weekly challenge')} style={{ marginTop: 'var(--bx-s3)' }}>
+    <div className="bx-card-hd"><h2 className="bx-label" style={{ color: 'var(--bx-ink)' }}>{t('Weekly challenge')}</h2></div>
+    {!data ? <div className="bx-skeleton" style={{ height: 60 }} /> : <>
+      {c && <div>
+        <div className="bx-row"><b>{t(CHALLENGE_TITLES[c.kind])}</b><span className="bx-small bx-dim">{c.done ? t('Done') : `${c.progress} / ${c.goal}`}</span></div>
+        <progress max={c.goal} value={Math.min(c.progress, c.goal)} aria-label={t(CHALLENGE_TITLES[c.kind])} style={{ width: '100%' }} />
+      </div>}
+      {data.members.some(m => m.badges.length) && <>
+        <h3 className="bx-label" style={{ marginTop: 'var(--bx-s3)' }}>{t('Badges')}</h3>
+        <ul className="bx-list">{data.members.filter(m => m.badges.length).map(m => <li key={m.member} className="bx-item">
+          {m.name}{m.me ? ' ·' : ''} {m.badges.map(b => <span key={b.id} className="bx-chip"><Icon name={b.id === 'streak' ? 'flame' : b.id === 'records' ? 'trophy' : 'medal'} /> {badgeLabel(b)}</span>)}
+        </li>)}</ul>
+      </>}
+    </>}
+  </section>
 }
 
 // Who says they are at the gym right now: checking in is the consent, and it lapses by itself.

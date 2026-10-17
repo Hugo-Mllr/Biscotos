@@ -249,7 +249,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>100 endpoints</span>
+    <span>101 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3177,6 +3177,38 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">404</span>
     <span class="p-desc">Not a circle of the caller.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getSocialChallenge">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/social/challenge</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The circle's challenge of the week and each member's badges</span>
+  </summary>
+  <div class="ep-body">
+<p>Derived on demand from what each member shares, nothing stored. <code>challenge</code> is null until two members share their training. Badges are milestones (sessions, weeks of streak, records); a member who does not share training has none, and the records badge needs shared records. Members are named by opaque key.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">circle<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>challenge</code> ({ week, kind: sessions|records|plan, goal, progress, members, done }) or null; <code>members</code> ({ member, name, me, badges: [{ id, tier }] }).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such circle (or not a member).</span>
   </div>
     </div>
   </div>
