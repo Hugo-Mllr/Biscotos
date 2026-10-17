@@ -55,7 +55,7 @@ before(async () => {
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost',
-      OFF_BASE_URL: `http://127.0.0.1:${offServer.address().port}` }
+      OFF_SEARCH_URL: '0', OFF_BASE_URL: `http://127.0.0.1:${offServer.address().port}` }
   });
   h = { log: '', dataDir, child };
   child.stdout.on('data', d => h.log += d);

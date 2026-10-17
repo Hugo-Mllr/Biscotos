@@ -10,6 +10,7 @@ const api = vi.hoisted(() => ({
   loadSocial: vi.fn(), savePrefs: vi.fn(), createCircle: vi.fn(), joinCircle: vi.fn(), leaveCircle: vi.fn(),
   renameCircle: vi.fn(), rotateCode: vi.fn(), removeMember: vi.fn(), deleteCircle: vi.fn(), loadLeaderboard: vi.fn(),
   loadFeed: vi.fn(), react: vi.fn(), setShame: vi.fn(),
+  loadGym: vi.fn(() => Promise.resolve({ here: [], mine: false })), setGym: vi.fn(),
   socialProblem: e => (e?.data?.code === 'bad-code' ? 'bad-code' : 'unavailable'),
 }))
 vi.mock('../lib/social-api.js', () => api)

@@ -72,3 +72,9 @@ cette semaine). Deux semaines ratées de suite cassent la série.
   Tests d'autorisation de chaque route : `api/test/social-routes.test.js`.
 - Un profil supprimé par l'admin quitte tous ses cercles et ses préférences sont oubliées.
 - Écrans : `frontend/src/views/League.jsx`, carte d'accueil `components/LeagueToday.jsx`.
+
+## Qui est à la salle ?
+
+Un bouton « Je suis à la salle » dans l'écran du cercle. C'est un choix explicite : la présence
+n'est gardée qu'en mémoire du serveur (jamais écrite sur disque), expire seule au bout de 3 h,
+disparaît au redémarrage, et n'est visible que des membres d'un cercle commun (404 sinon).

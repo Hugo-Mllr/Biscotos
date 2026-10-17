@@ -118,6 +118,7 @@ export default function League() {
             </ul>
           </section>
         </>}
+        <Gym circle={circle} />
         <Feed circle={circle} />
       </div><div className="bx-col">
         {mine && <MyWeek row={mine} rows={board.week.rows} />}
@@ -371,6 +372,27 @@ function CircleSheet({ circle, onClose, onChanged, onGone }) {
         : <button className="bx-btn bx-btn-ghost bx-tap" onClick={() => setConfirm('delete')}>{t('Delete the circle')}</button>)}
     </div>
   </Sheet>
+}
+
+// Who says they are at the gym right now: checking in is the consent, and it lapses by itself.
+function Gym({ circle }) {
+  const [gym, setGym] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const load = useCallback(() => sapi.loadGym(circle.id).then(setGym).catch(() => setGym({ here: [], mine: false })), [circle.id])
+  useEffect(() => { setGym(null); load() }, [load])
+  const toggle = async () => {
+    setBusy(true)
+    try { await sapi.setGym(!gym.mine); await load() } catch { /* keeps the old state */ } finally { setBusy(false) }
+  }
+  return <section className="bx-card" aria-label={t('At the gym')} style={{ marginTop: 'var(--bx-s3)' }}>
+    <div className="bx-card-hd">
+      <h2 className="bx-label" style={{ color: 'var(--bx-ink)' }}>{t('At the gym')}</h2>
+      {gym && <button className="bx-chip bx-tap" disabled={busy} onClick={toggle}>{gym.mine ? t('I left') : t("I'm at the gym")}</button>}
+    </div>
+    {!gym ? <div className="bx-skeleton" style={{ height: 40 }} />
+      : !gym.here.length ? <p className="bx-small bx-dim">{t('Nobody at the gym right now.')}</p>
+      : <ul className="bx-list">{gym.here.map(p => <li key={p.member} className="bx-item">{p.name}{p.me ? ' ·' : ''} <span className="bx-small bx-dim">{ago(p.since, Date.now(), dateLocale())}</span></li>)}</ul>}
+  </section>
 }
 
 // What happened in the circle these two weeks, with one-tap reactions.
