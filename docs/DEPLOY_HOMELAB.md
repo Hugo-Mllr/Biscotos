@@ -67,6 +67,15 @@ Avec le fichier `docker-compose.tunnel.yml` :
 - l'adresse réelle des visiteurs arrive par l'en-tête Cloudflare (journal d'activité, limites
   anti-bruteforce et anti-spam du webhook).
 
+## Avec Portainer (stack Git)
+
+Une stack Git n'a pas de fichier `.env` (il est ignoré par git). Dans Portainer, remplis
+**Environment variables** de la stack avec les mêmes réglages que le `.env` ci-dessus
+(`RP_ID`, `ORIGIN`, `RP_NAME`, `DEFAULT_LANG`, `FIRST_USER_ADMIN`, `TZ`, puis `INVITE_ONLY=1` et
+`ALLOW_GUEST=0` une fois ton profil créé). Le compose les passe à l'API : si elles ne sont pas
+listées sous `environment:` du service `api`, elles n'y arrivent pas. Pour vérifier :
+`curl https://ton-adresse/api/config` doit répondre `"invite_only":true` une fois réglé.
+
 ## 4. Ton profil d'abord, puis tes amis
 
 1. **Crée ton profil en premier**, avant de partager l'adresse : avec `FIRST_USER_ADMIN=1`, le
