@@ -1487,6 +1487,8 @@ export const PT_BR_OVERRIDES = {
   'I left': 'Já saí',
   'Nobody at the gym right now.': 'Ninguém na academia agora.',
   'Same as {0}': 'Igual a {0}',
+  "Today's form": 'Forma de hoje',
+  'Go easy on {0}': 'Vá com calma em: {0}',
   'Reach your protein goal': 'Alcance sua meta de proteína',
   'Weekly challenge': 'Desafio da semana',
   'Sessions together': 'Treinos em grupo',

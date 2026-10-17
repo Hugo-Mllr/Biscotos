@@ -2419,6 +2419,8 @@ export default {
   'Wall of shame': '恥辱牆',
   'The Monday recap names those on 0 points.': '週一總結會點名 0 分的人。',
   'Activity': '動態',
+  "Today's form": '今日狀態',
+  'Go easy on {0}': '少練：{0}',
   'Reach your protein goal': '達成蛋白質目標',
   'Same as {0}': '同{0}',
   'Weekly challenge': '本週挑戰',

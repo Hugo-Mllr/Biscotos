@@ -2426,6 +2426,8 @@ export default {
   'Wall of shame': '부끄러움의 벽',
   'The Monday recap names those on 0 points.': '월요일 결산에 0점인 사람의 이름이 나옵니다.',
   'Activity': '활동',
+  "Today's form": '오늘의 컨디션',
+  'Go easy on {0}': '가볍게: {0}',
   'Reach your protein goal': '단백질 목표 달성하기',
   'Same as {0}': '{0}과 동일',
   'Weekly challenge': '이번 주 챌린지',

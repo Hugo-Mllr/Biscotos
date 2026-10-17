@@ -2426,6 +2426,8 @@ export default {
   'Wall of shame': 'Ściana wstydu',
   'The Monday recap names those on 0 points.': 'Poniedziałkowe podsumowanie wymienia osoby z 0 pkt.',
   'Activity': 'Aktywność',
+  "Today's form": 'Dzisiejsza forma',
+  'Go easy on {0}': 'Oszczędzaj: {0}',
   'Reach your protein goal': 'Osiągnij cel białkowy',
   'Same as {0}': 'Jak w {0}',
   'Weekly challenge': 'Wyzwanie tygodnia',

@@ -2481,6 +2481,8 @@ export default {
   'Wall of shame': 'حائط العار',
   'The Monday recap names those on 0 points.': 'ملخص الاثنين يذكر أصحاب 0 نقطة.',
   'Activity': 'النشاط',
+  "Today's form": 'لياقتك اليوم',
+  'Go easy on {0}': 'خفّف الحمل على: {0}',
   'Reach your protein goal': 'حقّق هدف البروتين',
   'Same as {0}': 'مثل {0}',
   'Weekly challenge': 'تحدي الأسبوع',
