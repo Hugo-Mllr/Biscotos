@@ -396,13 +396,13 @@ function Challenge({ circle }) {
     <div className="bx-card-hd"><h2 className="bx-label" style={{ color: 'var(--bx-ink)' }}>{t('Weekly challenge')}</h2></div>
     {!data ? <div className="bx-skeleton" style={{ height: 60 }} /> : <>
       {c && <div>
-        <div className="bx-row"><b>{t(CHALLENGE_TITLES[c.kind])}</b><span className="bx-small bx-dim">{c.done ? t('Done') : `${c.progress} / ${c.goal}`}</span></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 'var(--bx-s2)', marginBottom: 'var(--bx-s2)' }}><b>{t(CHALLENGE_TITLES[c.kind])}</b><span className="bx-small bx-dim">{c.done ? t('Done') : `${c.progress} / ${c.goal}`}</span></div>
         <progress max={c.goal} value={Math.min(c.progress, c.goal)} aria-label={t(CHALLENGE_TITLES[c.kind])} style={{ width: '100%' }} />
       </div>}
       {data.members.some(m => m.badges.length) && <>
         <h3 className="bx-label" style={{ marginTop: 'var(--bx-s3)' }}>{t('Badges')}</h3>
-        <ul className="bx-list">{data.members.filter(m => m.badges.length).map(m => <li key={m.member} className="bx-item">
-          {m.name}{m.me ? ' ·' : ''} {m.badges.map(b => <span key={b.id} className="bx-chip"><Icon name={b.id === 'streak' ? 'flame' : b.id === 'records' ? 'trophy' : 'medal'} /> {badgeLabel(b)}</span>)}
+        <ul className="bx-list">{data.members.filter(m => m.badges.length).map(m => <li key={m.member} className="bx-item" style={{ flexWrap: 'wrap', gap: 'var(--bx-s2)' }}>
+          <span>{m.me ? t('You') : m.name}</span> {m.badges.map(b => <span key={b.id} className="bx-chip"><Icon name={b.id === 'streak' ? 'flame' : b.id === 'records' ? 'trophy' : 'medal'} /> {badgeLabel(b)}</span>)}
         </li>)}</ul>
       </>}
     </>}
@@ -426,7 +426,7 @@ function Gym({ circle }) {
     </div>
     {!gym ? <div className="bx-skeleton" style={{ height: 40 }} />
       : !gym.here.length ? <p className="bx-small bx-dim">{t('Nobody at the gym right now.')}</p>
-      : <ul className="bx-list">{gym.here.map(p => <li key={p.member} className="bx-item">{p.name}{p.me ? ' ·' : ''} <span className="bx-small bx-dim">{ago(p.since, Date.now(), dateLocale())}</span></li>)}</ul>}
+      : <ul className="bx-list">{gym.here.map(p => <li key={p.member} className="bx-item" style={{ gap: 'var(--bx-s2)' }}>{p.me ? t('You') : p.name} <span className="bx-small bx-dim">{ago(p.since, Date.now(), dateLocale())}</span></li>)}</ul>}
   </section>
 }
 
