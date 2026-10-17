@@ -130,6 +130,35 @@ export function lastMeal(log, day, meal) {
 export const repeatEntries = (entries, { d, meal }) =>
   (entries || []).map(e => entryFromFood(e, { d, meal, grams: e.grams }))
 
+/**
+ * Foods from the person's own log that would close the day's protein gap without blowing the
+ * calorie goal: [{ food, grams, macros }], best first, at most `limit`. Each food is offered at the
+ * portion last eaten. Empty when there is no protein goal, the gap is under 10 g, or nothing fits.
+ * A food counts for the protein it adds up to the gap (no credit for overshooting), per kcal.
+ */
+export function fillSuggestions(log, goals, day, limit = 3) {
+  const target = num(goals?.protein)
+  if (!target) return []
+  const today = (log || []).filter(e => e.d === day)
+  const eaten = totalsOf(today)
+  const gap = target - eaten.protein
+  if (gap < 10) return []
+  const room = num(goals?.kcal) ? goals.kcal - eaten.kcal : Infinity
+  const seen = new Map()
+  for (const e of [...(log || [])].sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : 0))) {
+    const key = [e.name, e.brand || '', e.barcode || ''].join('|')
+    if (!seen.has(key) && num(e.grams) > 0) seen.set(key, e)   // newest entry of each food
+  }
+  const out = []
+  for (const e of seen.values()) {
+    const macros = macrosOf(e)
+    if (macros.protein < 5 || macros.kcal > room) continue
+    out.push({ food: e, grams: e.grams, macros, score: Math.min(macros.protein, gap) / Math.max(macros.kcal, 1) })
+  }
+  return out.sort((a, b) => b.score - a.score || a.food.name.localeCompare(b.food.name))
+    .slice(0, limit).map(({ score, ...r }) => r)
+}
+
 /** The barcode formats a food package carries (EAN/UPC), as BarcodeDetector names them. */
 export const FOOD_BARCODE_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e']
 

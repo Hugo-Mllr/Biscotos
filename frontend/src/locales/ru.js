@@ -2430,6 +2430,7 @@ export default {
   'Wall of shame': 'Доска позора',
   'The Monday recap names those on 0 points.': 'В итогах понедельника названы те, у кого 0 очков.',
   'Activity': 'Активность',
+  'Reach your protein goal': 'Достичь цели по белку',
   'Same as {0}': 'Как в {0}',
   'Weekly challenge': 'Вызов недели',
   'Sessions together': 'Тренировки вместе',
