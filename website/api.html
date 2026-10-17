@@ -249,7 +249,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>98 endpoints</span>
+    <span>100 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3177,6 +3177,70 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">404</span>
     <span class="p-desc">Not a circle of the caller.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getSocialGym">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/social/gym</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Who in a circle says they are at the gym right now</span>
+  </summary>
+  <div class="ep-body">
+<p>Opt-in presence: kept in the server's memory only (never on disk), lapses after three hours, forgotten on restart. Members are named by opaque key.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">circle<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>here</code> ({ member, name, me, since }), <code>mine</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such circle (or not a member).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-setSocialGym">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/gym</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Say you are at the gym, or that you left</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">in<em class="p-req" title="required">required</em></span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>mine</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>in</code> is not a boolean.</span>
   </div>
     </div>
   </div>
