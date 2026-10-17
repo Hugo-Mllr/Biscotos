@@ -1486,6 +1486,11 @@ export const PT_BR_OVERRIDES = {
   "I'm at the gym": 'Estou na academia',
   'I left': 'Já saí',
   'Nobody at the gym right now.': 'Ninguém na academia agora.',
+  'Weekly challenge': 'Desafio da semana',
+  'Sessions together': 'Treinos em grupo',
+  'Records together': 'Recordes em grupo',
+  'Weekly plans met': 'Planos da semana cumpridos',
+  'Badges': 'Insígnias',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

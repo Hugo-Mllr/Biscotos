@@ -3467,6 +3467,21 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { description: Not a circle of the caller. }
 
+  /api/social/challenge:
+    get:
+      tags: [social]
+      operationId: getSocialChallenge
+      summary: The circle's challenge of the week and each member's badges
+      description: >-
+        Derived on demand from what each member shares, nothing stored. `challenge` is null
+        until two members share their training. Badges are milestones (sessions, weeks of
+        streak, records); a member who does not share training has none, and the records
+        badge needs shared records. Members are named by opaque key.
+      parameters:
+        - { name: circle, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: "`challenge` ({ week, kind: sessions|records|plan, goal, progress, members, done }) or null; `members` ({ member, name, me, badges: [{ id, tier }] })." }
+        '404': { description: No such circle (or not a member). }
   /api/social/gym:
     get:
       tags: [social]

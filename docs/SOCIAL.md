@@ -78,3 +78,13 @@ cette semaine). Deux semaines ratées de suite cassent la série.
 Un bouton « Je suis à la salle » dans l'écran du cercle. C'est un choix explicite : la présence
 n'est gardée qu'en mémoire du serveur (jamais écrite sur disque), expire seule au bout de 3 h,
 disparaît au redémarrage, et n'est visible que des membres d'un cercle commun (404 sinon).
+
+## Défi de la semaine et badges
+
+Un défi **collectif** par semaine, qui change à tour de rôle : séances à plusieurs (3 par
+personne, 5 séances comptées au plus par personne), records à plusieurs, ou la moitié du cercle
+qui tient son plan de la semaine. Il n'existe qu'à partir de deux membres qui partagent leur
+entraînement. Les **badges** sont des paliers sur tout l'historique : séances (10, 50, 100, 250),
+série en semaines (4, 12, 26, 52), records (10, 50, 100 ; seulement si les records sont partagés).
+Tout est calculé à la demande (`api/social/badges.js`), rien n'est stocké, et les séances Strava
+ne comptent pas.

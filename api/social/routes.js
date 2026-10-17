@@ -17,6 +17,7 @@ import {
 } from './store.js';
 import { weekPoints, streakOf, seasonOf, weekOf, shiftDay, usableWorkouts } from './score.js';
 import { memberEvents, reactionView, pruneReactions, recordsByWorkout, REACTIONS, FEED_MAX } from './feed.js';
+import { badgesOf, challengeOf } from './badges.js';
 import { reactionPush, recordsPush, recapPush } from './push-copy.js';
 
 const RECAP_HOUR = 9;   // Monday, from 9:00 on the server's clock
@@ -322,6 +323,27 @@ export function createSocial({
       if (!c) return noCircle(res);
       const events = feedOf(doc, c, user.id, today()).map(({ owner, ...e }) => ({ ...e, reactions: reactionView(doc.reactions[e.id]?.by, user.id) }));
       json(res, 200, { circle: { id: c.id, name: c.name }, events, choices: REACTIONS });
+    },
+
+    // The circle's challenge of the week and each member's badges, both derived on demand from
+    // what that member shares (nothing is stored).
+    'GET /api/social/challenge': async (req, res) => {
+      const user = signedIn(req, res, READS); if (!user) return;
+      const q = new URL(req.url, 'http://x').searchParams;
+      const doc = load(res); if (!doc) return;
+      const c = memberCircle(doc, q.get('circle'), user.id);
+      if (!c) return noCircle(res);
+      const day = today(), monday = weekOf(day);
+      const rows = [], members = [];
+      for (const m of c.members) {
+        const prefs = prefsOf(doc, m.uid);
+        const who = { member: keyOf(c.id, m.uid), name: nameOf(m.uid), me: m.uid === user.id };
+        if (!prefs.training) { members.push({ ...who, badges: [] }); continue; }
+        const st = standing(doc, c, m, monday, day).row;
+        rows.push({ workouts: st.workouts, records: st.records, plan: st.breakdown.plan > 0 });
+        members.push({ ...who, badges: badgesOf(readState(m.uid) || { workouts: [] }, day, { prs: prefs.prs }) });
+      }
+      json(res, 200, { circle: { id: c.id, name: c.name }, challenge: challengeOf(monday, rows), members });
     },
 
     // Who is at the gym right now, among the people of one circle.

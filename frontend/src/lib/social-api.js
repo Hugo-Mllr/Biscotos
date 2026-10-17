@@ -32,3 +32,4 @@ export const react = (circle, event, emoji) => post('/api/social/react', { circl
 export const setShame = (circle, shame) => post('/api/social/circles/update', { circle, shame }).then(r => r.circle)
 export const loadGym = circle => api('/api/social/gym?' + new URLSearchParams({ circle }))
 export const setGym = inGym => post('/api/social/gym', { in: inGym })
+export const loadChallenge = circle => api('/api/social/challenge?' + new URLSearchParams({ circle }))
