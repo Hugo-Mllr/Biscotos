@@ -3467,6 +3467,31 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { description: Not a circle of the caller. }
 
+  /api/social/gym:
+    get:
+      tags: [social]
+      operationId: getSocialGym
+      summary: Who in a circle says they are at the gym right now
+      description: >-
+        Opt-in presence: kept in the server's memory only (never on disk), lapses after three
+        hours, forgotten on restart. Members are named by opaque key.
+      parameters:
+        - { name: circle, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: "`here` ({ member, name, me, since }), `mine`." }
+        '404': { description: No such circle (or not a member). }
+    post:
+      tags: [social]
+      operationId: setSocialGym
+      summary: Say you are at the gym, or that you left
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [in], properties: { in: { type: boolean } } }
+      responses:
+        '200': { description: "`mine`." }
+        '400': { description: "`in` is not a boolean." }
   /api/social/feed:
     get:
       tags: [social]

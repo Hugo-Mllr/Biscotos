@@ -121,7 +121,8 @@ test('a member who stops sharing training shows no points at all', async () => {
 test('every route: no session → 401', async () => {
   const routes = [['GET', '/api/social'], ['PUT', '/api/social/prefs'], ['POST', '/api/social/circles'], ['POST', '/api/social/join'],
     ['POST', '/api/social/leave'], ['POST', '/api/social/circles/update'], ['POST', '/api/social/circles/remove'],
-    ['POST', '/api/social/circles/delete'], ['GET', `/api/social/leaderboard?circle=${circle.id}`]];
+    ['POST', '/api/social/circles/delete'], ['GET', `/api/social/leaderboard?circle=${circle.id}`],
+    ['GET', `/api/social/gym?circle=${circle.id}`], ['POST', '/api/social/gym']];
   for (const [m, route] of routes) {
     const r = await call(m, route, anon, m === 'GET' ? undefined : { circle: circle.id, code: circle.code, name: 'x', training: true });
     assert.equal(r.status, 401, `${m} ${route}`);
@@ -132,6 +133,7 @@ test('every circle route: a circle you are not in is 404, like one that does not
   const before = snap();
   for (const id of [circle.id, 'does-not-exist']) {
     assert.equal((await call('GET', `/api/social/leaderboard?circle=${id}`, as(C))).status, 404);
+    assert.equal((await call('GET', `/api/social/gym?circle=${id}`, as(C))).status, 404);
     for (const route of ['/api/social/leave', '/api/social/circles/update', '/api/social/circles/remove', '/api/social/circles/delete']) {
       const r = await call('POST', route, as(C), { circle: id, name: 'Pwned', rotateCode: true, member: 'x' });
       assert.equal(r.status, 404, `${route} ${id}`);
@@ -225,4 +227,26 @@ test('the feed: friends’ workouts with name, length and record count — never
   assert.equal((await call('POST', '/api/social/circles/update', as(B), { circle: made.id, shame: false })).status, 403);
   r = await call('POST', '/api/social/circles/update', as(A), { circle: made.id, shame: false });
   assert.equal(r.body.circle.shame, false);
+});
+
+test('who is at the gym: opt-in, circle mates only, memory only, no uid', async () => {
+  const mine = (await call('POST', '/api/social/circles', as(A), { name: 'Gym' })).body.circle;
+  await call('POST', '/api/social/join', as(B), { code: mine.code });
+  const gym = uid => call('GET', `/api/social/gym?circle=${mine.id}`, as(uid));
+  assert.deepEqual((await gym(B)).body.here, []);
+  assert.equal((await call('POST', '/api/social/gym', as(A), { in: 'yes' })).status, 400);
+  const before = snap();
+  let r = await call('POST', '/api/social/gym', as(A), { in: true });
+  assert.deepEqual(r.body, { mine: true });
+  assert.equal(snap(), before, 'presence is never written to disk');
+  r = await gym(B);
+  assert.equal(r.body.here.length, 1);
+  assert.equal(r.body.here[0].name, 'Alex Demo');
+  assert.equal(r.body.here[0].me, false);
+  assert.equal(r.body.mine, false);
+  assert.ok(!JSON.stringify(r.body).includes(A), 'named by key, never by uid');
+  assert.equal((await gym(A)).body.here[0].me, true);
+  assert.equal((await gym(C)).status, 404, 'not in the circle: same answer as unknown');
+  await call('POST', '/api/social/gym', as(A), { in: false });
+  assert.deepEqual((await gym(B)).body.here, []);
 });

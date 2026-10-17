@@ -30,3 +30,5 @@ export function socialProblem(e) {
 export const loadFeed = circle => api('/api/social/feed?' + new URLSearchParams({ circle }))
 export const react = (circle, event, emoji) => post('/api/social/react', { circle, event, emoji })
 export const setShame = (circle, shame) => post('/api/social/circles/update', { circle, shame }).then(r => r.circle)
+export const loadGym = circle => api('/api/social/gym?' + new URLSearchParams({ circle }))
+export const setGym = inGym => post('/api/social/gym', { in: inGym })
