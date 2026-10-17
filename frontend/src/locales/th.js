@@ -2437,6 +2437,7 @@ export default {
   'Wall of shame': 'กำแพงแห่งความอาย',
   'The Monday recap names those on 0 points.': 'สรุปวันจันทร์จะบอกชื่อคนที่ได้ 0 คะแนน',
   'Activity': 'กิจกรรม',
+  'Reach your protein goal': 'ทำตามเป้าโปรตีน',
   'Same as {0}': 'เหมือน{0}',
   'Weekly challenge': 'ชาเลนจ์ประจำสัปดาห์',
   'Sessions together': 'เซสชันรวมกัน',

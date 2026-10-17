@@ -2426,6 +2426,7 @@ export default {
   'Wall of shame': 'Muro de la vergüenza',
   'The Monday recap names those on 0 points.': 'El resumen del lunes nombra a quienes tienen 0 puntos.',
   'Activity': 'Actividad',
+  'Reach your protein goal': 'Alcanza tu objetivo de proteínas',
   'Same as {0}': 'Igual que el {0}',
   'Weekly challenge': 'Reto de la semana',
   'Sessions together': 'Sesiones en grupo',

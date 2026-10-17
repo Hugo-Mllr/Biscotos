@@ -11,7 +11,7 @@ import { lastBW } from '../lib/history.js'
 import { MOBILE } from '../lib/mobile.js'
 import {
   MEALS, MACROS, macrosOf, totalsOf, byMeal, progress, mealForHour, shiftDay, weekEnding, kcalByDay,
-  toKg, bmi, bmiBand, parseAmount, entryFromFood, foodBarcode, lastMeal, repeatEntries
+  toKg, bmi, bmiBand, parseAmount, entryFromFood, foodBarcode, lastMeal, repeatEntries, fillSuggestions
 } from '../lib/nutrition.js'
 import * as napi from '../lib/nutrition-api.js'
 import { CountUp, Ring, Bar, Sheet } from '../components/bx/index.jsx'
@@ -94,6 +94,13 @@ export default function Nutrition() {
     setSheet(null)
   }
 
+  // One tap: one of the person's own foods, at the portion they last ate, to close the protein gap.
+  const addSuggestion = async s => {
+    setRepeating(true)
+    try { onLogged(await napi.addEntry(entryFromFood(s.food, { d: day, meal: mealForHour(new Date().getHours()), grams: s.grams }))) }
+    catch (e) { setError(e) } finally { setRepeating(false) }
+  }
+
   // One tap: the same meal as the last time it was logged this week.
   const repeatMeal = async (meal, last) => {
     setRepeating(true)
@@ -146,6 +153,16 @@ export default function Nutrition() {
       <button className="bx-btn bx-btn-primary bx-btn-block bx-tap" style={{ margin: 'var(--bx-s4) 0' }} onClick={() => setSheet('add')}>
         <Icon name="plus" /> {t('Add food')}
       </button>
+
+      {/* Close the protein gap with foods already in the log */}
+      {data && (fills => fills.length > 0 && <section className="bx-card" aria-label={t('Reach your protein goal')}>
+        <div className="bx-card-hd"><h2 className="bx-label" style={{ color: 'var(--bx-ink)' }}>{t('Reach your protein goal')}</h2></div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--bx-s2)' }}>
+          {fills.map(f => <button key={f.food.id} className="bx-chip bx-tap" disabled={repeating} onClick={() => addSuggestion(f)}>
+            {f.food.name} · {fmtNum(f.grams)} g · +{fmtNum(f.macros.protein)} g
+          </button>)}
+        </div>
+      </section>)(fillSuggestions(log, goals, day))}
 
       {/* Meals */}
       {!data && !error ? <div className="bx-card"><div className="bx-skeleton" style={{ height: 120 }} /></div>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   macrosOf, totalsOf, byMeal, progress, energySplit, mealForHour, shiftDay, weekEnding, kcalByDay,
-  toKg, bmi, bmiBand, parseAmount, entryFromFood, foodBarcode, lastMeal, repeatEntries
+  toKg, bmi, bmiBand, parseAmount, entryFromFood, foodBarcode, lastMeal, repeatEntries, fillSuggestions
 } from './nutrition.js'
 
 // Synthetic foods only.
@@ -136,5 +136,42 @@ describe('lastMeal / repeatEntries', () => {
     expect(out[0]).toEqual({ d: '2026-03-18', meal: 'snack', grams: 150, name: 'Skyr 2', per100: skyr, source: 'off', brand: 'Demo', barcode: '3000000000017' })
     expect(out.every(x => !('id' in x))).toBe(true)
     expect(repeatEntries(undefined, { d: '2026-03-18', meal: 'snack' })).toEqual([])
+  })
+})
+
+describe('fillSuggestions', () => {
+  const food = (id, name, protein, kcal, grams = 100, d = '2026-03-17') => ({ id, d, meal: 'snack', grams, name, per100: { kcal, protein, carbs: 0, fat: 0 } })
+  const skyrE = food(1, 'Skyr', 11, 63, 150)
+  const chicken = food(2, 'Chicken', 31, 165, 100)
+  const bread = food(3, 'Bread', 4, 250, 100)
+  const log = [skyrE, chicken, bread]
+  const goals = { kcal: 2000, protein: 120 }
+
+  it('proposes the foods that close the gap for the fewest kcal, at the portion last eaten', () => {
+    const out = fillSuggestions(log, goals, '2026-03-18')
+    expect(out.map(x => x.food.name)).toEqual(['Chicken', 'Skyr'])   // 31 g / 165 kcal beats 16.5 g / 94.5 kcal
+    const skyr = out.find(x => x.food.name === 'Skyr')
+    expect(skyr.grams).toBe(150)
+    expect(skyr.macros.protein).toBe(16.5)
+  })
+
+  it('offers each food once, from its newest entry', () => {
+    const older = food(9, 'Skyr', 11, 63, 500, '2026-03-10')
+    expect(fillSuggestions([older, ...log], goals, '2026-03-18').find(x => x.food.name === 'Skyr').grams).toBe(150)
+  })
+
+  it('says nothing without a protein goal, with a gap under 10 g, or when kcal are used up', () => {
+    expect(fillSuggestions(log, { kcal: 2000 }, '2026-03-18')).toEqual([])
+    expect(fillSuggestions([...log, food(5, 'Steak', 40, 200, 300, '2026-03-18')], { protein: 120 }, '2026-03-18')).toEqual([])
+    expect(fillSuggestions(log, { kcal: 50, protein: 120 }, '2026-03-18')).toEqual([])
+    expect(fillSuggestions([], goals, '2026-03-18')).toEqual([])
+  })
+
+  it('does not count overshoot: a small gap prefers the food that fits it', () => {
+    const big = food(6, 'Protein shake', 60, 400, 100)
+    const small = food(7, 'Egg', 13, 155, 100)
+    const eaten = food(8, 'Big lunch', 35, 300, 300, '2026-03-18')   // 105 g protein today: 15 g to go
+    const out = fillSuggestions([big, small, eaten], { protein: 120 }, '2026-03-18')
+    expect(out[0].food.name).toBe('Egg')   // 13 g for 155 kcal beats 15 g credited for 400 kcal
   })
 })
