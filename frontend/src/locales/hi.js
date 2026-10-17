@@ -2426,6 +2426,8 @@ export default {
   'Wall of shame': 'शर्म की दीवार',
   'The Monday recap names those on 0 points.': 'सोमवार का सार 0 अंक वालों के नाम बताता है।',
   'Activity': 'गतिविधि',
+  "Today's form": 'आज की फ़ॉर्म',
+  'Go easy on {0}': 'इन पर हल्का रखें: {0}',
   'Reach your protein goal': 'अपना प्रोटीन लक्ष्य पूरा करें',
   'Same as {0}': '{0} जैसा',
   'Weekly challenge': 'इस सप्ताह की चुनौती',

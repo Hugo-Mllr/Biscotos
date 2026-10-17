@@ -2426,6 +2426,8 @@ export default {
   'Wall of shame': 'Utanç duvarı',
   'The Monday recap names those on 0 points.': 'Pazartesi özeti 0 puanlıların adını verir.',
   'Activity': 'Etkinlik',
+  "Today's form": 'Bugünkü form',
+  'Go easy on {0}': 'Şunlara dikkat et: {0}',
   'Reach your protein goal': 'Protein hedefine ulaş',
   'Same as {0}': '{0} gibi',
   'Weekly challenge': 'Haftanın meydan okuması',

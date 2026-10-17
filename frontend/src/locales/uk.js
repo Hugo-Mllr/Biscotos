@@ -2423,6 +2423,8 @@ export default {
   'Wall of shame': 'Дошка ганьби',
   'The Monday recap names those on 0 points.': 'У підсумках понеділка названо тих, хто має 0 очок.',
   'Activity': 'Активність',
+  "Today's form": 'Форма сьогодні',
+  'Go easy on {0}': 'Поберіжіть: {0}',
   'Reach your protein goal': 'Досягти цілі з білка',
   'Same as {0}': 'Як у {0}',
   'Weekly challenge': 'Виклик тижня',

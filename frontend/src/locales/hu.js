@@ -2429,6 +2429,8 @@ export default {
   'Wall of shame': 'Szégyenfal',
   'The Monday recap names those on 0 points.': 'A hétfői összesítő megnevezi a 0 pontosokat.',
   'Activity': 'Aktivitás',
+  "Today's form": 'A mai forma',
+  'Go easy on {0}': 'Kímélj: {0}',
   'Reach your protein goal': 'Érd el a fehérjecélod',
   'Same as {0}': 'Mint {0}-n',
   'Weekly challenge': 'A hét kihívása',

@@ -2505,6 +2505,8 @@ export default {
   'Wall of shame': 'লজ্জার দেয়াল',
   'The Monday recap names those on 0 points.': 'সোমবারের সারাংশে ০ পয়েন্ট পাওয়াদের নাম থাকে।',
   'Activity': 'কার্যকলাপ',
+  "Today's form": 'আজকের ফর্ম',
+  'Go easy on {0}': 'এগুলোতে হালকা রাখুন: {0}',
   'Reach your protein goal': 'প্রোটিন লক্ষ্যে পৌঁছান',
   'Same as {0}': '{0}-এর মতো',
   'Weekly challenge': 'এই সপ্তাহের চ্যালেঞ্জ',

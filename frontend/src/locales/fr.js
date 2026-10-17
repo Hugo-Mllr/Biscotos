@@ -2426,6 +2426,8 @@ export default {
   'Wall of shame': 'Mur de la honte',
   'The Monday recap names those on 0 points.': 'Le bilan du lundi nomme ceux à 0 point.',
   'Activity': 'Activité',
+  "Today's form": 'Forme du jour',
+  'Go easy on {0}': 'Vas-y doucement sur : {0}',
   'Reach your protein goal': 'Atteindre ton objectif de protéines',
   'Same as {0}': 'Comme {0}',
   'Weekly challenge': 'Défi de la semaine',
