@@ -2419,6 +2419,7 @@ export default {
   'Wall of shame': '恥辱牆',
   'The Monday recap names those on 0 points.': '週一總結會點名 0 分的人。',
   'Activity': '動態',
+  'Same as {0}': '同{0}',
   'Weekly challenge': '本週挑戰',
   'Sessions together': '一起訓練',
   'Records together': '一起破紀錄',

@@ -2505,6 +2505,7 @@ export default {
   'Wall of shame': 'লজ্জার দেয়াল',
   'The Monday recap names those on 0 points.': 'সোমবারের সারাংশে ০ পয়েন্ট পাওয়াদের নাম থাকে।',
   'Activity': 'কার্যকলাপ',
+  'Same as {0}': '{0}-এর মতো',
   'Weekly challenge': 'এই সপ্তাহের চ্যালেঞ্জ',
   'Sessions together': 'একসাথে সেশন',
   'Records together': 'একসাথে রেকর্ড',

@@ -2426,6 +2426,7 @@ export default {
   'Wall of shame': 'Mural da vergonha',
   'The Monday recap names those on 0 points.': 'O resumo de segunda nomeia quem tem 0 pontos.',
   'Activity': 'Atividade',
+  'Same as {0}': 'Como na {0}',
   'Weekly challenge': 'Desafio da semana',
   'Sessions together': 'Treinos em grupo',
   'Records together': 'Recordes em grupo',

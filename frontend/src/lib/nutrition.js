@@ -112,6 +112,24 @@ export function entryFromFood(food, { d, meal, grams }) {
   return e
 }
 
+/**
+ * The most recent day before `day` on which `meal` has entries: { d, entries } (entries in log
+ * order), or null. Only looks inside the log it is given, so a week's log means "this week".
+ */
+export function lastMeal(log, day, meal) {
+  let best = null
+  for (const e of log || []) {
+    if (e.meal !== meal || !(e.d < day)) continue
+    if (!best || e.d > best.d) best = { d: e.d, entries: [] }
+    if (e.d === best.d) best.entries.push(e)
+  }
+  return best
+}
+
+/** The entries of a past meal as bodies of POST /api/nutrition/log, on `day` in `meal`. */
+export const repeatEntries = (entries, { d, meal }) =>
+  (entries || []).map(e => entryFromFood(e, { d, meal, grams: e.grams }))
+
 /** The barcode formats a food package carries (EAN/UPC), as BarcodeDetector names them. */
 export const FOOD_BARCODE_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e']
 

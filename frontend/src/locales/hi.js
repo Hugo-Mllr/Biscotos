@@ -2426,6 +2426,7 @@ export default {
   'Wall of shame': 'शर्म की दीवार',
   'The Monday recap names those on 0 points.': 'सोमवार का सार 0 अंक वालों के नाम बताता है।',
   'Activity': 'गतिविधि',
+  'Same as {0}': '{0} जैसा',
   'Weekly challenge': 'इस सप्ताह की चुनौती',
   'Sessions together': 'साथ में सत्र',
   'Records together': 'साथ में रिकॉर्ड',

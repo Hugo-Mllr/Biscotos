@@ -2481,6 +2481,7 @@ export default {
   'Wall of shame': 'حائط العار',
   'The Monday recap names those on 0 points.': 'ملخص الاثنين يذكر أصحاب 0 نقطة.',
   'Activity': 'النشاط',
+  'Same as {0}': 'مثل {0}',
   'Weekly challenge': 'تحدي الأسبوع',
   'Sessions together': 'تمارين جماعية',
   'Records together': 'أرقام قياسية جماعية',

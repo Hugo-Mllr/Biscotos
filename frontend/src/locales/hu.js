@@ -2429,6 +2429,7 @@ export default {
   'Wall of shame': 'Szégyenfal',
   'The Monday recap names those on 0 points.': 'A hétfői összesítő megnevezi a 0 pontosokat.',
   'Activity': 'Aktivitás',
+  'Same as {0}': 'Mint {0}-n',
   'Weekly challenge': 'A hét kihívása',
   'Sessions together': 'Közös edzések',
   'Records together': 'Közös rekordok',
