@@ -2426,6 +2426,7 @@ export default {
   'Wall of shame': 'Ściana wstydu',
   'The Monday recap names those on 0 points.': 'Poniedziałkowe podsumowanie wymienia osoby z 0 pkt.',
   'Activity': 'Aktywność',
+  'Same as {0}': 'Jak w {0}',
   'Weekly challenge': 'Wyzwanie tygodnia',
   'Sessions together': 'Wspólne treningi',
   'Records together': 'Wspólne rekordy',

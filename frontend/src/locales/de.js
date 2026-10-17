@@ -2446,6 +2446,7 @@ export default {
   'Wall of shame': 'Wand der Schande',
   'The Monday recap names those on 0 points.': 'Die Montagsbilanz nennt alle mit 0 Punkten.',
   'Activity': 'Aktivität',
+  'Same as {0}': 'Wie am {0}',
   'Weekly challenge': 'Wochenchallenge',
   'Sessions together': 'Gemeinsame Einheiten',
   'Records together': 'Gemeinsame Rekorde',

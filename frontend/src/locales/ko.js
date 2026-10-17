@@ -2426,6 +2426,7 @@ export default {
   'Wall of shame': '부끄러움의 벽',
   'The Monday recap names those on 0 points.': '월요일 결산에 0점인 사람의 이름이 나옵니다.',
   'Activity': '활동',
+  'Same as {0}': '{0}과 동일',
   'Weekly challenge': '이번 주 챌린지',
   'Sessions together': '함께한 운동',
   'Records together': '함께한 기록',

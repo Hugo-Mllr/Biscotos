@@ -4,14 +4,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { t } from '../lib/i18n.js'
+import { t, dateLocale } from '../lib/i18n.js'
 import { getLang } from '../lib/i18n-core.js'
 import { todayISO, fmtNum } from '../lib/format.js'
 import { lastBW } from '../lib/history.js'
 import { MOBILE } from '../lib/mobile.js'
 import {
   MEALS, MACROS, macrosOf, totalsOf, byMeal, progress, mealForHour, shiftDay, weekEnding, kcalByDay,
-  toKg, bmi, bmiBand, parseAmount, entryFromFood, foodBarcode
+  toKg, bmi, bmiBand, parseAmount, entryFromFood, foodBarcode, lastMeal, repeatEntries
 } from '../lib/nutrition.js'
 import * as napi from '../lib/nutrition-api.js'
 import { CountUp, Ring, Bar, Sheet } from '../components/bx/index.jsx'
@@ -53,6 +53,7 @@ export default function Nutrition() {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [sheet, setSheet] = useState(null)        // 'add' | 'goals' | { edit: entry }
+  const [repeating, setRepeating] = useState(false)
   const [pulse, setPulse] = useState(0)           // bumps on every logged food: the ring pops
 
   const days = useMemo(() => weekEnding(day), [day])
@@ -91,6 +92,13 @@ export default function Nutrition() {
     setData(d => ({ ...d, log: [...(d?.log || []), entry] }))
     setPulse(p => p + 1)
     setSheet(null)
+  }
+
+  // One tap: the same meal as the last time it was logged this week.
+  const repeatMeal = async (meal, last) => {
+    setRepeating(true)
+    try { for (const body of repeatEntries(last.entries, { d: day, meal })) onLogged(await napi.addEntry(body)) }
+    catch (e) { setError(e) } finally { setRepeating(false) }
   }
 
   return (
@@ -148,7 +156,12 @@ export default function Nutrition() {
               <span className="bx-small bx-dim">{fmtNum(totalsOf(meals[m]).kcal)} kcal</span>
             </div>
             {meals[m].length === 0
-              ? <p className="bx-small bx-dim">{t('Nothing logged yet.')}</p>
+              ? <>
+                <p className="bx-small bx-dim">{t('Nothing logged yet.')}</p>
+                {(last => last && <button className="bx-chip bx-tap" disabled={repeating} onClick={() => repeatMeal(m, last)}>
+                  <Icon name="repeat" /> {t('Same as {0}', new Date(last.d + 'T00:00:00').toLocaleDateString(dateLocale(), { weekday: 'long' }))}
+                </button>)(lastMeal(log, day, m))}
+              </>
               : <ul className="bx-list">{meals[m].map(e => {
                   const mm = macrosOf(e)
                   return <li key={e.id} className="bx-item">

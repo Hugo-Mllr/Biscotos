@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   macrosOf, totalsOf, byMeal, progress, energySplit, mealForHour, shiftDay, weekEnding, kcalByDay,
-  toKg, bmi, bmiBand, parseAmount, entryFromFood, foodBarcode
+  toKg, bmi, bmiBand, parseAmount, entryFromFood, foodBarcode, lastMeal, repeatEntries
 } from './nutrition.js'
 
 // Synthetic foods only.
@@ -109,5 +109,32 @@ describe('input', () => {
     expect(foodBarcode('3000000000017')).toBe('3000000000017')
     expect(foodBarcode(' 1234 5678 ')).toBe('12345678')
     for (const bad of ['https://evil.example', '1234567', 'ABC12345', null]) expect(foodBarcode(bad)).toBe(null)
+  })
+})
+
+describe('lastMeal / repeatEntries', () => {
+  const e = (id, d, meal, grams = 100) => ({ id, d, meal, grams, name: 'Skyr ' + id, per100: skyr, source: 'off', brand: 'Demo', barcode: '3000000000017' })
+  const log = [e(1, '2026-03-14', 'breakfast'), e(2, '2026-03-16', 'breakfast', 150), e(3, '2026-03-16', 'breakfast', 60), e(4, '2026-03-16', 'lunch'), e(5, '2026-03-18', 'breakfast')]
+
+  it('finds the latest earlier day with that meal, every entry of it', () => {
+    const m = lastMeal(log, '2026-03-18', 'breakfast')
+    expect(m.d).toBe('2026-03-16')
+    expect(m.entries.map(x => x.id)).toEqual([2, 3])
+  })
+
+  it('ignores today, the future and other meals; null when there is nothing', () => {
+    expect(lastMeal(log, '2026-03-16', 'lunch')).toBeNull()
+    expect(lastMeal(log, '2026-03-14', 'breakfast')).toBeNull()
+    expect(lastMeal(log, '2026-03-18', 'dinner')).toBeNull()
+    expect(lastMeal([], '2026-03-18', 'breakfast')).toBeNull()
+    expect(lastMeal(undefined, '2026-03-18', 'breakfast')).toBeNull()
+  })
+
+  it('turns them into new entries for the day and meal, keeping grams and food, never the old id or day', () => {
+    const out = repeatEntries(lastMeal(log, '2026-03-18', 'breakfast').entries, { d: '2026-03-18', meal: 'snack' })
+    expect(out).toHaveLength(2)
+    expect(out[0]).toEqual({ d: '2026-03-18', meal: 'snack', grams: 150, name: 'Skyr 2', per100: skyr, source: 'off', brand: 'Demo', barcode: '3000000000017' })
+    expect(out.every(x => !('id' in x))).toBe(true)
+    expect(repeatEntries(undefined, { d: '2026-03-18', meal: 'snack' })).toEqual([])
   })
 })
