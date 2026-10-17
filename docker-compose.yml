@@ -28,8 +28,23 @@ services:
       # X-Forwarded-For / X-Real-IP with the real peer — so the sign-in throttle may count
       # requests by those headers instead of lumping everyone in as "the web container".
       - TRUST_PROXY=${TRUST_PROXY:-1}
-      # 👇 Ajoute ici les variables de ton .env dont l'app a besoin (voir plus bas)
-      # - NOM_VARIABLE=${NOM_VARIABLE}
+      # Réglages du déploiement. Portainer (stack Git) n'a pas de fichier .env : ses « Environment
+      # variables » ne servent qu'à remplir les ${…} d'ici, donc elles doivent être listées pour
+      # arriver dans le conteneur. Vide = non défini (l'API retombe sur ses valeurs par défaut) ;
+      # avec un .env ça marche pareil. Aucune valeur réelle ici : domaine et réglages vont dans
+      # Portainer ou dans .env (docs/DEPLOY_HOMELAB.md).
+      - RP_ID=${RP_ID:-}
+      - ORIGIN=${ORIGIN:-}
+      - RP_NAME=${RP_NAME:-}
+      - DEFAULT_LANG=${DEFAULT_LANG:-}
+      - FIRST_USER_ADMIN=${FIRST_USER_ADMIN:-}
+      - INVITE_ONLY=${INVITE_ONLY:-}
+      - ALLOW_GUEST=${ALLOW_GUEST:-}
+      - ADMIN_UIDS=${ADMIN_UIDS:-}
+      - SESSION_DAYS=${SESSION_DAYS:-}
+      - TZ=${TZ:-}
+      # 👇 Une autre variable de .env dont l'app a besoin ? Ajoute-la ici :
+      # - NOM_VARIABLE=${NOM_VARIABLE:-}
     volumes:
       # 👈 volumes nommés au lieu de ./data et ./coach-auth (les chemins relatifs
       #    ne marchent pas avec les stacks Git de Portainer)
