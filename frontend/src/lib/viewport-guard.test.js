@@ -110,4 +110,24 @@ describe('viewport guard', () => {
     expect(w.scrollTo).not.toHaveBeenCalled()
     expect(typeof installViewportGuard({ visualViewport: null, document: {} })).toBe('function')
   })
+
+  it('leaves an ordinary scroll alone, and only corrects a scroll right after the keyboard went away', () => {
+    vi.useFakeTimers()
+    try {
+      const w = fakeWindow({ offsetTop: 40 })      // displaced, keyboard closed, nothing just happened
+      installViewportGuard(w)
+      w.fire(w.visualViewport, 'scroll')
+      expect(w.scrollTo).not.toHaveBeenCalled()      // the person scrolling back up a long page
+
+      w.fire(w.document, 'focusout', { target: { tagName: 'INPUT' } })
+      const afterBlur = w.scrollTo.mock.calls.length
+      w.fire(w.visualViewport, 'scroll')
+      expect(w.scrollTo.mock.calls.length).toBe(afterBlur + 1)   // still settling: corrected
+
+      vi.advanceTimersByTime(2000)
+      const settled = w.scrollTo.mock.calls.length
+      w.fire(w.visualViewport, 'scroll')
+      expect(w.scrollTo.mock.calls.length).toBe(settled)        // window over: left alone
+    } finally { vi.useRealTimers() }
+  })
 })

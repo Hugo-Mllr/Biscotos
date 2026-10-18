@@ -16,7 +16,8 @@ import { tappable, useRevealActiveChip } from '../lib/use-sheet-keyboard.js'
 import { useAutoMore } from '../lib/use-auto-more.js'
 import { isFav, sortFavouritesFirst, sortYoursFirst, usageOf } from '../lib/favourites.js'
 
-export default function Library() {
+// `embedded`: shown as the third view of Plan (Biscotos), under Plan's own title, so it has none of its own.
+export default function Library({ embedded = false }) {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const [q, setQ] = useState('')
@@ -68,7 +69,7 @@ export default function Library() {
   }
 
   return <>
-    <div className="hdr lib-hdr"><div><h1>{t('Exercises')}</h1></div>
+    <div className="hdr lib-hdr">{!embedded && <div><h1>{t('Exercises')}</h1></div>}
       <Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/muscles')}>{t('By muscle')}</Button>
       {/* Without the licensed media (EXERCISE_MEDIA off) the count does not promise animations. */}
       <div className="sub lib-count">{!EXERCISE_MEDIA

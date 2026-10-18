@@ -8,9 +8,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import TabBar from './TabBar.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 
+let path = '/home'
 vi.mock('react-router-dom', () => ({
   useNavigate: () => () => {},
-  useLocation: () => ({ pathname: '/home' }),
+  useLocation: () => ({ pathname: path }),
 }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -21,11 +22,12 @@ const realMatchMedia = window.matchMedia
 beforeEach(() => {
   // A phone unless a test says otherwise (TabBar's sidebar starts at DESKTOP_QUERY).
   wide = false
+  path = '/home'
   window.matchMedia = () => ({ matches: wide, addEventListener() {}, removeEventListener() {} })
   const store = useStore.getState()
   originalS = store.S
   originalUser = store.user
-  useStore.setState({ S: JSON.parse(JSON.stringify(DEF)), user: { id: 1, name: 'test' } })
+  useStore.setState({ S: JSON.parse(JSON.stringify(DEF)), user: { id: 1, name: 'test' }, config: null })
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -39,15 +41,13 @@ afterEach(() => {
 })
 
 describe('the sidebar on a computer (Biscotos)', () => {
-  it('adds the brand, Nutrition, League and Settings to the five tabs', () => {
+  it('adds the brand, the League and Settings to the tabs, and has no Exercises tab', () => {
     wide = true
     act(() => { root.render(<TabBar onStart={() => {}} />) })
-    expect(host.querySelectorAll('#tabbar button')).toHaveLength(8)
+    expect(host.querySelectorAll('#tabbar button')).toHaveLength(7)
     expect(host.querySelector('.tab-brand').textContent).toContain('Biscotos')
     const labels = [...host.querySelectorAll('#tabbar button')].map(b => b.textContent)
-    expect(labels).toContain('Nutrition')
-    expect(labels).toContain('Settings')
-    expect(labels).toContain('League')
+    expect(labels).toEqual(['Home', 'Plan', 'Start', 'Nutrition', 'Stats', 'League', 'Settings'])
   })
 })
 
@@ -106,8 +106,8 @@ describe('the tab icons and labels', () => {
   const label = el => el.querySelector('span:last-child').textContent
   it('labels every tab and uses one icon per concept', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
-    expect(tabs().map(icon)).toEqual(['house', 'calendar', 'play', 'chart', 'dumbbell'])
-    expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Start', 'Stats', 'Exercises'])
+    expect(tabs().map(icon)).toEqual(['house', 'calendar', 'play', 'flame', 'chart'])
+    expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Start', 'Nutrition', 'Stats'])
 
     act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
     expect(icon(tabs()[2])).toBe('play')
@@ -131,5 +131,39 @@ describe('the tab icons and labels', () => {
       act(() => { useStore.getState().update(s => { s.active.editingWorkoutId = 'w1' }, false) })
       expect(label(tabs()[2])).toBe('Edit workout')
     } finally { vi.useRealTimers() }
+  })
+})
+
+// Biscotos: Nutrition and the Coach have tabs of their own; the exercise library lives under Plan.
+describe('Biscotos tabs', () => {
+  const label = el => el.querySelector('span:last-child').textContent
+  it('adds the Coach tab, last, only once the Coach is turned on', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(tabs().map(label)).not.toContain('Coach')
+    act(() => { useStore.setState({ config: { coach: { enabled: true } } }) })
+    expect(tabs()).toHaveLength(6)
+    expect(label(tabs()[5])).toBe('Coach')
+    expect(tabs()[5].querySelector('svg').getAttribute('data-icon')).toBe('sparkles')
+  })
+
+  it('has no Nutrition or Coach tab without a signed-in profile', () => {
+    useStore.setState({ user: null, config: { coach: { enabled: true } } })
+    const guest = useStore.getState().isGuest
+    useStore.setState({ isGuest: () => true })
+    try {
+      act(() => { root.render(<TabBar onStart={() => {}} />) })
+      expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Start', 'Stats'])
+    } finally { useStore.setState({ isGuest: guest }) }
+  })
+
+  it('lights Plan for the exercise library and Nutrition for the measurements', () => {
+    path = '/library'
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(tabs()[1].className).toBe('on')
+    act(() => root.unmount()); root = createRoot(host)
+    path = '/measurements'
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(tabs()[3].className).toBe('on')
+    expect(tabs()[0].className).toBe('')
   })
 })
