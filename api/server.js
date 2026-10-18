@@ -42,6 +42,7 @@ import { removeDoc as removeNutrition } from './nutrition/store.js';
 import { healthRoutes, forgetHealthUser } from './health/routes.js';
 import { removeHealth } from './health/store.js';
 import { createSocial } from './social/routes.js';
+import { createIdeas } from './ideas/index.js';
 import { forgetSocialUser } from './social/store.js';
 import { readDoc as readNutritionDoc } from './nutrition/store.js';
 
@@ -1940,6 +1941,16 @@ const social = createSocial({
 // The Monday recap: checked every ten minutes, sent once per circle and week.
 setInterval(() => { try { social.tick(); } catch (e) { console.error('social: recap failed', e.message); } }, 10 * 60 * 1000).unref();
 
+// Biscotos ideas box (docs/IDEAS.md). With IDEAS_GITHUB_TOKEN + IDEAS_GITHUB_REPO each new idea is
+// also opened as an anonymous issue; one that could not be sent is tried again every ten minutes.
+const ideas = createIdeas({
+  json, readBody, readSession, tooMany, createWindow, audit, dataDir: DATA, atomicWrite,
+  userById: uid => db.users.find(u => u.id === uid && !u.disabled) || null,
+  isAdmin,
+  github: { token: process.env.IDEAS_GITHUB_TOKEN || '', repo: process.env.IDEAS_GITHUB_REPO || '', api: process.env.IDEAS_GITHUB_API || '' },
+});
+setInterval(() => { ideas.tick(); }, 10 * 60 * 1000).unref();
+
 const routes = {
   // 503 rather than a flag in a 200: the container healthcheck is `wget --spider`, which reads
   // the status and nothing else, and an instance that cannot write its data directory is exactly
@@ -2623,6 +2634,7 @@ const routes = {
   ...portabilityRoutes({ json, readBody, readSession, tooMany, createWindow, audit, dataDir: DATA, atomicWrite }),
   // Biscotos circles, weekly league and feed (docs/SOCIAL.md), built below.
   ...social.routes,
+  ...ideas.routes,
   ...nutritionRoutes({
     json, readBody, readSession, tooMany, createWindow, dataDir: DATA, atomicWrite,
     off: FOOD_SEARCH ? createOff({
