@@ -56,7 +56,7 @@ export default function TabBar({ onStart }) {
   // On a phone, Settings and the League are reached from Home, so Home stays lit there; the sidebar
   // has tabs of their own. The exercise library lives under Plan (its third view), measurements under
   // Nutrition.
-  const homeOwns = desk ? [] : ['settings', 'league']
+  const homeOwns = desk ? ['ideas'] : ['settings', 'league', 'ideas']
   const on = k => cur === k || (cur === 'history' && k === 'stats') || (homeOwns.includes(cur) && k === 'home')
     || ((cur === 'library' || cur === 'muscles') && k === 'plan') || (cur === 'structural-balance' && k === 'stats')
     || (cur === 'measurements' && k === 'nutrition')

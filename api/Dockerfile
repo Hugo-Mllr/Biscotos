@@ -58,6 +58,7 @@ COPY coach ./coach
 COPY nutrition ./nutrition
 COPY health ./health
 COPY social ./social
+COPY ideas ./ideas
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000

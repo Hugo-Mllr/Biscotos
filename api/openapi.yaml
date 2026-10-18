@@ -161,6 +161,11 @@ tags:
     description: >-
       Biscotos nutrition: food log, own foods, daily goals and height, stored per profile
       (nutrition-<uid>.json), plus Open Food Facts search and barcode lookup through the server.
+  - name: ideas
+    description: >-
+      Biscotos ideas box (docs/IDEAS.md): friends post ideas and +1 them; the admin marks them done
+      or declined. With IDEAS_GITHUB_TOKEN and IDEAS_GITHUB_REPO each new idea is also opened as an
+      anonymous GitHub issue.
   - name: social
     description: >-
       Biscotos circles of friends and the weekly league (docs/SOCIAL.md): points computed by the
@@ -3467,6 +3472,73 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { description: Not a circle of the caller. }
 
+  /api/ideas:
+    get:
+      tags: [ideas]
+      operationId: listIdeas
+      summary: The ideas box, open ideas first by votes
+      description: >-
+        Each idea names its author by display name, never by uid; `mine` and `voted` are worked out
+        for the caller. `url` is the GitHub issue once it was opened. `github` says whether this
+        instance sends ideas to GitHub; `admin` whether the caller may set a status.
+      responses:
+        '200': { description: "`ideas` ({ id, title, body, at, author, mine, votes, voted, status, url? }), `github`, `limits`, `admin`." }
+    post:
+      tags: [ideas]
+      operationId: createIdea
+      summary: Post an idea (also opened as an anonymous GitHub issue when configured)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [title], properties: { title: { type: string, minLength: 3, maxLength: 80 }, body: { type: string, maxLength: 1000 } } }
+      responses:
+        '201': { description: "`idea`." }
+        '400': { description: Title too short. }
+        '409': { description: The box is full. }
+        '429': { description: "Five ideas a day at most (`code: per-day`), or too many requests." }
+  /api/ideas/vote:
+    post:
+      tags: [ideas]
+      operationId: voteIdea
+      summary: +1 an idea, or take the +1 back
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [id], properties: { id: { type: string } } }
+      responses:
+        '200': { description: "`idea`." }
+        '404': { description: No such idea. }
+  /api/ideas/status:
+    post:
+      tags: [ideas]
+      operationId: setIdeaStatus
+      summary: Admin only — mark an idea open, done or declined
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [id, status], properties: { id: { type: string }, status: { type: string, enum: [open, done, declined] } } }
+      responses:
+        '200': { description: "`idea`." }
+        '400': { description: Unknown status. }
+        '403': { description: Not an admin. }
+        '404': { description: No such idea. }
+  /api/ideas/delete:
+    post:
+      tags: [ideas]
+      operationId: deleteIdea
+      summary: Its author or the admin takes an idea out of the box
+      description: An issue already opened on GitHub stays there. Someone else's idea answers 404, like a missing one.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [id], properties: { id: { type: string } } }
+      responses:
+        '200': { description: "`ok`." }
+        '404': { description: "No such idea, or not yours." }
   /api/social/challenge:
     get:
       tags: [social]

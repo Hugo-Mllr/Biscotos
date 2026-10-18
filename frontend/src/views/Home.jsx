@@ -20,6 +20,7 @@ import HealthWeightPrompt from '../components/HealthWeightPrompt.jsx'
 import NutritionToday from '../components/NutritionToday.jsx'
 import LeagueToday from '../components/LeagueToday.jsx'
 import ReadinessToday from '../components/ReadinessToday.jsx'
+import IdeasToday from '../components/IdeasToday.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -248,5 +249,7 @@ export default function Home() {
         <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
       </div>
     </div>
+    {/* Biscotos: the ideas box — last, it is not what Home is for */}
+    {user && <IdeasToday />}
   </div>
 }

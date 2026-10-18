@@ -43,6 +43,9 @@ services:
       - ADMIN_UIDS=${ADMIN_UIDS:-}
       - SESSION_DAYS=${SESSION_DAYS:-}
       - TZ=${TZ:-}
+      # Boîte à idées → tickets GitHub anonymes (docs/IDEAS.md). Vides : les idées restent dans l'app.
+      - IDEAS_GITHUB_TOKEN=${IDEAS_GITHUB_TOKEN:-}
+      - IDEAS_GITHUB_REPO=${IDEAS_GITHUB_REPO:-}
       # 👇 Une autre variable de .env dont l'app a besoin ? Ajoute-la ici :
       # - NOM_VARIABLE=${NOM_VARIABLE:-}
     volumes:

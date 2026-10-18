@@ -225,6 +225,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#nutrition"><b>Nutrition</b><span>Food log, goals, Open Food Facts</span></a>
   <a class="side-link" href="#health"><b>Health import</b><span>Apple Health webhook &amp; tokens</span></a>
   <a class="side-link" href="#social"><b>Friends &amp; league</b><span>Circles, sharing, weekly points</span></a>
+  <a class="side-link" href="#ideas"><b>Ideas box</b><span>Suggestions, votes, GitHub issues</span></a>
   <a class="side-link" href="#coach"><b>AI Coach</b><span>Plans, reviews, debriefs</span></a>
   <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log, Coach</span></a>
   <a class="side-link" href="#schemas"><b>Schemas</b><span>The state blob, the error shape &amp; co.</span></a>
@@ -249,7 +250,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>101 endpoints</span>
+    <span>106 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3363,6 +3364,189 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">429</span>
     <span class="p-desc">Over the per-profile budget.</span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
+<section class="api-sec" id="ideas">
+  <h2>Ideas box</h2>
+  <p class="sub">Biscotos ideas box (docs/IDEAS.md): friends post ideas and +1 them; the admin marks them done or declined. With IDEAS_GITHUB_TOKEN and IDEAS_GITHUB_REPO each new idea is also opened as an anonymous GitHub issue.</p>
+  <div class="eps">
+
+<details class="ep" id="op-listIdeas">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/ideas</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The ideas box, open ideas first by votes</span>
+  </summary>
+  <div class="ep-body">
+<p>Each idea names its author by display name, never by uid; <code>mine</code> and <code>voted</code> are worked out for the caller. <code>url</code> is the GitHub issue once it was opened. <code>github</code> says whether this instance sends ideas to GitHub; <code>admin</code> whether the caller may set a status.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>ideas</code> ({ id, title, body, at, author, mine, votes, voted, status, url? }), <code>github</code>, <code>limits</code>, <code>admin</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-createIdea">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/ideas</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Post an idea (also opened as an anonymous GitHub issue when configured)</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">title<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(&le; 80 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">body</span>
+    <span class="p-type">string <span class="p-hint">(&le; 1000 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">201</span>
+    <span class="p-desc"><code>idea</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Title too short.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The box is full.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Five ideas a day at most (<code>code: per-day</code>), or too many requests.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-voteIdea">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/ideas/vote</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">+1 an idea, or take the +1 back</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>idea</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such idea.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-setIdeaStatus">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/ideas/status</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Admin only — mark an idea open, done or declined</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">status<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;open&quot; | &quot;done&quot; | &quot;declined&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>idea</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Unknown status.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not an admin.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such idea.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-deleteIdea">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/ideas/delete</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Its author or the admin takes an idea out of the box</span>
+  </summary>
+  <div class="ep-body">
+<p>An issue already opened on GitHub stays there. Someone else's idea answers 404, like a missing one.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>ok</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such idea, or not yours.</span>
   </div>
     </div>
   </div>
