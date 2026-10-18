@@ -399,10 +399,13 @@ h4.sec{
   background:color-mix(in srgb,var(--bg-el) 94%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
   border-top:var(--hair) solid var(--sep-op);
+  /* Its own compositing layer: iOS then keeps it pinned to the screen instead of carrying it
+     along with the page while momentum scrolling back up (Biscotos). */
+  transform:translateZ(0);
 }
 :root[data-theme="light"] #tabbar{background:color-mix(in srgb,var(--bg-el) 94%,transparent)}
 #tabbar button{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;
   color:var(--label-3);font-size:10px;font-weight:500;letter-spacing:.005em;padding-top:3px;
   transition:color var(--fast);
 }
@@ -412,6 +415,8 @@ h4.sec{
    fade on the <svg> instead of in the stroke colour flattens the icon first and
    fades it as one shape — and it does that for every icon, not just this one. */
 #tabbar button .icn{font-size:25px;--icon-stroke:1.65;color:var(--label)}
+/* Six tabs on a 375px phone: a long translated label ends with … rather than pushing its neighbours. */
+#tabbar button > span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #tabbar button.on{color:var(--acc)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
 /* A connection problem while the banner is switched off (Settings → Show connection status):

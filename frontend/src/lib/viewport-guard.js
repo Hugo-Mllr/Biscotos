@@ -16,6 +16,11 @@
  */
 const KEYBOARD_MIN_PX = 100
 const SETTLE_MS = 350   // the keyboard's dismiss animation; the offset is only wrong after it
+// How long after the keyboard closes (or a field lets go) a scroll may still trigger the
+// correction. Outside that window a scroll is the person scrolling: correcting it then fought
+// iOS's own momentum scrolling and threw the page — and the tab bar with it — upward while
+// scrolling back up a long screen (Biscotos).
+const ARMED_MS = 1500
 
 const isText = el => !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)
 
@@ -75,16 +80,17 @@ export function installViewportGuard(win = window) {
   const vv = win.visualViewport
   if (!vv) return () => {}
   let wasOpen = keyboardOpen(win)
+  let armedUntil = 0
   const timers = new Set()
   const later = (fn, ms) => { const t = win.setTimeout(() => { timers.delete(t); fn() }, ms); timers.add(t) }
-  const settle = () => { realign(win); later(() => realign(win), SETTLE_MS) }
+  const settle = () => { armedUntil = Date.now() + ARMED_MS; realign(win); later(() => realign(win), SETTLE_MS) }
 
   const onResize = () => {
     const open = keyboardOpen(win)
     if (wasOpen && !open) settle()
     wasOpen = open
   }
-  const onScroll = () => { if (!wasOpen) realign(win) }
+  const onScroll = () => { if (!wasOpen && Date.now() < armedUntil) realign(win) }
   const onFocusOut = e => { if (isText(e.target)) settle() }
 
   vv.addEventListener('resize', onResize)

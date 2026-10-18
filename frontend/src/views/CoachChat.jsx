@@ -187,7 +187,9 @@ export default function CoachChat() {
 
   return <div className="narrow chat">
     <div className="chat-hdr">
-      <button className="iconbtn" onClick={() => nav('/plan')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
+      {/* Back to wherever the chat was opened from (the Coach tab, or Plan); a chat opened as the
+          first page of the app has nowhere to go back to, so it goes Home. */}
+      <button className="iconbtn" onClick={() => (window.history.state?.idx > 0 ? nav(-1) : nav('/home'))} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
       <div className="chat-av"><Icon name="sparkles" /></div>
       <div className="grow">
         <h1>{t('Coach')}</h1>

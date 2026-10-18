@@ -8,6 +8,9 @@ import Icon from './Icon.jsx'
 import Elapsed from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
 import { APP_NAME } from '../lib/brand.js'
+import { coachAvailable } from '../lib/coach.js'
+import { DEMO } from '../lib/demo.js'
+import { MOBILE } from '../lib/mobile.js'
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
@@ -21,7 +24,7 @@ function Tab({ active, icon, label, onClick, dot }) {
   )
 }
 
-// Biscotos: from this width the bar is a sidebar (index.css) with room for Nutrition and Settings,
+// Biscotos: from this width the bar is a sidebar (index.css) with room for the League and Settings,
 // which a phone reaches from Home.
 export const DESKTOP_QUERY = '(min-width:1000px)'
 function useDesktop() {
@@ -42,17 +45,24 @@ export default function TabBar({ onStart }) {
   const loc = useLocation()
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
+  const config = useStore(s => s.config)
+  const coachMode = useStore(s => s.coachLocal?.mode)
   const isGuest = useStore(s => s.isGuest())
   // With the connection banner switched off, a sync problem shows as a dot on Home, the tab
   // Settings lives under (#369, #330).
   const trouble = useConnectionTrouble()
   if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
-  // On a phone, Settings and Nutrition are reached from Home, so Home stays lit there; the sidebar
-  // has tabs of their own.
-  const homeOwns = desk ? [] : ['settings', 'nutrition', 'measurements', 'league']
-  const on = k => cur === k || (cur === 'history' && k === 'stats') || (homeOwns.includes(cur) && k === 'home') || (cur === 'muscles' && k === 'library') || (cur === 'structural-balance' && k === 'stats')
-    || (desk && cur === 'measurements' && k === 'nutrition')
+  // On a phone, Settings and the League are reached from Home, so Home stays lit there; the sidebar
+  // has tabs of their own. The exercise library lives under Plan (its third view), measurements under
+  // Nutrition.
+  const homeOwns = desk ? [] : ['settings', 'league']
+  const on = k => cur === k || (cur === 'history' && k === 'stats') || (homeOwns.includes(cur) && k === 'home')
+    || ((cur === 'library' || cur === 'muscles') && k === 'plan') || (cur === 'structural-balance' && k === 'stats')
+    || (cur === 'measurements' && k === 'nutrition')
+  // The Coach tab only exists once the Coach can answer (an admin turned it on, or the phone app
+  // brings its own key): an empty tab would be a door to nothing.
+  const coach = coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })
 
   const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
   const startWorkout = () => {
@@ -82,9 +92,9 @@ export default function TabBar({ onStart }) {
         {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
           : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
       </button>
+      {user && <Tab active={on('nutrition')} icon="flame" label={t('Nutrition')} onClick={() => nav('/nutrition')} />}
       <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
-      <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />
-      {desk && user && <Tab active={on('nutrition')} icon="flame" label={t('Nutrition')} onClick={() => nav('/nutrition')} />}
+      {coach && <Tab active={on('coach')} icon="sparkles" label={t('Coach')} onClick={() => nav('/coach')} />}
       {desk && user && <Tab active={on('league')} icon="trophy" label={t('League')} onClick={() => nav('/league')} />}
       {desk && <span className="tab-spacer" />}
       {desk && <Tab active={on('settings')} icon="gear" label={t('Settings')} onClick={() => nav('/settings')} />}

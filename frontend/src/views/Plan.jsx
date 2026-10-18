@@ -9,6 +9,7 @@ import {
   planHasRoutines, exportPlanFile, printWholePlan, importPlanFile,
 } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import Library from './Library.jsx'
 import { noteImportSheet } from '../components/NoteImportSheet.jsx'
 import { Button, Row, Section, Segmented } from '../components/ui.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
@@ -28,12 +29,14 @@ import {
   chooseRotation, chooseFixedWeek,
 } from '../lib/rotation.js'
 
-// Plan has two views (v1.3.11): Schedule (how you train, and when) and Routines (what you
-// train). The last one you looked at comes back: a per-device convenience, never synced, so it
-// lives in this browser's storage and not in S.
+// Plan has three views: Schedule (how you train, and when), Routines (what you train) and, in
+// Biscotos, Exercises (the library, which no longer has a tab of its own). The last one you looked
+// at comes back: a per-device convenience, never synced, so it lives in this browser's storage and
+// not in S.
 export const PLAN_VIEW_KEY = 'gym_plan_view'
+const PLAN_VIEWS = ['schedule', 'routines', 'library']
 const readView = () => {
-  try { return localStorage.getItem(PLAN_VIEW_KEY) === 'routines' ? 'routines' : 'schedule' } catch { return 'schedule' }
+  try { const v = localStorage.getItem(PLAN_VIEW_KEY); return PLAN_VIEWS.includes(v) ? v : 'schedule' } catch { return 'schedule' }
 }
 
 /* Undo for Plan's two removals (v1.3.11). Both go through the store's normal update, so sync
@@ -171,10 +174,12 @@ export default function Plan() {
     </div>
     <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
     <Segmented className="plan-views" value={view} onChange={setView}
-      options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
+      options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }, { value: 'library', label: t('Exercises') }]} />
     {view === 'routines'
       ? <Routines S={S} update={update} nav={nav} />
-      : <Schedule S={S} update={update} nav={nav} mode={mode} />}
+      : view === 'library'
+        ? <Library embedded />
+        : <Schedule S={S} update={update} nav={nav} mode={mode} />}
   </div>
 }
 
