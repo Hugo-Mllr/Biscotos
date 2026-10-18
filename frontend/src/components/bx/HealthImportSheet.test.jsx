@@ -10,6 +10,8 @@ vi.mock('../../lib/nutrition-api.js', () => api)
 vi.mock('../../lib/api.js', () => ({ apiUrl: p => 'https://biscotos.example' + p }))
 
 import HealthImportSheet from './HealthImportSheet.jsx'
+import { useStore } from '../../store/useStore.js'
+import { SHORTCUT_JSON } from '../../lib/health-guide.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 window.matchMedia = q => ({ matches: q.includes('reduce'), addEventListener() {}, removeEventListener() {} })
@@ -62,5 +64,34 @@ describe('HealthImportSheet', () => {
     act(() => btn('Create a token').click())
     await flush()
     expect(document.body.textContent).toContain('Five tokens at most')
+  })
+  it('walks through building the Shortcut, with the text and the address to copy', async () => {
+    const writeText = vi.fn().mockResolvedValue()
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    act(() => root.render(<HealthImportSheet onClose={() => {}} />))
+    await flush()
+    expect(document.querySelector('summary').textContent).toBe('How to set up the Shortcut')
+    expect(document.querySelectorAll('details ol > li').length).toBe(7)
+    expect(document.querySelector('a[href*="icloud"]')).toBe(null)
+    await act(async () => btn('Copy the text').click())
+    expect(writeText).toHaveBeenLastCalledWith(SHORTCUT_JSON)
+    await act(async () => btn('Copy the address').click())
+    expect(writeText).toHaveBeenLastCalledWith('https://biscotos.example/api/hooks/apple-health')
+
+    api.createHookToken.mockResolvedValue({ hook: { id: 'h2', label: 'iPhone', createdAt: 2 }, token: TOKEN })
+    act(() => btn('Create a token').click())
+    await flush()
+    await act(async () => btn('Bearer').click())
+    expect(writeText).toHaveBeenLastCalledWith('Bearer ' + TOKEN)
+  })
+
+  it('offers the shared Shortcut when the instance has one', async () => {
+    const link = 'https://www.icloud.com/shortcuts/0123456789abcdef'
+    useStore.setState({ config: { health_shortcut: link } })
+    act(() => root.render(<HealthImportSheet onClose={() => {}} />))
+    await flush()
+    expect(document.querySelector('a[href*="icloud"]').getAttribute('href')).toBe(link)
+    expect(document.querySelector('summary').textContent).toBe('Or build it yourself')
+    useStore.setState({ config: null })
   })
 })

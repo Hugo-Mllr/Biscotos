@@ -293,6 +293,13 @@ paths:
                       Present (and true) only when the instance runs with
                       PASSWORD_LOGIN=1; the client then offers name-and-password
                       sign-in next to passkeys.
+                  health_shortcut:
+                    type: string
+                    format: uri
+                    description: >-
+                      Present only when the instance runs with HEALTH_SHORTCUT_URL set to a
+                      https://www.icloud.com/shortcuts/ link: the shared Apple Health
+                      Shortcut the app offers to install.
                   default_lang:
                     type: string
                     example: pt-BR

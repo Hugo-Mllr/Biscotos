@@ -91,6 +91,16 @@ const DEFAULT_LANG = (() => {
   console.warn(`DEFAULT_LANG "${v.slice(0, 40)}" is not a language tag such as pt-BR or de — ignored`);
   return '';
 })();
+// Biscotos: the iCloud link of a shared Apple Health Shortcut (docs/APPLE_HEALTH.md). The sheet
+// that hands out webhook tokens shows an "Install the Shortcut" button for it. Only a
+// https://www.icloud.com/shortcuts/ link is taken; anything else is ignored with a warning.
+const HEALTH_SHORTCUT = (() => {
+  const v = String(process.env.HEALTH_SHORTCUT_URL || '').trim();
+  if (!v) return '';
+  if (/^https:\/\/www\.icloud\.com\/shortcuts\/[A-Za-z0-9]{8,64}\/?$/.test(v)) return v;
+  console.warn('HEALTH_SHORTCUT_URL is not a https://www.icloud.com/shortcuts/ link — ignored');
+  return '';
+})();
 // Whether the address a request came from may be read from the headers a proxy sets. Only the
 // sign-in throttle asks (limitAddress below); the bundled compose file sets it, because the API
 // is reachable there only through the web container, which overwrites those headers.
@@ -1988,6 +1998,7 @@ const routes = {
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
+      ...(HEALTH_SHORTCUT ? { health_shortcut: HEALTH_SHORTCUT } : {}),
       ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {})
     });
   },
