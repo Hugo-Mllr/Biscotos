@@ -18,6 +18,7 @@ import { CountUp, Ring, Bar, Sheet } from '../components/bx/index.jsx'
 import FoodScanner, { canScanInBrowser } from '../components/bx/FoodScanner.jsx'
 import Icon from '../components/Icon.jsx'
 import HealthImportSheet from '../components/bx/HealthImportSheet.jsx'
+import MenuImportSheet from '../components/bx/MenuImportSheet.jsx'
 import NutritionDataSheet from '../components/bx/NutritionDataSheet.jsx'
 
 const MEAL_LABEL = { breakfast: () => t('Breakfast'), lunch: () => t('Lunch'), dinner: () => t('Dinner'), snack: () => t('Snack') }
@@ -150,9 +151,12 @@ export default function Nutrition() {
         </div>
       </section>
 
-      <button className="bx-btn bx-btn-primary bx-btn-block bx-tap" style={{ margin: 'var(--bx-s4) 0' }} onClick={() => setSheet('add')}>
+      <button className="bx-btn bx-btn-primary bx-btn-block bx-tap" style={{ margin: 'var(--bx-s4) 0 var(--bx-s2)' }} onClick={() => setSheet('add')}>
         <Icon name="plus" /> {t('Add food')}
       </button>
+      <div style={{ textAlign: 'center', marginBottom: 'var(--bx-s4)' }}>
+        <button className="bx-chip bx-tap" onClick={() => setSheet('menu')}><Icon name="note" /> {t('Import a menu')}</button>
+      </div>
 
       {/* Close the protein gap with foods already in the log */}
       {data && (fills => fills.length > 0 && <section className="bx-card" aria-label={t('Reach your protein goal')}>
@@ -218,6 +222,8 @@ export default function Nutrition() {
 
       {sheet === 'add' && <AddFoodSheet day={day} foods={data?.foods || []} onClose={() => setSheet(null)} onLogged={onLogged}
         onFoodSaved={f => setData(d => ({ ...d, foods: [...(d?.foods || []), f] }))} />}
+      {sheet === 'menu' && <MenuImportSheet day={day} foods={data?.foods || []} log={log} onClose={() => setSheet(null)}
+        onLogged={entry => { setData(d => ({ ...d, log: [...(d?.log || []), entry] })); setPulse(p => p + 1) }} />}
       {sheet === 'health' && <HealthImportSheet onClose={() => setSheet(null)} />}
       {sheet === 'data' && <NutritionDataSheet onClose={() => setSheet(null)} onChanged={reload} />}
       {sheet === 'goals' && <GoalsSheet data={data} onClose={() => setSheet(null)}
