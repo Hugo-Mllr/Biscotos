@@ -121,6 +121,24 @@ Optionnel : **Afficher le résultat** à la fin pour voir `accepted` / `rejected
 immédiatement** → choisis le Raccourci « Biscotos ». iOS demande une fois l'accès aux données
 Santé : autorise uniquement les types utilisés.
 
+## 3 bis. Partager le Raccourci à tes potes (optionnel)
+
+L'appli explique déjà ces étapes (Nutrition → Apple Santé → « Comment créer le Raccourci »), avec
+des boutons pour copier le texte JSON, l'adresse et `Bearer <jeton>`. Plus simple encore : tu le
+construis une fois et tu le partages.
+
+1. Construis le Raccourci comme au § 3, mais laisse l'URL et l'en-tête `Authorization` **vides**.
+2. Réglages du Raccourci (ⓘ) → **Configurer l'importation** (*Import Questions*) → **Ajouter
+   une question** : une pour l'URL (« Colle l'adresse donnée par Biscotos »), une pour la valeur
+   de `Authorization` (« Colle Bearer, un espace, puis ton jeton »).
+3. **Partager** → **Copier le lien iCloud**. Le lien ressemble à
+   `https://www.icloud.com/shortcuts/…` et ne contient ni jeton ni adresse.
+4. Mets-le dans la variable `HEALTH_SHORTCUT_URL` de la stack (Portainer) et redéploie.
+
+La fiche Apple Santé affiche alors **Installer le Raccourci** : chacun crée son jeton, touche le
+bouton, et colle l'adresse et `Bearer <jeton>` quand iOS pose les questions. L'automatisation de
+21 h (§ 3 e) reste à créer sur chaque iPhone : iOS ne la partage pas.
+
 ## 4. Sécurité
 
 - **Le jeton est un mot de passe** limité : il ne peut **qu'écrire** des mesures dans *ton*

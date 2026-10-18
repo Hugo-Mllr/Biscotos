@@ -98,3 +98,14 @@ test('GET /api/config: DEFAULT_LANG is public when set, absent when unset or mal
   const unset = await startServer(t, { DEFAULT_LANG: '' });
   assert.equal('default_lang' in await fetch(`${unset.api}/api/config`).then(r => r.json()), false);
 });
+
+test('GET /api/config: HEALTH_SHORTCUT_URL only when it is an iCloud Shortcut link', async t => {
+  const link = 'https://www.icloud.com/shortcuts/0123456789abcdef0123456789abcdef';
+  const set = await startServer(t, { HEALTH_SHORTCUT_URL: link });
+  assert.equal((await fetch(`${set.api}/api/config`).then(r => r.json())).health_shortcut, link);
+
+  for (const v of ['http://www.icloud.com/shortcuts/0123456789abcdef', 'https://evil.example/shortcuts/0123456789abcdef', 'javascript:alert(1)', '']) {
+    const s = await startServer(t, { HEALTH_SHORTCUT_URL: v });
+    assert.equal('health_shortcut' in await fetch(`${s.api}/api/config`).then(r => r.json()), false, v);
+  }
+});

@@ -46,6 +46,7 @@ services:
       # Boîte à idées → tickets GitHub anonymes (docs/IDEAS.md). Vides : les idées restent dans l'app.
       - IDEAS_GITHUB_TOKEN=${IDEAS_GITHUB_TOKEN:-}
       - IDEAS_GITHUB_REPO=${IDEAS_GITHUB_REPO:-}
+      - HEALTH_SHORTCUT_URL=${HEALTH_SHORTCUT_URL:-}
       # 👇 Une autre variable de .env dont l'app a besoin ? Ajoute-la ici :
       # - NOM_VARIABLE=${NOM_VARIABLE:-}
     volumes:
