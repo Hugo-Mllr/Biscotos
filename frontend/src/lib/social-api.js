@@ -33,3 +33,4 @@ export const setShame = (circle, shame) => post('/api/social/circles/update', { 
 export const loadGym = circle => api('/api/social/gym?' + new URLSearchParams({ circle }))
 export const setGym = inGym => post('/api/social/gym', { in: inGym })
 export const loadChallenge = circle => api('/api/social/challenge?' + new URLSearchParams({ circle }))
+export const loadGhosts = ids => api('/api/social/ghosts?' + new URLSearchParams({ ex: ids.join(',') }))

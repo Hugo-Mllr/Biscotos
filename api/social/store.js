@@ -19,7 +19,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export const LIMITS = Object.freeze({ CIRCLES_PER_USER: 5, MEMBERS_MAX: 30, NAME_MAX: 40 });
-export const DEFAULT_PREFS = Object.freeze({ training: true, prs: true, nutrition: false, notify: true });
+// `lifts` (off unless turned on): the profile's best sets are shown to its circles as a ghost to beat.
+export const DEFAULT_PREFS = Object.freeze({ training: true, prs: true, nutrition: false, notify: true, lifts: false });
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';    // no 0/O, 1/I/L
 
 export class UnreadableError extends Error {}
@@ -82,6 +83,7 @@ export function prefsOf(doc, uid) {
     prs: typeof p.prs === 'boolean' ? p.prs : DEFAULT_PREFS.prs,
     nutrition: typeof p.nutrition === 'boolean' ? p.nutrition : DEFAULT_PREFS.nutrition,
     notify: typeof p.notify === 'boolean' ? p.notify : DEFAULT_PREFS.notify,
+    lifts: typeof p.lifts === 'boolean' ? p.lifts : DEFAULT_PREFS.lifts,
   };
 }
 /** Only the three known switches, only booleans; null when the body has none of them right. */

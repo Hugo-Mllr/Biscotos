@@ -1,7 +1,7 @@
 /* Biscotos league rules (social/score.js) on synthetic workouts. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { weekPoints, streakOf, weekOf, shiftDay, bestsOf, usableWorkouts, plannedPerWeek, seasonOf, POINTS } from '../social/score.js';
+import { weekPoints, streakOf, weekOf, shiftDay, bestsOf, bestSetsOf, usableWorkouts, plannedPerWeek, seasonOf, POINTS } from '../social/score.js';
 
 const MON = '2026-10-12';           // a Monday
 const TODAY = '2026-10-16';         // the Friday after
@@ -105,4 +105,19 @@ test('season: one entry per week, the last 52 at most', () => {
   const S = { workouts: [wk('2026-10-13', [ex('a', set(10, 5))])] };
   assert.equal(seasonOf(S, '2026-09-28', { today: TODAY }).length, 3);
   assert.equal(seasonOf(S, '2020-01-01', { today: TODAY }).length, 52);
+});
+
+test('bestSetsOf: the best done work set per exercise, in kg, warm-ups and high reps left out', () => {
+  const S = { unit: 'lb', workouts: [
+    { id: 'a', d: '2026-01-05', entries: [{ id: 'bench', sets: [
+      { w: 225, r: 5, done: true }, { w: 315, r: 1, done: false }, { w: 300, r: 3, warmup: true, done: true }, { w: 135, r: 20, done: true }] }] },
+    { id: 'b', d: '2026-01-12', entries: [{ id: 'row', sets: [{ sides: { L: { w: 50, r: 8, done: true }, R: { w: 55, r: 8, done: false } } }] }] },
+    { id: 'c', d: '2099-01-01', entries: [{ id: 'bench', sets: [{ w: 400, r: 5, done: true }] }] },
+  ] };
+  const b = bestSetsOf(S, ['bench', 'row', 'squat'], '2026-02-01');
+  assert.deepEqual(Object.keys(b).sort(), ['bench', 'row']);
+  assert.equal(b.bench.reps, 5);
+  assert.equal(b.bench.kg, 102);
+  assert.equal(b.bench.d, '2026-01-05');
+  assert.equal(b.row.kg, 22.75);
 });

@@ -21,6 +21,7 @@ Un seul réglage pour tous ses cercles (**Ligue → bouclier**), choisi aussi au
 | Points, séances et série (activé) | points et leur détail, nombre de séances, série | les charges, les exercices, les notes |
 | Records personnels (activé) | le **nombre** de records de la semaine | quels exercices, quelles charges |
 | Jours dans mon objectif calorique (désactivé) | des points « journée dans l'objectif » | ce qui a été mangé, l'objectif lui-même |
+| Mes meilleures charges, en fantôme (désactivé) | ton meilleur set par exercice, pendant leur séance | le reste de tes séances, tes notes |
 
 Le **poids corporel et les mensurations ne sont jamais partagés**. Un membre qui désactive le
 premier interrupteur apparaît sans aucun chiffre.
@@ -88,3 +89,17 @@ entraînement. Les **badges** sont des paliers sur tout l'historique : séances 
 série en semaines (4, 12, 26, 52), records (10, 50, 100 ; seulement si les records sont partagés).
 Tout est calculé à la demande (`api/social/badges.js`), rien n'est stocké, et les séances Strava
 ne comptent pas.
+
+## Le fantôme d'un pote
+
+Pendant une séance, sous chaque exercice en répétitions, une ligne « 👻 Sam : 100 kg × 5 »
+montre le meilleur set d'un pote sur ce même exercice : le plus fort des potes qui partagent, avec
+« +2 potes » s'il y en a d'autres. Le meilleur set est celui qui a le plus haut 1RM estimé, selon
+les mêmes règles que les records : séries de travail cochées, 12 répétitions au plus.
+
+C'est le seul endroit où une charge est montrée aux autres. Le partage est donc **désactivé par
+défaut** : chacun l'active dans Ligue → « Mes meilleures charges, en fantôme », qui demande aussi
+le partage de l'entraînement. Le serveur répond avec le nom affiché seulement (`GET
+/api/social/ghosts?ex=…`, 30 exercices au plus), jamais un uid, et jamais ses propres charges à
+celui qui demande. L'appli fait un seul appel pour tous les exercices de l'écran et garde la
+réponse 5 minutes.
