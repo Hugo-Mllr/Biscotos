@@ -53,6 +53,33 @@ function doneRows(set) {
 }
 const epley = (w, r) => w * (1 + r / 30);
 
+const LB_PER_KG = 2.2046226218;
+
+/**
+ * The best set (highest estimated 1RM) of each exercise in `ids`, over every usable workout:
+ * { exerciseId: { kg, reps, e1rm, d } }, in kg whatever the profile logs in. Same rules as the
+ * records: work sets that are done, 12 reps or fewer, no load above E1RM_MAX.
+ */
+export function bestSetsOf(S, ids, today) {
+  const want = new Set(ids), out = {};
+  const toKg = S?.unit === 'lb' ? v => v / LB_PER_KG : v => v;
+  for (const w of usableWorkouts(S, today)) {
+    for (const e of Array.isArray(w.entries) ? w.entries : []) {
+      if (!e || !want.has(e.id)) continue;
+      for (const set of Array.isArray(e.sets) ? e.sets : []) {
+        for (const row of doneRows(set)) {
+          const kg = toKg(Number(row.w)), r = Number(row.r);
+          if (!(kg > 0) || !(r >= 1) || r > REP_CAP || !Number.isInteger(r)) continue;
+          const v = epley(kg, r);
+          if (v > E1RM_MAX || out[e.id]?.e1rm >= v) continue;
+          out[e.id] = { kg: Math.round(kg * 4) / 4, reps: r, e1rm: Math.round(v * 10) / 10, d: w.d };
+        }
+      }
+    }
+  }
+  return out;
+}
+
 /** Best estimated 1RM per exercise in one workout: { exerciseId: kg-or-lb }. */
 export function bestsOf(workout) {
   const out = {};

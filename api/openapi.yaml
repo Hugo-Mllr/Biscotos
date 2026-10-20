@@ -3561,6 +3561,20 @@ paths:
       responses:
         '200': { description: "`challenge` ({ week, kind: sessions|records|plan, goal, progress, members, done }) or null; `members` ({ member, name, me, badges: [{ id, tier }] })." }
         '404': { description: No such circle (or not a member). }
+  /api/social/ghosts:
+    get:
+      tags: [social]
+      operationId: getSocialGhosts
+      summary: Friends' best sets on the exercises of a workout
+      description: >-
+        For each exercise id asked, the best set (highest estimated 1RM, 12 reps or fewer, in kg)
+        of every circle mate who shares both training and lifts, strongest first, at most three.
+        Named by display name only. The caller's own lifts are never in it.
+      parameters:
+        - { name: ex, in: query, required: true, description: '1 to 30 exercise ids, comma-separated.', schema: { type: string, example: 'bench,squat' } }
+      responses:
+        '200': { description: "`ghosts`: { exerciseId: [{ name, kg, reps, e1rm, d }] }, only exercises someone has a ghost for." }
+        '400': { description: "`ex` missing, too many ids, or a malformed id." }
   /api/social/gym:
     get:
       tags: [social]
@@ -3788,6 +3802,7 @@ components:
         prs: { type: boolean, description: Records count visible (and counted). }
         nutrition: { type: boolean, description: Days on the calorie goal counted (never what was eaten). }
         notify: { type: boolean, description: Push notifications for reactions, friends' records and the Monday recap. }
+        lifts: { type: boolean, default: false, description: Show this profile's best set of each exercise to its circles as a ghost to beat (needs training too). Off by default. }
     Circle:
       type: object
       properties:

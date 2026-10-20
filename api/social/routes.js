@@ -15,13 +15,15 @@ import {
   LIMITS, readSocial, writeSocial, newId, newCode, cleanCode, cleanName, prefsOf, cleanPrefs,
   circlesOf, memberCircle, memberKeyer, removeMember, UnreadableError
 } from './store.js';
-import { weekPoints, streakOf, seasonOf, weekOf, shiftDay, usableWorkouts } from './score.js';
+import { weekPoints, streakOf, seasonOf, weekOf, shiftDay, usableWorkouts, bestSetsOf } from './score.js';
 import { memberEvents, reactionView, pruneReactions, recordsByWorkout, REACTIONS, FEED_MAX } from './feed.js';
 import { badgesOf, challengeOf } from './badges.js';
 import { reactionPush, recordsPush, recapPush } from './push-copy.js';
 
 const RECAP_HOUR = 9;   // Monday, from 9:00 on the server's clock
 const HERE_MS = 3 * 3600 * 1000;   // "at the gym" lapses by itself after three hours
+const GHOST_IDS = 30, GHOSTS_PER_EXERCISE = 3;
+const EX_ID = /^[A-Za-z0-9_.:-]{1,64}$/;
 
 export function createSocial({
   json, readBody, readSession, tooMany, createWindow, limitAddress, audit, dataDir, atomicWrite,
@@ -170,7 +172,7 @@ export function createSocial({
     'PUT /api/social/prefs': async (req, res) => {
       const user = signedIn(req, res, WRITES); if (!user) return;
       const p = cleanPrefs(await readBody(req));
-      if (!p) return json(res, 400, { error: 'expected booleans: training, prs, nutrition, notify' });
+      if (!p) return json(res, 400, { error: 'expected booleans: training, prs, nutrition, notify, lifts' });
       const doc = load(res); if (!doc) return;
       doc.prefs[user.id] = { ...prefsOf(doc, user.id), ...p };
       save(doc);
@@ -368,6 +370,30 @@ export function createSocial({
       if (typeof body?.in !== 'boolean') return json(res, 400, { error: 'in must be a boolean', field: 'in' });
       if (body.in) here.set(user.id, now().getTime()); else here.delete(user.id);
       json(res, 200, { mine: body.in });
+    },
+
+    // The ghosts of a workout: for each exercise asked (?ex=a,b,c), the best set of the friends who
+    // share their lifts, from every circle the caller is in, strongest first. Names only, no member
+    // key: a ghost belongs to no one circle. The caller's own lifts are never in it.
+    'GET /api/social/ghosts': async (req, res) => {
+      const user = signedIn(req, res, READS); if (!user) return;
+      const ids = [...new Set((new URL(req.url, 'http://x').searchParams.get('ex') || '').split(',').filter(Boolean))];
+      if (!ids.length || ids.length > GHOST_IDS || !ids.every(id => EX_ID.test(id))) {
+        return json(res, 400, { error: `ex: 1 to ${GHOST_IDS} exercise ids, comma-separated`, field: 'ex' });
+      }
+      const doc = load(res); if (!doc) return;
+      const day = today();
+      const friends = new Set();
+      for (const c of circlesOf(doc, user.id)) for (const m of c.members) if (m.uid !== user.id) friends.add(m.uid);
+      const ghosts = {};
+      for (const uid of friends) {
+        const prefs = prefsOf(doc, uid);
+        if (!prefs.training || !prefs.lifts) continue;
+        const bests = bestSetsOf(readState(uid) || { workouts: [] }, ids, day);
+        for (const [id, b] of Object.entries(bests)) (ghosts[id] ||= []).push({ name: nameOf(uid), ...b });
+      }
+      for (const id of Object.keys(ghosts)) ghosts[id] = ghosts[id].sort((a, b) => b.e1rm - a.e1rm).slice(0, GHOSTS_PER_EXERCISE);
+      json(res, 200, { ghosts });
     },
 
     // One reaction per person and event: an emoji sets it, the same one again or null takes it off.

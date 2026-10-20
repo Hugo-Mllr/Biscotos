@@ -267,6 +267,7 @@ function Toggles({ value, onChange }) {
     ['training', t('Points, workouts and streak'), t('Never the weights you lift.')],
     ['prs', t('Personal records'), t('How many, not which loads.')],
     ['nutrition', t('Days on my calorie goal'), t('Never what you eat.')],
+    ['lifts', t('My best lifts, as a ghost'), t('Friends see your best set of an exercise while they log it.')],
     ['notify', t('Notifications'), t('Reactions, friends’ records and the Monday recap.')],
   ]
   return <div className="bx-toggles">
@@ -282,7 +283,7 @@ function StartSheet({ prefs, onClose, onDone }) {
   const [mode, setMode] = useState('join')
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
-  const [share, setShare] = useState(prefs || { training: true, prs: true, nutrition: false, notify: true })
+  const [share, setShare] = useState(prefs || { training: true, prs: true, nutrition: false, notify: true, lifts: false })
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState(null)
   const submit = async e => {

@@ -1376,6 +1376,7 @@ body.chips-dragging *{cursor:inherit}
    looking like the plain line it replaced, with a small icon to say it can be tapped. */
 .refline{width:100%;display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;padding:0;text-align:start}
 .refline svg{flex:none;margin-top:2px;font-size:12px}
+.ghostline{margin-bottom:4px}
 /* an exercise kept out of progression for this session, with its undo */
 .noprog{display:flex;align-items:center;gap:7px;margin:0 0 6px;font-size:13px;line-height:1.38;color:var(--orange)}
 .noprog svg{flex:none}
