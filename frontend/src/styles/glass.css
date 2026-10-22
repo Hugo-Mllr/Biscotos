@@ -1,0 +1,125 @@
+/* ============================================================================
+   Biscotos — « Verre » (frosted glass)
+   ----------------------------------------------------------------------------
+   One layer over index.css and biscotos.css, loaded last. It changes three things and nothing
+   else, so every screen follows without being touched:
+
+   1. THE BACKDROP. The page is transparent over three soft glows drawn from the accent (the
+      accent, then two hues turned either way round the colour wheel). They come from --acc, so
+      the colour chosen in Settings → Appearance (and the light or dark theme) recolours the whole
+      app; a custom accent works as well as a preset.
+   2. THE FILLS. --surface, --surface-2, --surface-3 and --bg-el are redefined on <body> as
+      translucent whites, so everything already built on them turns into glass. They are set on
+      <body>, below the tinted background's inline values on <html> (lib/tint.js), so the tint
+      cannot bring the opaque fills back. Cards, sheets and the tab bar add the blur and a hairline.
+   3. THE SHAPES. Rounder corners, and a tab bar that floats above the bottom edge on a phone
+      (a sidebar from 1000px up, as before).
+
+   Where the phone cannot blur, or its owner turned transparency down, the fills become opaque
+   again at the bottom of this file.
+   ========================================================================== */
+
+:root {
+  --glow-1: color-mix(in srgb, var(--acc) 52%, transparent);
+  --glow-2: color-mix(in srgb, var(--blue) 40%, transparent);
+  --glow-3: color-mix(in srgb, var(--pink) 28%, transparent);
+  --glass-line: rgba(255,255,255,.14);
+  --glass-shadow: 0 10px 30px -16px rgba(0,0,0,.7);
+  --glass-blur: blur(22px) saturate(160%);
+  --glass-blur-strong: blur(32px) saturate(170%);
+}
+/* Where the browser can turn the accent's hue, the two other glows follow it round the wheel. */
+@supports (color: hsl(from red h s l)) {
+  :root {
+    --glow-2: hsl(from var(--acc) calc(h + 75) s l / .42);
+    --glow-3: hsl(from var(--acc) calc(h - 70) s l / .30);
+  }
+  :root[data-theme="light"] {
+    --glow-2: hsl(from var(--acc) calc(h + 75) s l / .30);
+    --glow-3: hsl(from var(--acc) calc(h - 70) s l / .22);
+  }
+}
+:root[data-theme="light"] {
+  --glow-1: color-mix(in srgb, var(--acc) 36%, transparent);
+  --glow-2: color-mix(in srgb, var(--blue) 26%, transparent);
+  --glow-3: color-mix(in srgb, var(--pink) 20%, transparent);
+  --glass-line: rgba(255,255,255,.92);
+  --glass-shadow: 0 12px 30px -20px color-mix(in srgb, var(--acc-2) 70%, transparent);
+}
+
+html { background: var(--bg) }
+body {
+  background: transparent;
+  /* the fills: translucent whites over the glows (dark), frosted white (light) */
+  --surface:   rgba(255,255,255,.07);
+  --surface-2: rgba(255,255,255,.11);
+  --surface-3: rgba(255,255,255,.16);
+  --bg-el:     rgba(24,18,38,.72);
+  /* the corners */
+  --r-sm: 10px; --r: 16px; --r-lg: 22px; --r-xl: 28px; --r-card: 24px;
+  --bx-r: 18px; --bx-r-lg: 26px;
+}
+:root[data-theme="light"] body {
+  --surface:   rgba(255,255,255,.62);
+  --surface-2: rgba(255,255,255,.80);
+  --surface-3: rgba(110,100,150,.14);
+  --bg-el:     rgba(251,249,255,.80);
+}
+/* The glows sit behind everything, fixed to the screen (a fixed background-attachment is
+   unreliable on iOS, a fixed layer is not). */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60% 34% at 12% 6%,  var(--glow-1), transparent 72%),
+    radial-gradient(55% 34% at 98% 28%, var(--glow-2), transparent 72%),
+    radial-gradient(60% 40% at 22% 74%, var(--glow-3), transparent 72%);
+}
+
+/* ------------------------------------------------------------------ glass -- */
+.card, .tile, .list, .menu-group.grouped .menu-list, .bx-card, .sect-b {
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 0 0 1px var(--glass-line), var(--glass-shadow);
+}
+.sheet, .center {
+  -webkit-backdrop-filter: var(--glass-blur-strong); backdrop-filter: var(--glass-blur-strong);
+  box-shadow: inset 0 0 0 1px var(--glass-line), 0 -10px 40px -18px rgba(0,0,0,.6);
+}
+.center { box-shadow: inset 0 0 0 1px var(--glass-line), 0 20px 60px -12px rgba(0,0,0,.5) }
+:root[data-theme="light"] .sheet { background: var(--bg-el) }
+:root[data-theme="light"] .center { background: var(--bg-el) }
+.picker-search, :root[data-theme="light"] .picker-search { background: var(--bg-el) }
+.hdr h1 { font-weight: 700 }
+
+/* ------------------------------------------------------------- tab bar -- */
+#tabbar {
+  background: rgba(24,18,38,.72);
+  -webkit-backdrop-filter: var(--glass-blur-strong); backdrop-filter: var(--glass-blur-strong);
+  border-top: 0;
+  box-shadow: inset 0 0 0 1px var(--glass-line), 0 14px 34px -14px rgba(0,0,0,.7);
+}
+:root[data-theme="light"] #tabbar { background: rgba(255,255,255,.78) }
+@media (max-width: 999.98px) {
+  /* floating: clear of the edges, rounded, a little above the home indicator */
+  #tabbar {
+    inset-inline: 10px; bottom: calc(6px + var(--sab) * .55);
+    padding: 7px 8px 8px; border-radius: 28px;
+  }
+  #app { padding-bottom: calc(96px + var(--sab)) }
+}
+@media (min-width: 1000px) {
+  #tabbar { border-radius: 0; box-shadow: inset -1px 0 0 var(--glass-line); background: var(--bg-el) }
+}
+
+/* -------------------------------------------------------------- fall back -- */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  body { --surface: color-mix(in srgb, var(--bg) 70%, white 12%); --bg-el: var(--bg) }
+  :root[data-theme="light"] body { --surface: #fff; --bg-el: #fbf9ff }
+  #tabbar { background: var(--bg-el) }
+}
+@media (prefers-reduced-transparency: reduce) {
+  body { --surface: color-mix(in srgb, var(--bg) 70%, white 12%); --surface-2: color-mix(in srgb, var(--bg) 60%, white 18%);
+    --surface-3: color-mix(in srgb, var(--bg) 50%, white 24%); --bg-el: color-mix(in srgb, var(--bg) 85%, white 8%) }
+  :root[data-theme="light"] body { --surface: #fff; --surface-2: #f1edf8; --surface-3: #e6e0f1; --bg-el: #fbf9ff }
+  #tabbar { background: var(--bg-el) }
+  body::before { opacity: .4 }
+}

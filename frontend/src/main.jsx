@@ -8,6 +8,7 @@ import { startNativeKeyboard } from './lib/native-keyboard.js'
 import './index.css'
 // Biscotos design layer: --bx-* tokens and .bx-scoped rules only (docs/DESIGN.md).
 import './styles/biscotos.css'
+import './styles/glass.css'
 
 // App.jsx restores per-route scroll itself; the browser's own attempt races it.
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
