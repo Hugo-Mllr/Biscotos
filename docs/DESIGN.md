@@ -25,17 +25,31 @@ qui compte : le score du jour, l'action principale, la progression. Un second si
 - **Mobile-first, en salle.** Cibles ≥ 44 px, boutons principaux 48 px pleine largeur, contrastes
   AA minimum, lisible en plein soleil (mode clair « papier chaud »).
 
-### Pourquoi pas un look « template IA »
+### Le style « Verre » (octobre 2026)
 
-On évite les signatures habituelles : violet→bleu en dégradé, glassmorphism, coins arrondis
-partout identiques, emoji en guise d'icônes, ombres douces sur fond blanc. À la place : contraste
-fort, un accent unique et assumé, typographie condensée de tableau de score, grille de 4 px stricte.
+Le propriétaire a choisi un style verre dépoli pour toute l'appli, à la place du gris neutre
+d'openGym. Il vit dans une seule feuille, `frontend/src/styles/glass.css`, chargée en dernier, et
+ne touche aucun écran :
+
+- **Le fond** est transparent sur trois halos fixes tirés de `--acc` (l'accent, puis deux teintes
+  tournées de part et d'autre sur le cercle chromatique). Changer la couleur ou le thème clair/sombre
+  dans les réglages recolore donc tout, accent personnalisé compris.
+- **Les fills** (`--surface`, `--surface-2`, `--surface-3`, `--bg-el`) sont redéfinis sur `<body>` en
+  blancs translucides : tout ce qui est construit dessus devient du verre. Ils sont posés sur `<body>`,
+  sous les valeurs en ligne du fond teinté (`lib/tint.js`) posées sur `<html>`, que la teinte ne peut
+  donc pas rendre opaques. Cartes, feuilles et barre du bas ajoutent le flou et un filet clair.
+- **Les formes** : coins plus ronds, barre du bas flottante sur téléphone (barre latérale dès 1000 px).
+- **Repli** : sans `backdrop-filter`, ou avec « réduire la transparence », les fills redeviennent opaques.
+
+À savoir : le flou est lu par WebKit et Chrome ; le Chromium sans GPU des captures de test n'applique
+pas les grands rayons (les captures de la PR utilisent 12 px).
 
 ## Fichiers
 
 | Fichier | Rôle |
 |---|---|
 | `frontend/src/styles/biscotos.css` | Tokens `--bx-*`, thèmes sombre/clair, keyframes, primitives `.bx-*` |
+| `frontend/src/styles/glass.css` | Le style « Verre » : halos, fills translucides, flou, barre du bas flottante |
 | `frontend/src/lib/motion.js` (+ test) | Durées, courbes, `prefersReducedMotion()`, `tween`, `bezier`, `ringOffset` |
 | `frontend/src/components/bx/index.jsx` (+ test) | `CountUp` / `useCountUp`, `Ring`, `Bar`, `Sheet` |
 
