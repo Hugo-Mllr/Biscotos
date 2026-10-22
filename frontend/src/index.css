@@ -1377,6 +1377,19 @@ body.chips-dragging *{cursor:inherit}
 .refline{width:100%;display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;padding:0;text-align:start}
 .refline svg{flex:none;margin-top:2px;font-size:12px}
 .ghostline{margin-bottom:4px}
+/* Small celebrations: a record's confetti (components/Confetti.jsx), the finish screen, the badges.
+   The global reduced-motion rule above stops them all; Confetti also checks it, as its pieces would
+   otherwise sit still on the screen. */
+@keyframes fin-pop{0%{transform:scale(.4) rotate(-14deg);opacity:0}55%{transform:scale(1.2) rotate(5deg);opacity:1}100%{transform:none;opacity:1}}
+@keyframes fin-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes confetti-fall{0%{transform:translate3d(0,0,0) rotate(0);opacity:1}80%{opacity:1}100%{transform:translate3d(var(--dx),var(--dy),0) rotate(var(--rot));opacity:0}}
+@keyframes badge-bounce{0%{transform:scale(.4);opacity:0}45%{transform:scale(1.22);opacity:1}70%{transform:scale(.93)}100%{transform:none}}
+.fin-pop{animation:fin-pop .7s cubic-bezier(.34,1.56,.64,1) both}
+.fin-rise{animation:fin-rise .45s ease-out both}
+.confetti{position:fixed;inset:0;z-index:1000;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:22%;left:50%;display:block;animation:confetti-fall 1.8s cubic-bezier(.2,.7,.4,1) both}
+.bx-badge{animation:badge-bounce .65s cubic-bezier(.34,1.56,.64,1) both}
+.bx-badge:active{transform:scale(.92);transition:transform .1s}
 .wrapped-card .l{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:13px}
 .wrapped-v{font-size:34px;font-weight:800;line-height:1.15;margin:4px 0;text-transform:capitalize}
 .wrapped-top{margin:8px 0 0;padding:0;list-style:none}
