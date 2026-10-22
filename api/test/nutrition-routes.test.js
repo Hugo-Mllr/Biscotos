@@ -297,3 +297,17 @@ test('nothing of the food log ever reaches the server log', async () => {
   await call('POST', '/api/nutrition/log', as(A), { ...entry, grams: -1, name: 'Canary-Food-7f3b' });
   assert.ok(!h.log.includes('Canary-Food'), 'a food name was logged');
 });
+
+test('the body profile: partial updates keep the rest, bad values are 400', async () => {
+  await call('PUT', '/api/nutrition/settings', as(A), { profile: { heightCm: 178 } });
+  let r = await call('PUT', '/api/nutrition/settings', as(A), { profile: { sex: 'm', birthYear: 1999, goalMode: 'bulk', pace: 'gentle' } });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.body.profile, { heightCm: 178, sex: 'm', birthYear: 1999, goalMode: 'bulk', pace: 'gentle' });
+  r = await call('PUT', '/api/nutrition/settings', as(A), { profile: { goalMode: null, calibrate: true } });
+  assert.deepEqual(r.body.profile, { heightCm: 178, sex: 'm', birthYear: 1999, goalMode: null, pace: 'gentle', calibrate: true });
+  const kept = await call('GET', '/api/nutrition' + RANGE, as(A));
+  assert.equal(kept.body.profile.birthYear, 1999);
+  for (const bad of [{ sex: 'robot' }, { goalMode: 'yolo' }, { birthYear: 1700 }, { bodyFatPct: 2 }, { calibrate: 'sure' }]) {
+    assert.equal((await call('PUT', '/api/nutrition/settings', as(A), { profile: bad })).status, 400, JSON.stringify(bad));
+  }
+});

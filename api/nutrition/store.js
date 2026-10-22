@@ -162,12 +162,48 @@ export function validateGoals(input) {
   return Object.keys(clean).length ? clean : null;
 }
 
-export function validateProfile(input) {
+// The body profile behind the calculated daily goal (frontend/src/lib/body.js). Everything is
+// optional and only a key that is present is changed: a null clears it, an absent key stays.
+export const SEXES = Object.freeze(['m', 'f']);
+export const ACTIVITY_LEVELS = Object.freeze(['low', 'mid', 'high']);
+export const GOAL_MODES = Object.freeze(['manual', 'cut', 'maintain', 'bulk', 'recomp']);
+export const PACES = Object.freeze(['gentle', 'steady', 'fast']);
+
+function pick(v, field, list) {
+  if (v === null || v === '') return null;
+  if (!list.includes(v)) fail(field, `one of ${list.join(', ')}`);
+  return v;
+}
+
+export function validateProfile(input, { year = new Date().getFullYear() } = {}) {
   if (!isObj(input)) fail('profile', 'not an object');
-  return {
-    heightCm: input.heightCm === null ? null
-      : num(input.heightCm, 'profile.heightCm', { min: LIMITS.HEIGHT_MIN, max: LIMITS.HEIGHT_MAX, optional: true }) ?? null,
-  };
+  const out = {};
+  const has = k => k in input && input[k] !== undefined;
+  if (has('heightCm')) {
+    out.heightCm = input.heightCm === null ? null
+      : num(input.heightCm, 'profile.heightCm', { min: LIMITS.HEIGHT_MIN, max: LIMITS.HEIGHT_MAX, optional: true }) ?? null;
+  }
+  if (has('birthYear')) {
+    out.birthYear = input.birthYear === null ? null
+      : num(input.birthYear, 'profile.birthYear', { min: year - 110, max: year - 10, optional: true, decimals: 0 }) ?? null;
+  }
+  if (has('bodyFatPct')) {
+    out.bodyFatPct = input.bodyFatPct === null ? null
+      : num(input.bodyFatPct, 'profile.bodyFatPct', { min: 3, max: 60, optional: true }) ?? null;
+  }
+  if (has('sex')) out.sex = pick(input.sex, 'profile.sex', SEXES);
+  if (has('activity')) out.activity = pick(input.activity, 'profile.activity', ACTIVITY_LEVELS);
+  if (has('goalMode')) out.goalMode = pick(input.goalMode, 'profile.goalMode', GOAL_MODES);
+  if (has('pace')) out.pace = pick(input.pace, 'profile.pace', PACES);
+  if (has('calibration')) {
+    out.calibration = input.calibration === null ? null
+      : num(input.calibration, 'profile.calibration', { min: -500, max: 500, optional: true, decimals: 0 }) ?? null;
+  }
+  if (has('calibrate')) {
+    if (input.calibrate !== null && typeof input.calibrate !== 'boolean') fail('profile.calibrate', 'a boolean');
+    out.calibrate = input.calibrate === true;
+  }
+  return out;
 }
 
 function dropUndefined(o) {

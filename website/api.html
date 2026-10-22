@@ -2102,7 +2102,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The profile's nutrition data for the range.<span class="r-sig">{ profile: object, goals: <a href="#schema-NutritionGoals">NutritionGoals</a> | null, foods: <a href="#schema-Food">Food</a>[], log: <a href="#schema-FoodLogEntry">FoodLogEntry</a>[], from: string <span class="p-hint">(date)</span>, to: string <span class="p-hint">(date)</span> }</span></span>
+    <span class="p-desc">The profile's nutrition data for the range.<span class="r-sig">{ profile: <a href="#schema-NutritionProfile">NutritionProfile</a>, goals: <a href="#schema-NutritionGoals">NutritionGoals</a> | null, foods: <a href="#schema-Food">Food</a>[], log: <a href="#schema-FoodLogEntry">FoodLogEntry</a>[], from: string <span class="p-hint">(date)</span>, to: string <span class="p-hint">(date)</span> }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
@@ -2125,10 +2125,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="m put">PUT</span>
     <span class="ep-path"><code>/api/nutrition/settings</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum">Set daily goals and/or height</span>
+    <span class="ep-sum">Set daily goals and/or the body profile</span>
   </summary>
   <div class="ep-body">
-<p><code>goals: null</code> clears the goals. At least one of <code>goals</code>, <code>profile</code> is required.</p>
+<p><code>goals: null</code> clears the goals. At least one of <code>goals</code>, <code>profile</code> is required. In <code>profile</code> only the keys sent change; <code>null</code> clears one.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -2139,12 +2139,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow">
     <span class="p-name">profile</span>
-    <span class="p-type">object</span>
-    <span class="p-desc"></span>
-  </div>
-  <div class="prow">
-    <span class="p-name">profile.heightCm</span>
-    <span class="p-type">number | null <span class="p-hint">(50&ndash;260)</span></span>
+    <span class="p-type"><a href="#schema-NutritionProfile">NutritionProfile</a></span>
     <span class="p-desc"></span>
   </div>
 </div>
@@ -4950,6 +4945,64 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">salt</span>
     <span class="p-type">number <span class="p-hint">(0&ndash;100)</span></span>
     <span class="p-desc"></span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-NutritionProfile">
+  <summary>
+    <span class="sch-name"><code>NutritionProfile</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The body profile behind the calculated daily goal (the app computes it; the server only stores and validates).</span>
+  </summary>
+  <div class="ep-body">
+<p>Every key is optional and <code>null</code> when unset.</p>
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">heightCm</span>
+    <span class="p-type">number | null <span class="p-hint">(50&ndash;260)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">birthYear</span>
+    <span class="p-type">integer | null</span>
+    <span class="p-desc">Between 110 and 10 years ago.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">sex</span>
+    <span class="p-type">&quot;m&quot; | &quot;f&quot; | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">activity</span>
+    <span class="p-type">&quot;low&quot; | &quot;mid&quot; | &quot;high&quot; | null</span>
+    <span class="p-desc">Daily life outside the gym.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">goalMode</span>
+    <span class="p-type">&quot;manual&quot; | &quot;cut&quot; | &quot;maintain&quot; | &quot;bulk&quot; | &quot;recomp&quot; | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pace</span>
+    <span class="p-type">&quot;gentle&quot; | &quot;steady&quot; | &quot;fast&quot; | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bodyFatPct</span>
+    <span class="p-type">number | null <span class="p-hint">(3&ndash;60)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">calibrate</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Shift the estimate toward what the weight trend shows.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">calibration</span>
+    <span class="p-type">integer | null <span class="p-hint">(-500&ndash;500)</span></span>
+    <span class="p-desc">The shift</span>
   </div>
 </div>
   </div>

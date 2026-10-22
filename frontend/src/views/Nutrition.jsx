@@ -7,7 +7,8 @@ import { useStore } from '../store/useStore.js'
 import { t, dateLocale } from '../lib/i18n.js'
 import { getLang } from '../lib/i18n-core.js'
 import { todayISO, fmtNum } from '../lib/format.js'
-import { lastBW } from '../lib/history.js'
+import { lastBW, workoutDay } from '../lib/history.js'
+import { planFor, healthOf } from '../lib/body.js'
 import { MOBILE } from '../lib/mobile.js'
 import {
   MEALS, MACROS, macrosOf, totalsOf, byMeal, progress, mealForHour, shiftDay, weekEnding, kcalByDay,
@@ -66,6 +67,14 @@ export default function Nutrition() {
     } catch (e) { setError(e) }
   }, [user, days])
   useEffect(() => { reload() }, [reload])
+  // What the Apple Health Shortcut sent for the day (steps, active energy): it corrects the day's cost.
+  const [health, setHealth] = useState({})
+  useEffect(() => {
+    if (!user) return
+    let live = true
+    napi.loadHealthSamples(day, day).then(s => { if (live) setHealth(healthOf(s)) }).catch(() => { if (live) setHealth({}) })
+    return () => { live = false }
+  }, [user, day])
 
   if (!user) {
     return <div className="bx bx-page"><div className="bx-wrap">
@@ -80,13 +89,17 @@ export default function Nutrition() {
   const log = data?.log || []
   const todays = log.filter(e => e.d === day)
   const totals = totalsOf(todays)
-  const goals = data?.goals || {}
+  // With a goal chosen in Body & goals, the day's goal is calculated from what the day costs (lib/body.js);
+  // "Manual" keeps the goals typed by hand.
+  const last = lastBW(S)
+  const weightKg = last ? toKg(last.w, S.unit) : null
+  const plan = planFor({ profile: data?.profile || {}, weightKg, unit: S.unit, workouts: S.workouts.filter(w => workoutDay(w) === day), health, year: Number(day.slice(0, 4)) })
+  const auto = !!plan.target && !!data?.profile?.goalMode && data.profile.goalMode !== 'manual'
+  const goals = auto ? { kcal: plan.target.kcal, ...(plan.macros || {}) } : data?.goals || {}
   const kcalP = progress(totals.kcal, goals.kcal)
   const meals = byMeal(log, day)
   const week = kcalByDay(log, days)
-  const last = lastBW(S)
   const heightCm = data?.profile?.heightCm ?? null
-  const weightKg = last ? toKg(last.w, S.unit) : null
   const bmiV = bmi(heightCm, weightKg)
 
   const onLogged = entry => {
@@ -146,7 +159,8 @@ export default function Nutrition() {
                 <Bar fraction={p.fraction ?? (totals[m] > 0 ? 1 : 0)} color={MACRO_COLOR[m]} label={MACRO_LABEL[m]()} />
               </div>
             })}
-            {!data?.goals && <button className="bx-chip bx-tap" onClick={() => setSheet('goals')}>{t('Set daily goals')}</button>}
+            {auto && <button className="bx-chip bx-tap" onClick={() => nav('/body')}>{t('Goal for today')} · {t('{0} kcal burnt', fmtNum(plan.tdee))}</button>}
+            {!data?.goals && !auto && <button className="bx-chip bx-tap" onClick={() => setSheet('goals')}>{t('Set daily goals')}</button>}
           </div>
         </div>
       </section>
@@ -214,6 +228,7 @@ export default function Nutrition() {
         </p>}
         <div style={{ display: 'flex', gap: 'var(--bx-s2)', marginTop: 'var(--bx-s4)', flexWrap: 'wrap' }}>
           {!heightCm && <button className="bx-chip bx-tap" onClick={() => setSheet('goals')}>{t('Add your height')}</button>}
+          <button className="bx-chip bx-tap" onClick={() => nav('/body')}>{t('Body & goals')} <Icon name="chevronRight" /></button>
           <button className="bx-chip bx-tap" onClick={() => nav('/measurements')}>{t('Body measurements')} <Icon name="chevronRight" /></button>
           <button className="bx-chip bx-tap" onClick={() => setSheet('health')}><Icon name="heart" /> {t('Apple Health')}</button>
         </div>

@@ -83,6 +83,20 @@ test('goals and profile', () => {
   assert.deepEqual(validateProfile({ heightCm: 178.25 }), { heightCm: 178.3 });
   assert.deepEqual(validateProfile({ heightCm: null }), { heightCm: null });
   throwsOn(() => validateProfile({ heightCm: 20 }), 'profile.heightCm');
+  // the body profile: only the keys sent, nulls clear, values are checked
+  assert.deepEqual(validateProfile({}), {});
+  assert.deepEqual(
+    validateProfile({ birthYear: '1999', sex: 'f', activity: 'mid', goalMode: 'cut', pace: 'steady', bodyFatPct: 18.26, calibrate: true }, { year: 2026 }),
+    { birthYear: 1999, sex: 'f', activity: 'mid', goalMode: 'cut', pace: 'steady', bodyFatPct: 18.3, calibrate: true });
+  assert.deepEqual(validateProfile({ sex: null, goalMode: '', calibrate: null }), { sex: null, goalMode: null, calibrate: false });
+  throwsOn(() => validateProfile({ sex: 'x' }), 'profile.sex');
+  throwsOn(() => validateProfile({ goalMode: 'bulking' }), 'profile.goalMode');
+  throwsOn(() => validateProfile({ birthYear: 1850 }, { year: 2026 }), 'profile.birthYear');
+  throwsOn(() => validateProfile({ birthYear: 2020 }, { year: 2026 }), 'profile.birthYear');
+  throwsOn(() => validateProfile({ bodyFatPct: 90 }), 'profile.bodyFatPct');
+  throwsOn(() => validateProfile({ calibrate: 'yes' }), 'profile.calibrate');
+  assert.deepEqual(validateProfile({ calibration: -120.4 }), { calibration: -120 });
+  throwsOn(() => validateProfile({ calibration: 900 }), 'profile.calibration');
 });
 
 test('the file: per profile, uid sanitised, damaged file never treated as empty', () => {

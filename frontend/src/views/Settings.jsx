@@ -66,6 +66,7 @@ export function SettingsRoute() {
   const ctx = { user: useStore(s => s.user), mobile: MOBILE }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
+  if (page === 'body') return <Navigate to="/body" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} />
 }
 
@@ -418,6 +419,7 @@ export default function Settings({ page = null, find = null, via = null }) {
 
   const open = id => {
     if (id === 'coach') { nav('/coach/setup'); return }
+    if (id === 'body') { nav('/body'); return }
     nav('/settings/' + id)
   }
   // Back the way you came when there is a way (the browser's back, Android's back, this button
