@@ -403,7 +403,7 @@ function Challenge({ circle }) {
       {data.members.some(m => m.badges.length) && <>
         <h3 className="bx-label" style={{ marginTop: 'var(--bx-s3)' }}>{t('Badges')}</h3>
         <ul className="bx-list">{data.members.filter(m => m.badges.length).map(m => <li key={m.member} className="bx-item" style={{ flexWrap: 'wrap', gap: 'var(--bx-s2)' }}>
-          <span>{m.me ? t('You') : m.name}</span> {m.badges.map(b => <span key={b.id} className="bx-chip"><Icon name={b.id === 'streak' ? 'flame' : b.id === 'records' ? 'trophy' : 'medal'} /> {badgeLabel(b)}</span>)}
+          <span>{m.me ? t('You') : m.name}</span> {m.badges.map((b, i) => <span key={b.id} className="bx-chip bx-badge" style={{ animationDelay: 150 + i * 120 + 'ms' }}><Icon name={b.id === 'streak' ? 'flame' : b.id === 'records' ? 'trophy' : 'medal'} /> {badgeLabel(b)}</span>)}
         </li>)}</ul>
       </>}
     </>}

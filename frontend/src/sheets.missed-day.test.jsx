@@ -181,6 +181,9 @@ describe('badges on a workout logged into the past', () => {
     expect(byDay['2026-09-15']).not.toContain(BENCH)   // 52.5 no longer leads what came before it
     expect(byDay['2026-09-11']).toContain(BENCH)
     // The summary names it.
-    expect(mountTopSheet().textContent).toContain('New PR:')
+    const summary = mountTopSheet()
+    expect(summary.textContent).toContain('New PR:')
+    expect(summary.querySelector('.confetti')).not.toBe(null)   // a record is celebrated
+    expect(summary.querySelectorAll('.tile.fin-rise')).toHaveLength(4)
   })
 })
