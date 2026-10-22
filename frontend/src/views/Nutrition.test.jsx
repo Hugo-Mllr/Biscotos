@@ -40,6 +40,7 @@ beforeEach(() => {
   useStore.setState({ S: { ...JSON.parse(JSON.stringify(DEF)), unit: 'kg', bodyweight: [{ d: today, w: 75, t: 1 }] }, user: { id: 'u1', name: 'Alex Demo' } })
   Object.values(api).forEach(f => f.mockReset?.())
   api.loadHealthSamples.mockResolvedValue([])
+  api.saveSettings.mockResolvedValue({})
   api.loadNutrition.mockResolvedValue({
     profile: { heightCm: 178 }, goals: { kcal: 2000, protein: 150 }, foods: [],
     log: [{ id: 'e1', d: today, meal: 'breakfast', grams: 100, name: 'Flocons démo', per100: oats }]
@@ -165,9 +166,12 @@ describe('Nutrition', () => {
     expect(host.textContent).toContain('1,870')      // 1,795 × 1.35 − 550
     expect(host.textContent).toContain('burnt')
     expect(host.textContent).not.toContain('2,000')
+    expect(api.saveSettings).toHaveBeenCalledWith({ profile: { goalToday: expect.objectContaining({ d: today, kcal: 1870 }) } })
     api.loadNutrition.mockResolvedValue({ profile: { ...profile, goalMode: 'manual' }, goals: { kcal: 2000, protein: 150 }, foods: [], log: [] })
     act(() => root.unmount()); root = createRoot(host)
+    api.saveSettings.mockClear()
     act(() => root.render(<Nutrition />)); await flush()
     expect(host.textContent).toContain('2,000')
+    expect(api.saveSettings).not.toHaveBeenCalled()   // a typed goal is nobody's to keep
   })
 })

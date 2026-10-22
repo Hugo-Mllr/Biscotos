@@ -55,28 +55,33 @@ export function writeIntegrations(dataDir, doc, atomicWrite) {
   atomicWrite(integrationsFile(dataDir), JSON.stringify(doc), 0o600);
 }
 
-/** The live webhook a presented token belongs to, or null. Constant-time on the hash. */
-export function findByToken(doc, token) {
+// What a token may do: write Apple Health samples, or read the iPhone widget's summary. A token of
+// one kind is refused by the other's route (older rows have no kind: they are Apple Health ones).
+export const HOOK_KINDS = Object.freeze(['apple-health', 'widget']);
+export const kindOf = w => (HOOK_KINDS.includes(w?.kind) ? w.kind : 'apple-health');
+
+/** The live webhook of `kind` a presented token belongs to, or null. Constant-time on the hash. */
+export function findByToken(doc, token, kind = 'apple-health') {
   if (!looksLikeToken(token)) return null;
   const want = Buffer.from(hashToken(token), 'hex');
   let hit = null;
   for (const w of doc.webhooks) {
     if (typeof w.tokenHash !== 'string' || !/^[0-9a-f]{64}$/.test(w.tokenHash)) continue;
     // Every row compared, whichever matches: the time taken says nothing about which one did.
-    if (crypto.timingSafeEqual(want, Buffer.from(w.tokenHash, 'hex')) && !w.revokedAt) hit = w;
+    if (crypto.timingSafeEqual(want, Buffer.from(w.tokenHash, 'hex')) && !w.revokedAt && kindOf(w) === kind) hit = w;
   }
   return hit;
 }
 
 /** A webhook as its owner sees it: never the hash. */
-export const publicHook = w => ({ id: w.id, label: w.label, kind: w.kind, createdAt: w.createdAt, lastUsedAt: w.lastUsedAt || null, revokedAt: w.revokedAt || null });
+export const publicHook = w => ({ id: w.id, label: w.label, kind: kindOf(w), createdAt: w.createdAt, lastUsedAt: w.lastUsedAt || null, revokedAt: w.revokedAt || null });
 
-export function cleanLabel(v) {
-  if (v == null || v === '') return 'Apple Health';
+export function cleanLabel(v, fallback = 'Apple Health') {
+  if (v == null || v === '') return fallback;
   if (typeof v !== 'string') return null;
   // eslint-disable-next-line no-control-regex
   const s = v.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, LABEL_MAX);
-  return s || 'Apple Health';
+  return s || fallback;
 }
 
 /* --------------------------------------------------------------- samples -- */

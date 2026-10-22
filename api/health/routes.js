@@ -12,7 +12,7 @@
  * minute per address, then 30 a minute per token, 256 KiB and 500 samples per request.
  * Nothing about a sample — not its type, not its value — is ever logged. */
 import {
-  TOKENS_MAX, BATCH_MAX, mintToken, hashToken, readIntegrations, writeIntegrations, findByToken,
+  TOKENS_MAX, BATCH_MAX, HOOK_KINDS, mintToken, hashToken, readIntegrations, writeIntegrations, findByToken,
   publicHook, cleanLabel, validateSample, mergeSamples, readHealth, writeHealth
 } from './store.js';
 import crypto from 'node:crypto';
@@ -45,14 +45,16 @@ export function healthRoutes({ json, readBody, readSession, tooMany, createWindo
       const user = signedIn(req, res); if (!user) return;
       const wait = TOKEN_WRITES.take(user.id); if (wait) return tooMany(res, wait);
       const body = await readBody(req);
-      const label = cleanLabel(body?.label);
+      const kind = body?.kind == null ? 'apple-health' : body.kind;
+      if (!HOOK_KINDS.includes(kind)) return json(res, 400, { error: `kind: ${HOOK_KINDS.join(', ')}`, field: 'kind' });
+      const label = cleanLabel(body?.label, kind === 'widget' ? 'Widget' : 'Apple Health');
       if (label == null) return json(res, 400, { error: 'label must be a string', field: 'label' });
       let doc; try { doc = readIntegrations(dataDir); } catch { return unreadable(res); }
       if (doc.webhooks.filter(w => w.uid === user.id && !w.revokedAt).length >= TOKENS_MAX) {
         return json(res, 409, { error: `at most ${TOKENS_MAX} live tokens; revoke one first`, code: 'full' });
       }
       const token = mintToken();
-      const hook = { id: crypto.randomBytes(9).toString('base64url'), uid: user.id, kind: 'apple-health', label, tokenHash: hashToken(token), createdAt: Date.now() };
+      const hook = { id: crypto.randomBytes(9).toString('base64url'), uid: user.id, kind, label, tokenHash: hashToken(token), createdAt: Date.now() };
       doc.webhooks.push(hook);
       writeIntegrations(dataDir, doc, atomicWrite);
       audit(req, 'hook.token.create', { user, msg: label });
@@ -89,7 +91,7 @@ export function healthRoutes({ json, readBody, readSession, tooMany, createWindo
       const auth = String(req.headers.authorization || '');
       const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
       let integ; try { integ = readIntegrations(dataDir); } catch { return unreadable(res); }
-      const hook = findByToken(integ, token);
+      const hook = findByToken(integ, token, 'apple-health');
       // One answer for a missing, malformed, unknown or revoked token.
       if (!hook) return json(res, 401, { error: 'invalid webhook token' }, { 'WWW-Authenticate': 'Bearer' });
       const tokWait = HOOK_TOKEN.take(hook.id);

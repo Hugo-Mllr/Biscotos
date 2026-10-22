@@ -3207,7 +3207,11 @@ paths:
       requestBody:
         content:
           application/json:
-            schema: { type: object, properties: { label: { type: string, maxLength: 40 } } }
+            schema:
+              type: object
+              properties:
+                label: { type: string, maxLength: 40 }
+                kind: { type: string, enum: [apple-health, widget], default: apple-health, description: What the key may do. A widget key only reads `GET /api/hooks/widget`. }
       responses:
         '201':
           description: The new token, once.
@@ -3218,7 +3222,7 @@ paths:
                 properties:
                   hook: { $ref: '#/components/schemas/HookToken' }
                   token: { type: string, pattern: '^bxh_[A-Za-z0-9_-]{43}$' }
-        '400': { description: label is not a string. }
+        '400': { description: label is not a string, or kind is not a known one. }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '409': { description: Five live tokens already; revoke one first. }
         '429': { description: More than 20 token changes a minute. }
@@ -3236,6 +3240,36 @@ paths:
         '200': { description: 'The revoked token, as `{ hook }`.' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { description: Not one of the caller's tokens. }
+  /api/hooks/widget:
+    get:
+      tags: [health]
+      operationId: getWidgetSummary
+      summary: The summary of the day for the iPhone widget
+      description: >-
+        Authenticated only by a widget key (`kind: widget`, minted with `POST /api/hooks/tokens`) in
+        `Authorization: Bearer`; a session, an Apple Health key or no key is `401`. Numbers only, about
+        the key's owner: the streak in weeks, the week's workouts, today's calories and macros against
+        the day's goal (the one the app calculated for today, else the typed one), and the latest steps
+        of the last two days against the steps goal. 60 requests a minute per address, 30 per key.
+      security: []
+      responses:
+        '200':
+          description: The summary.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  v: { type: integer, const: 1 }
+                  day: { type: string, format: date }
+                  accent: { type: string }
+                  streak: { type: integer }
+                  week: { type: object, properties: { workouts: { type: integer }, planned: { type: integer } } }
+                  kcal: { type: object, properties: { eaten: { type: integer }, goal: { type: [integer, 'null'] } } }
+                  macros: { type: array, items: { type: object, properties: { id: { type: string, enum: [protein, carbs, fat] }, eaten: { type: integer }, goal: { type: [integer, 'null'] } } } }
+                  steps: { type: [object, 'null'], properties: { d: { type: string, format: date }, value: { type: integer }, goal: { type: integer } } }
+        '401': { description: No widget key, or one that is unknown, revoked or of another kind. }
+        '429': { description: Too many requests. }
   /api/hooks/apple-health:
     post:
       tags: [health]
@@ -3820,7 +3854,7 @@ components:
       properties:
         id: { type: string }
         label: { type: string }
-        kind: { type: string, enum: [apple-health] }
+        kind: { type: string, enum: [apple-health, widget] }
         createdAt: { type: integer }
         lastUsedAt: { type: [integer, 'null'] }
         revokedAt: { type: [integer, 'null'] }
@@ -3866,6 +3900,7 @@ components:
         goalMode: { type: [string, 'null'], enum: [manual, cut, maintain, bulk, recomp, null] }
         pace: { type: [string, 'null'], enum: [gentle, steady, fast, null] }
         bodyFatPct: { type: [number, 'null'], minimum: 3, maximum: 60 }
+        goalToday: { type: [object, 'null'], description: 'The goal the app calculated for one day ({ d, kcal, protein?, carbs?, fat? }), kept for the iPhone widget.' }
         stepGoal: { type: [integer, 'null'], minimum: 1000, maximum: 100000, description: Daily steps goal; the app uses 10,000 when unset. }
         calibrate: { type: boolean, description: Shift the estimate toward what the weight trend shows. }
         calibration: { type: [integer, 'null'], minimum: -500, maximum: 500, description: The shift, in kcal a day. }

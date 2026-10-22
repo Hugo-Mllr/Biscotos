@@ -32,7 +32,8 @@ export default function HealthImportSheet({ onClose }) {
   const shortcut = useStore(s => s.config?.health_shortcut)
 
   useEffect(() => {
-    listHookTokens().then(r => setHooks(r.hooks || [])).catch(setErr)
+    // The widget's keys (components/bx/WidgetSheet.jsx) are listed there, not among the Shortcut's.
+    listHookTokens().then(r => setHooks((r.hooks || []).filter(h => (h.kind || 'apple-health') === 'apple-health'))).catch(setErr)
     const today = todayISO()
     loadHealthSamples(shiftDay(today, -6), today).then(s => {
       // the newest value of each type

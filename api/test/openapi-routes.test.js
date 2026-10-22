@@ -42,6 +42,7 @@ test('every route the server registers is in openapi.yaml, and nothing else is',
     ...routeKeys(read(path.join(API, 'coach', 'routes.js'))),
     ...routeKeys(read(path.join(API, 'nutrition', 'routes.js'))),
     ...routeKeys(read(path.join(API, 'health', 'routes.js'))),
+    ...routeKeys(read(path.join(API, 'health', 'widget.js'))),
     ...routeKeys(read(path.join(API, 'nutrition', 'portability.js'))),
     ...routeKeys(read(path.join(API, 'social', 'routes.js'))),
     ...routeKeys(read(path.join(API, 'ideas', 'index.js')))

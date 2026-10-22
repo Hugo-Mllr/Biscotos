@@ -12,6 +12,7 @@ import { MACROS, totalsOf, progress, toKg } from '../lib/nutrition.js'
 import * as napi from '../lib/nutrition-api.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { Ring, Bar } from './bx/index.jsx'
+import GoalTodaySync from './GoalTodaySync.jsx'
 import Icon from './Icon.jsx'
 
 const MACRO = {
@@ -35,7 +36,7 @@ export default function NutritionToday() {
   const totals = totalsOf((data?.log || []).filter(e => e.d === todayISO()))
   // The same goal as the Nutrition screen: calculated from the day when a goal is chosen, else the typed one.
   const last = lastBW(S)
-  const { goals } = goalsFor({ profile: data?.profile || {}, goals: data?.goals, weightKg: last ? toKg(last.w, S.unit) : null, unit: S.unit,
+  const { goals, auto } = goalsFor({ profile: data?.profile || {}, goals: data?.goals, weightKg: last ? toKg(last.w, S.unit) : null, unit: S.unit,
     workouts: S.workouts.filter(w => workoutDay(w) === todayISO()), health, year: new Date().getFullYear() })
   const kcal = progress(totals.kcal, goals.kcal)
 
@@ -51,6 +52,7 @@ export default function NutritionToday() {
         </div>
         <Icon name="chevronRight" className="chev" />
       </div>
+      {data && <GoalTodaySync profile={data.profile} auto={auto} goals={goals} day={todayISO()} />}
       {data && <div className="nt-body">
         <Ring fraction={kcal.fraction ?? 0} size={92} stroke={9} label={t('{0} of {1} kcal', totals.kcal, goals.kcal || '–')}>
           <div style={{ textAlign: 'center', lineHeight: 1.1 }}>

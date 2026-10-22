@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ageOf, healthOf, stepGoalOf, goalsFor, bmrOf, workoutKcal, dayCost, targetOf, macrosFor, planFor, observedTdee, calibrationOf } from './body.js'
+import { ageOf, healthOf, stepGoalOf, goalsFor, goalTodayPatch, bmrOf, workoutKcal, dayCost, targetOf, macrosFor, planFor, observedTdee, calibrationOf } from './body.js'
 
 const at = (d, h) => new Date(d + `T${String(h).padStart(2, '0')}:00:00`).getTime()
 const session = (min, w = 100, r = 10, sets = 20) => ({ id: 'w', d: '2026-10-05', start: at('2026-10-05', 18), end: at('2026-10-05', 18) + min * 60000,
@@ -155,6 +155,23 @@ describe('stepGoalOf and goalsFor', () => {
     expect(goalsFor({ profile: { ...profile, goalMode: 'manual' }, goals: typed, weightKg: 80, year: 2026 })).toMatchObject({ auto: false, goals: typed })
     expect(goalsFor({ profile: { goalMode: 'cut' }, goals: typed, weightKg: 80 })).toMatchObject({ auto: false, goals: typed })
     expect(goalsFor({}).goals).toEqual({})
+  })
+})
+
+describe('goalTodayPatch', () => {
+  const goals = { kcal: 2450, protein: 170, carbs: 260, fat: 70 }
+  const base = { auto: true, goals, day: '2026-10-22', today: '2026-10-22' }
+  it('keeps today’s calculated goal, once', () => {
+    expect(goalTodayPatch({ ...base, profile: {} })).toEqual({ goalToday: { d: '2026-10-22', ...goals } })
+    expect(goalTodayPatch({ ...base, profile: { goalToday: { d: '2026-10-21', ...goals } } })).toEqual({ goalToday: { d: '2026-10-22', ...goals } })
+    expect(goalTodayPatch({ ...base, profile: { goalToday: { d: '2026-10-22', ...goals } } })).toBe(null)
+    expect(goalTodayPatch({ ...base, profile: { goalToday: { d: '2026-10-22', ...goals, kcal: 2400 } } })).toMatchObject({ goalToday: { kcal: 2450 } })
+  })
+  it('nothing for a typed goal, another day, or no energy', () => {
+    expect(goalTodayPatch({ ...base, auto: false, profile: {} })).toBe(null)
+    expect(goalTodayPatch({ ...base, day: '2026-10-20', profile: {} })).toBe(null)
+    expect(goalTodayPatch({ ...base, goals: {}, profile: {} })).toBe(null)
+    expect(goalTodayPatch({})).toBe(null)
   })
 })
 

@@ -137,6 +137,20 @@ export function goalsFor({ profile = {}, goals = null, weightKg, unit, workouts,
 }
 
 /**
+ * The profile patch that keeps today's calculated goal on the server, for the iPhone widget (which
+ * cannot run the calculation): { goalToday: { d, kcal, protein?, carbs?, fat? } }, or null when
+ * there is nothing to keep (a typed goal, another day) or it is already there.
+ */
+export function goalTodayPatch({ profile, auto, goals, day, today } = {}) {
+  if (!auto || day !== today || !(num(goals?.kcal) > 0)) return null
+  const next = { d: day, kcal: Math.round(goals.kcal) }
+  for (const k of ['protein', 'carbs', 'fat']) if (num(goals[k]) > 0) next[k] = Math.round(goals[k])
+  const g = profile?.goalToday
+  if (g && ['d', 'kcal', 'protein', 'carbs', 'fat'].every(k => (g[k] ?? null) === (next[k] ?? null))) return null
+  return { goalToday: next }
+}
+
+/**
  * What the body has really done over the last weeks: the average intake minus what the weight
  * trend says was stored (7,700 kcal a kg). Needs 4 weigh-ins over 14 days and 10 logged days.
  * @param weighIns [{ d, kg }]   @param intake [{ d, kcal }] one per logged day

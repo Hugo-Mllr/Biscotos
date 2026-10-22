@@ -199,6 +199,23 @@ export function validateProfile(input, { year = new Date().getFullYear() } = {})
     out.calibration = input.calibration === null ? null
       : num(input.calibration, 'profile.calibration', { min: -500, max: 500, optional: true, decimals: 0 }) ?? null;
   }
+  // The goal the app calculated for one day, kept so the iPhone widget can show it (the widget
+  // cannot run the calculation): { d, kcal, protein?, carbs?, fat? }.
+  if (has('goalToday')) {
+    const g = input.goalToday;
+    if (g === null) out.goalToday = null;
+    else {
+      if (!isObj(g)) fail('profile.goalToday', 'an object');
+      if (!isDay(g.d)) fail('profile.goalToday.d', 'a YYYY-MM-DD day');
+      out.goalToday = dropUndefined({
+        d: g.d,
+        kcal: num(g.kcal, 'profile.goalToday.kcal', { min: 0, max: LIMITS.GOAL_KCAL_MAX, decimals: 0 }),
+        protein: num(g.protein, 'profile.goalToday.protein', { max: LIMITS.GOAL_MACRO_MAX, optional: true, decimals: 0 }),
+        carbs: num(g.carbs, 'profile.goalToday.carbs', { max: LIMITS.GOAL_MACRO_MAX, optional: true, decimals: 0 }),
+        fat: num(g.fat, 'profile.goalToday.fat', { max: LIMITS.GOAL_MACRO_MAX, optional: true, decimals: 0 }),
+      });
+    }
+  }
   if (has('stepGoal')) {
     out.stepGoal = input.stepGoal === null ? null
       : num(input.stepGoal, 'profile.stepGoal', { min: 1000, max: 100000, optional: true, decimals: 0 }) ?? null;

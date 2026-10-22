@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const api = vi.hoisted(() => ({ loadNutrition: vi.fn(), loadHealthSamples: vi.fn(), saveSettings: vi.fn() }))
+const api = vi.hoisted(() => ({ loadNutrition: vi.fn(), loadHealthSamples: vi.fn(), saveSettings: vi.fn(), listHookTokens: vi.fn(), createHookToken: vi.fn(), revokeHookToken: vi.fn() }))
 vi.mock('../lib/nutrition-api.js', () => api)
 vi.mock('../sheets.jsx', () => ({ bwSheet: vi.fn() }))
 
@@ -84,6 +84,13 @@ describe('BodyGoals', () => {
     mount(); await flush()
     expect(host.textContent).toContain('Fill in your height, birth year, sex and weight')
     expect(host.textContent).not.toContain('Goal for today')
+  })
+
+  it('opens the iPhone widget sheet', async () => {
+    api.listHookTokens.mockResolvedValue({ hooks: [] })
+    mount(); await flush()
+    await act(async () => [...host.querySelectorAll('button')].find(b => b.textContent.includes('iPhone widget')).click()); await flush()
+    expect(document.body.textContent).toContain('Create a widget key')
   })
 
   it('needs an account', () => {
