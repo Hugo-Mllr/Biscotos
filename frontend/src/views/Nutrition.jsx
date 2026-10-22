@@ -19,6 +19,7 @@ import { CountUp, Ring, Bar, Sheet } from '../components/bx/index.jsx'
 import FoodScanner, { canScanInBrowser } from '../components/bx/FoodScanner.jsx'
 import Icon from '../components/Icon.jsx'
 import HealthImportSheet from '../components/bx/HealthImportSheet.jsx'
+import GoalTodaySync from '../components/GoalTodaySync.jsx'
 import MenuImportSheet from '../components/bx/MenuImportSheet.jsx'
 import NutritionDataSheet from '../components/bx/NutritionDataSheet.jsx'
 
@@ -125,6 +126,7 @@ export default function Nutrition() {
       <Header day={day} onPrev={() => setDay(d => shiftDay(d, -1))} onNext={day < todayISO() ? () => setDay(d => shiftDay(d, 1)) : null}
         onGoals={() => setSheet('goals')} />
 
+      <GoalTodaySync profile={data?.profile} auto={auto} goals={goals} day={day} />
       {error && <div className="bx-alert" role="alert" style={{ marginBottom: 'var(--bx-s3)' }}>
         {problemText(napi.lookupProblem(error)) || t('Could not load your nutrition. Try again.')}{' '}
         <button className="bx-chip bx-tap" onClick={reload}>{t('Try again')}</button>

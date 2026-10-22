@@ -40,6 +40,7 @@ import { portabilityRoutes } from './nutrition/portability.js';
 import { createOff, DEFAULT_BASE as OFF_DEFAULT_BASE, DEFAULT_SEARCH_BASE as OFF_DEFAULT_SEARCH } from './nutrition/off.js';
 import { removeDoc as removeNutrition } from './nutrition/store.js';
 import { healthRoutes, forgetHealthUser } from './health/routes.js';
+import { widgetRoutes } from './health/widget.js';
 import { removeHealth } from './health/store.js';
 import { createSocial } from './social/routes.js';
 import { createIdeas } from './ideas/index.js';
@@ -2641,6 +2642,14 @@ const routes = {
   ...healthRoutes({
     json, readBody, readSession, tooMany, createWindow, limitAddress, audit, dataDir: DATA, atomicWrite,
     todayISO: () => new Date().toISOString().slice(0, 10)
+  }),
+  // The iPhone widget's summary (docs/WIDGET.md), under /api/hooks/ with the Apple Health webhook.
+  ...widgetRoutes({
+    json, tooMany, createWindow, limitAddress, dataDir: DATA, atomicWrite,
+    readState: uid => readStateCached(uid),
+    readNutrition: uid => readNutritionDoc(DATA, uid),
+    today: () => localDay(),
+    shiftDay: (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 86400000).toISOString().slice(0, 10),
   }),
   ...portabilityRoutes({ json, readBody, readSession, tooMany, createWindow, audit, dataDir: DATA, atomicWrite }),
   // Biscotos circles, weekly league and feed (docs/SOCIAL.md), built below.

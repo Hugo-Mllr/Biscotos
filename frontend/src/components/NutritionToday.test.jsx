@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const nav = vi.fn()
 vi.mock('react-router-dom', () => ({ useNavigate: () => nav }))
-const api = vi.hoisted(() => ({ loadNutrition: vi.fn(), loadHealthSamples: vi.fn() }))
+const api = vi.hoisted(() => ({ loadNutrition: vi.fn(), loadHealthSamples: vi.fn(), saveSettings: vi.fn() }))
 vi.mock('../lib/nutrition-api.js', () => api)
 
 import NutritionToday from './NutritionToday.jsx'
@@ -18,7 +18,7 @@ window.matchMedia = q => ({ matches: q.includes('reduce'), addEventListener() {}
 
 let host, root
 const flush = async () => { for (let i = 0; i < 5; i++) await act(async () => { await Promise.resolve() }) }
-beforeEach(() => { api.loadHealthSamples.mockReset(); api.loadHealthSamples.mockResolvedValue([]); host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host); nav.mockReset() })
+beforeEach(() => { api.loadHealthSamples.mockReset(); api.loadHealthSamples.mockResolvedValue([]); api.saveSettings.mockReset(); api.saveSettings.mockResolvedValue({}); host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host); nav.mockReset() })
 afterEach(() => { act(() => root.unmount()); host.remove() })
 
 describe("Home's nutrition card", () => {
@@ -57,5 +57,8 @@ describe("Home's nutrition card", () => {
     await flush()
     expect(host.textContent).toContain('1,870')
     expect(host.textContent).not.toContain('2,200')
+    // today's calculated goal is kept on the server, once, for the iPhone widget
+    expect(api.saveSettings).toHaveBeenCalledTimes(1)
+    expect(api.saveSettings).toHaveBeenCalledWith({ profile: { goalToday: { d: todayISO(), kcal: 1870, protein: 176, carbs: expect.any(Number), fat: expect.any(Number) } } })
   })
 })

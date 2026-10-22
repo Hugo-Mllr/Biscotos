@@ -13,6 +13,7 @@ import { PACE_KG_WEEK, STEP_GOAL_DEFAULT, stepGoalOf, planFor, dayCost, observed
 import * as napi from '../lib/nutrition-api.js'
 import { bwSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import WidgetSheet from '../components/bx/WidgetSheet.jsx'
 
 const WINDOW_DAYS = 28
 const SEX = [['m', () => t('Male')], ['f', () => t('Female')]]
@@ -55,6 +56,7 @@ export default function BodyGoals() {
   const [health, setHealth] = useState({})
   const [p, setP] = useState({})
   const [err, setErr] = useState(null)
+  const [widget, setWidget] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -169,6 +171,11 @@ export default function BodyGoals() {
       </div>}
       <p className="bx-small bx-dim" style={{ marginTop: 'var(--bx-s3)' }}>{t('An estimate, not medical advice.')}</p>
     </section>
+
+    <section className="bx-card" aria-label={t('iPhone widget')}>
+      <button type="button" className="bx-btn bx-btn-block bx-tap" onClick={() => setWidget(true)}>{t('iPhone widget')} <Icon name="chevronRight" /></button>
+    </section>
+    {widget && <WidgetSheet onClose={() => setWidget(false)} />}
 
     {seen && <section className="bx-card" aria-label={t('Your results')}>
       <div className="bx-card-hd"><h2 className="bx-label" style={{ color: 'var(--bx-ink)' }}>{t('Your results')}</h2></div>

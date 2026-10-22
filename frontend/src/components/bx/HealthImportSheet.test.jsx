@@ -30,6 +30,17 @@ beforeEach(() => {
 afterEach(() => { act(() => root.unmount()); host.remove(); document.body.innerHTML = '' })
 
 describe('HealthImportSheet', () => {
+  it('lists the Shortcut’s tokens only: the widget’s keys have their own sheet', async () => {
+    api.listHookTokens.mockResolvedValue({ hooks: [
+      { id: 'h1', label: 'Old phone', createdAt: 1, lastUsedAt: null, revokedAt: null },
+      { id: 'w1', kind: 'widget', label: 'My widget key', createdAt: 1, lastUsedAt: null, revokedAt: null },
+    ] })
+    act(() => root.render(<HealthImportSheet onClose={() => {}} />))
+    await flush()
+    expect(document.body.textContent).toContain('Old phone')
+    expect(document.body.textContent).not.toContain('My widget key')
+  })
+
   it('lists tokens and the newest value of each received type', async () => {
     act(() => root.render(<HealthImportSheet onClose={() => {}} />))
     await flush()

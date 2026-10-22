@@ -96,6 +96,11 @@ test('goals and profile', () => {
   throwsOn(() => validateProfile({ bodyFatPct: 90 }), 'profile.bodyFatPct');
   throwsOn(() => validateProfile({ calibrate: 'yes' }), 'profile.calibrate');
   assert.deepEqual(validateProfile({ calibration: -120.4 }), { calibration: -120 });
+  assert.deepEqual(validateProfile({ goalToday: { d: '2026-10-22', kcal: '2450.4', protein: 170 } }), { goalToday: { d: '2026-10-22', kcal: 2450, protein: 170 } });
+  assert.deepEqual(validateProfile({ goalToday: null }), { goalToday: null });
+  throwsOn(() => validateProfile({ goalToday: { d: 'today', kcal: 2000 } }), 'profile.goalToday.d');
+  throwsOn(() => validateProfile({ goalToday: { d: '2026-10-22' } }), 'profile.goalToday.kcal');
+  throwsOn(() => validateProfile({ goalToday: 5 }), 'profile.goalToday');
   assert.deepEqual(validateProfile({ stepGoal: '8000' }), { stepGoal: 8000 });
   assert.deepEqual(validateProfile({ stepGoal: null }), { stepGoal: null });
   throwsOn(() => validateProfile({ stepGoal: 500 }), 'profile.stepGoal');

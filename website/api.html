@@ -250,7 +250,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>107 endpoints</span>
+    <span>108 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -2657,6 +2657,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">string <span class="p-hint">(&le; 40 chars)</span></span>
     <span class="p-desc"></span>
   </div>
+  <div class="prow">
+    <span class="p-name">kind</span>
+    <span class="p-type">&quot;apple-health&quot; | &quot;widget&quot;</span>
+    <span class="p-desc">What the key may do. A widget key only reads <code>GET /api/hooks/widget</code>.</span>
+  </div>
 </div>
     <p class="ep-h">Responses</p>
     <div class="ptab">
@@ -2666,7 +2671,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
-    <span class="p-desc">label is not a string.</span>
+    <span class="p-desc">label is not a string</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -2715,6 +2720,36 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">404</span>
     <span class="p-desc">Not one of the caller's tokens.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getWidgetSummary">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/hooks/widget</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The summary of the day for the iPhone widget</span>
+  </summary>
+  <div class="ep-body">
+<p>Authenticated only by a widget key (<code>kind: widget</code>, minted with <code>POST /api/hooks/tokens</code>) in <code>Authorization: Bearer</code>; a session, an Apple Health key or no key is <code>401</code>. Numbers only, about the key's owner: the streak in weeks, the week's workouts, today's calories and macros against the day's goal (the one the app calculated for today, else the typed one), and the latest steps of the last two days against the steps goal. 60 requests a minute per address, 30 per key.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The summary.<span class="r-sig">{ v: always 1, day: string <span class="p-hint">(date)</span>, accent: string, streak: integer, week: object, kcal: object, macros: object[], steps: object | null }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No widget key</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many requests.</span>
   </div>
     </div>
   </div>
@@ -4804,7 +4839,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow">
     <span class="p-name">kind</span>
-    <span class="p-type">&quot;apple-health&quot;</span>
+    <span class="p-type">&quot;apple-health&quot; | &quot;widget&quot;</span>
     <span class="p-desc"></span>
   </div>
   <div class="prow">
@@ -4993,6 +5028,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">bodyFatPct</span>
     <span class="p-type">number | null <span class="p-hint">(3&ndash;60)</span></span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">goalToday</span>
+    <span class="p-type">object | null</span>
+    <span class="p-desc">The goal the app calculated for one day ({ d, kcal, protein?, carbs?, fat? }), kept for the iPhone widget.</span>
   </div>
   <div class="prow">
     <span class="p-name">stepGoal</span>

@@ -28,7 +28,8 @@ export function lookupProblem(e) {
 
 // Apple Health import (api/health/routes.js, docs/APPLE_HEALTH.md)
 export const listHookTokens = () => api('/api/hooks/tokens')
-export const createHookToken = label => post('/api/hooks/tokens', { label })
+// kind: 'apple-health' (the Shortcut's key, the default) or 'widget' (the iPhone widget's read-only key)
+export const createHookToken = (label, kind) => post('/api/hooks/tokens', kind ? { label, kind } : { label })
 export const revokeHookToken = id => post('/api/hooks/tokens/revoke', { id }).then(r => r.hook)
 export const loadHealthSamples = (from, to) => api('/api/health-samples?' + qs({ from, to })).then(r => r.samples || [])
 
