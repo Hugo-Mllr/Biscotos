@@ -2998,7 +2998,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  profile: { type: object, properties: { heightCm: { type: [number, 'null'] } } }
+                  profile: { $ref: '#/components/schemas/NutritionProfile' }
                   goals: { oneOf: [{ $ref: '#/components/schemas/NutritionGoals' }, { type: 'null' }] }
                   foods: { type: array, items: { $ref: '#/components/schemas/Food' } }
                   log: { type: array, items: { $ref: '#/components/schemas/FoodLogEntry' } }
@@ -3011,8 +3011,10 @@ paths:
     put:
       tags: [nutrition]
       operationId: putNutritionSettings
-      summary: Set daily goals and/or height
-      description: '`goals: null` clears the goals. At least one of `goals`, `profile` is required.'
+      summary: Set daily goals and/or the body profile
+      description: >-
+        `goals: null` clears the goals. At least one of `goals`, `profile` is required. In `profile`
+        only the keys sent change; `null` clears one.
       requestBody:
         required: true
         content:
@@ -3021,7 +3023,7 @@ paths:
               type: object
               properties:
                 goals: { oneOf: [{ $ref: '#/components/schemas/NutritionGoals' }, { type: 'null' }] }
-                profile: { type: object, properties: { heightCm: { type: [number, 'null'], minimum: 50, maximum: 260 } } }
+                profile: { $ref: '#/components/schemas/NutritionProfile' }
       responses:
         '200': { description: The stored profile and goals. }
         '400': { $ref: '#/components/responses/NutritionInvalid' }
@@ -3851,6 +3853,22 @@ components:
         fiber: { type: number, minimum: 0, maximum: 100 }
         sugar: { type: number, minimum: 0, maximum: 100 }
         salt: { type: number, minimum: 0, maximum: 100 }
+    NutritionProfile:
+      type: object
+      description: >-
+        The body profile behind the calculated daily goal (the app computes it; the server only
+        stores and validates). Every key is optional and `null` when unset.
+      properties:
+        heightCm: { type: [number, 'null'], minimum: 50, maximum: 260 }
+        birthYear: { type: [integer, 'null'], description: Between 110 and 10 years ago. }
+        sex: { type: [string, 'null'], enum: [m, f, null] }
+        activity: { type: [string, 'null'], enum: [low, mid, high, null], description: Daily life outside the gym. }
+        goalMode: { type: [string, 'null'], enum: [manual, cut, maintain, bulk, recomp, null] }
+        pace: { type: [string, 'null'], enum: [gentle, steady, fast, null] }
+        bodyFatPct: { type: [number, 'null'], minimum: 3, maximum: 60 }
+        stepGoal: { type: [integer, 'null'], minimum: 1000, maximum: 100000, description: Daily steps goal; the app uses 10,000 when unset. }
+        calibrate: { type: boolean, description: Shift the estimate toward what the weight trend shows. }
+        calibration: { type: [integer, 'null'], minimum: -500, maximum: 500, description: The shift, in kcal a day. }
     NutritionGoals:
       type: object
       properties:

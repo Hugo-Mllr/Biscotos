@@ -10,7 +10,7 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => nav }))
 
 const api = vi.hoisted(() => ({
   loadNutrition: vi.fn(), saveSettings: vi.fn(), addEntry: vi.fn(), updateEntry: vi.fn(), deleteEntry: vi.fn(),
-  addFood: vi.fn(), deleteFood: vi.fn(), searchFoods: vi.fn(), foodByBarcode: vi.fn(),
+  addFood: vi.fn(), deleteFood: vi.fn(), searchFoods: vi.fn(), foodByBarcode: vi.fn(), loadHealthSamples: vi.fn(),
   lookupProblem: e => (e?.status === 404 ? 'not-found' : 'unavailable'),
 }))
 vi.mock('../lib/nutrition-api.js', () => api)
@@ -39,6 +39,7 @@ beforeEach(() => {
   saved = { S: useStore.getState().S, user: useStore.getState().user }
   useStore.setState({ S: { ...JSON.parse(JSON.stringify(DEF)), unit: 'kg', bodyweight: [{ d: today, w: 75, t: 1 }] }, user: { id: 'u1', name: 'Alex Demo' } })
   Object.values(api).forEach(f => f.mockReset?.())
+  api.loadHealthSamples.mockResolvedValue([])
   api.loadNutrition.mockResolvedValue({
     profile: { heightCm: 178 }, goals: { kcal: 2000, protein: 150 }, foods: [],
     log: [{ id: 'e1', d: today, meal: 'breakfast', grams: 100, name: 'Flocons démo', per100: oats }]
@@ -153,5 +154,20 @@ describe('Nutrition', () => {
     expect(api.foodByBarcode).toHaveBeenCalledWith('3000000000024', expect.any(String))
     expect(document.body.textContent).toContain('not in Open Food Facts yet')
     expect(document.body.textContent).toContain('Per 100 g')
+  })
+
+  it('with a goal chosen in Body & goals, the ring follows what the day costs; Manual keeps the typed goals', async () => {
+    const year = new Date().getFullYear()
+    const profile = { heightCm: 180, birthYear: year - 27, sex: 'm', activity: 'mid', goalMode: 'cut', pace: 'steady' }
+    api.loadNutrition.mockResolvedValue({ profile, goals: { kcal: 2000, protein: 150 }, foods: [], log: [] })
+    useStore.setState(st => ({ S: { ...st.S, bodyweight: [{ d: today, w: 80, t: 1 }] } }))
+    act(() => root.render(<Nutrition />)); await flush()
+    expect(host.textContent).toContain('1,870')      // 1,795 × 1.35 − 550
+    expect(host.textContent).toContain('burnt')
+    expect(host.textContent).not.toContain('2,000')
+    api.loadNutrition.mockResolvedValue({ profile: { ...profile, goalMode: 'manual' }, goals: { kcal: 2000, protein: 150 }, foods: [], log: [] })
+    act(() => root.unmount()); root = createRoot(host)
+    act(() => root.render(<Nutrition />)); await flush()
+    expect(host.textContent).toContain('2,000')
   })
 })

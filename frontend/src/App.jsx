@@ -49,6 +49,7 @@ import Nutrition from './views/Nutrition.jsx'
 import League from './views/League.jsx'
 import Ideas from './views/Ideas.jsx'
 import Wrapped from './views/Wrapped.jsx'
+import BodyGoals from './views/BodyGoals.jsx'
 import CoachIntake from './views/CoachIntake.jsx'
 import CoachSetup from './views/CoachSetup.jsx'
 
@@ -230,6 +231,7 @@ function Shell() {
               <Route path="/league" element={<League />} />
               <Route path="/ideas" element={<Ideas />} />
               <Route path="/wrapped" element={<Wrapped />} />
+              <Route path="/body" element={<BodyGoals />} />
               <Route path="/settings" element={<SettingsRoute />} />
               <Route path="/settings/:page" element={<SettingsRoute />} />
               {/* The Coach screens gate themselves on the instance config; the routes exist
