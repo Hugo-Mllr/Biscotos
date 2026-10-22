@@ -199,6 +199,10 @@ export function validateProfile(input, { year = new Date().getFullYear() } = {})
     out.calibration = input.calibration === null ? null
       : num(input.calibration, 'profile.calibration', { min: -500, max: 500, optional: true, decimals: 0 }) ?? null;
   }
+  if (has('stepGoal')) {
+    out.stepGoal = input.stepGoal === null ? null
+      : num(input.stepGoal, 'profile.stepGoal', { min: 1000, max: 100000, optional: true, decimals: 0 }) ?? null;
+  }
   if (has('calibrate')) {
     if (input.calibrate !== null && typeof input.calibrate !== 'boolean') fail('profile.calibrate', 'a boolean');
     out.calibrate = input.calibrate === true;

@@ -307,7 +307,7 @@ test('the body profile: partial updates keep the rest, bad values are 400', asyn
   assert.deepEqual(r.body.profile, { heightCm: 178, sex: 'm', birthYear: 1999, goalMode: null, pace: 'gentle', calibrate: true });
   const kept = await call('GET', '/api/nutrition' + RANGE, as(A));
   assert.equal(kept.body.profile.birthYear, 1999);
-  for (const bad of [{ sex: 'robot' }, { goalMode: 'yolo' }, { birthYear: 1700 }, { bodyFatPct: 2 }, { calibrate: 'sure' }]) {
+  for (const bad of [{ stepGoal: 5 }, { sex: 'robot' }, { goalMode: 'yolo' }, { birthYear: 1700 }, { bodyFatPct: 2 }, { calibrate: 'sure' }]) {
     assert.equal((await call('PUT', '/api/nutrition/settings', as(A), { profile: bad })).status, 400, JSON.stringify(bad));
   }
 });

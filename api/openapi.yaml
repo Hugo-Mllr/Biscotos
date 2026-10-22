@@ -3866,6 +3866,7 @@ components:
         goalMode: { type: [string, 'null'], enum: [manual, cut, maintain, bulk, recomp, null] }
         pace: { type: [string, 'null'], enum: [gentle, steady, fast, null] }
         bodyFatPct: { type: [number, 'null'], minimum: 3, maximum: 60 }
+        stepGoal: { type: [integer, 'null'], minimum: 1000, maximum: 100000, description: Daily steps goal; the app uses 10,000 when unset. }
         calibrate: { type: boolean, description: Shift the estimate toward what the weight trend shows. }
         calibration: { type: [integer, 'null'], minimum: -500, maximum: 500, description: The shift, in kcal a day. }
     NutritionGoals:

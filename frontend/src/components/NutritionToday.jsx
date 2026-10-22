@@ -4,8 +4,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { t } from '../lib/i18n.js'
+import { useStore } from '../store/useStore.js'
+import { lastBW, workoutDay } from '../lib/history.js'
+import { goalsFor, healthOf } from '../lib/body.js'
 import { fmtNum, todayISO } from '../lib/format.js'
-import { MACROS, totalsOf, progress } from '../lib/nutrition.js'
+import { MACROS, totalsOf, progress, toKg } from '../lib/nutrition.js'
 import * as napi from '../lib/nutrition-api.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { Ring, Bar } from './bx/index.jsx'
@@ -19,15 +22,21 @@ const MACRO = {
 
 export default function NutritionToday() {
   const nav = useNavigate()
+  const S = useStore(s => s.S)
   const [data, setData] = useState(null)
+  const [health, setHealth] = useState({})
   useEffect(() => {
     let live = true
     const d = todayISO()
     napi.loadNutrition(d, d).then(r => { if (live) setData(r) }).catch(() => {})
+    napi.loadHealthSamples(d, d).then(s => { if (live) setHealth(healthOf(s)) }).catch(() => {})
     return () => { live = false }
   }, [])
   const totals = totalsOf((data?.log || []).filter(e => e.d === todayISO()))
-  const goals = data?.goals || {}
+  // The same goal as the Nutrition screen: calculated from the day when a goal is chosen, else the typed one.
+  const last = lastBW(S)
+  const { goals } = goalsFor({ profile: data?.profile || {}, goals: data?.goals, weightKg: last ? toKg(last.w, S.unit) : null, unit: S.unit,
+    workouts: S.workouts.filter(w => workoutDay(w) === todayISO()), health, year: new Date().getFullYear() })
   const kcal = progress(totals.kcal, goals.kcal)
 
   return (

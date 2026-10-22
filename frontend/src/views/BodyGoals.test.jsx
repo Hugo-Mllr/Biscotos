@@ -49,6 +49,21 @@ describe('BodyGoals', () => {
     expect(api.saveSettings).toHaveBeenLastCalledWith({ profile: { sex: 'f' } })
   })
 
+  it('the steps goal: 10,000 as a hint, saved when typed, cleared when emptied, refused when absurd', async () => {
+    mount(); await flush()
+    const input = host.querySelector('section[aria-label="Daily steps goal"] input')
+    expect(input.placeholder).toBe('10000')
+    const type = async v => {
+      await act(async () => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, v); input.dispatchEvent(new Event('input', { bubbles: true })) })
+      await act(async () => { input.blur(); input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) }); await flush()
+    }
+    await type('8000')
+    expect(api.saveSettings).toHaveBeenLastCalledWith({ profile: { stepGoal: 8000 } })
+    api.saveSettings.mockClear()
+    await type('50')
+    expect(api.saveSettings).not.toHaveBeenCalled()
+  })
+
   it('Manual keeps the goals typed by hand: no calculated goal', async () => {
     mount(); await flush()
     await act(async () => chip('Manual').click()); await flush()

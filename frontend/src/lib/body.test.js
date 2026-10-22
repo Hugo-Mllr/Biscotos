@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ageOf, healthOf, bmrOf, workoutKcal, dayCost, targetOf, macrosFor, planFor, observedTdee, calibrationOf } from './body.js'
+import { ageOf, healthOf, stepGoalOf, goalsFor, bmrOf, workoutKcal, dayCost, targetOf, macrosFor, planFor, observedTdee, calibrationOf } from './body.js'
 
 const at = (d, h) => new Date(d + `T${String(h).padStart(2, '0')}:00:00`).getTime()
 const session = (min, w = 100, r = 10, sets = 20) => ({ id: 'w', d: '2026-10-05', start: at('2026-10-05', 18), end: at('2026-10-05', 18) + min * 60000,
@@ -138,6 +138,23 @@ describe('observedTdee', () => {
     expect(calibrationOf(4000, 2500)).toBe(500)
     expect(calibrationOf(1500, 2500)).toBe(-500)
     expect(calibrationOf(null, 2500)).toBe(0)
+  })
+})
+
+describe('stepGoalOf and goalsFor', () => {
+  it('10,000 steps unless the profile says otherwise', () => {
+    expect(stepGoalOf({})).toBe(10000)
+    expect(stepGoalOf(null)).toBe(10000)
+    expect(stepGoalOf({ stepGoal: 7500 })).toBe(7500)
+    expect(stepGoalOf({ stepGoal: 12 })).toBe(10000)
+  })
+  const profile = { heightCm: 180, birthYear: 1999, sex: 'm', activity: 'mid', goalMode: 'cut', pace: 'steady' }
+  it('the calculated goal when one is chosen, the typed one for Manual or a profile too short to compute', () => {
+    const typed = { kcal: 2000, protein: 150 }
+    expect(goalsFor({ profile, goals: typed, weightKg: 80, year: 2026 })).toMatchObject({ auto: true, goals: { kcal: 1870, protein: 176 } })
+    expect(goalsFor({ profile: { ...profile, goalMode: 'manual' }, goals: typed, weightKg: 80, year: 2026 })).toMatchObject({ auto: false, goals: typed })
+    expect(goalsFor({ profile: { goalMode: 'cut' }, goals: typed, weightKg: 80 })).toMatchObject({ auto: false, goals: typed })
+    expect(goalsFor({}).goals).toEqual({})
   })
 })
 

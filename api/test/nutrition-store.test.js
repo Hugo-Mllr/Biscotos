@@ -96,6 +96,10 @@ test('goals and profile', () => {
   throwsOn(() => validateProfile({ bodyFatPct: 90 }), 'profile.bodyFatPct');
   throwsOn(() => validateProfile({ calibrate: 'yes' }), 'profile.calibrate');
   assert.deepEqual(validateProfile({ calibration: -120.4 }), { calibration: -120 });
+  assert.deepEqual(validateProfile({ stepGoal: '8000' }), { stepGoal: 8000 });
+  assert.deepEqual(validateProfile({ stepGoal: null }), { stepGoal: null });
+  throwsOn(() => validateProfile({ stepGoal: 500 }), 'profile.stepGoal');
+  throwsOn(() => validateProfile({ stepGoal: 250000 }), 'profile.stepGoal');
   throwsOn(() => validateProfile({ calibration: 900 }), 'profile.calibration');
 });
 

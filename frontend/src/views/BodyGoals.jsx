@@ -9,7 +9,7 @@ import { t } from '../lib/i18n.js'
 import { todayISO, fmtNum } from '../lib/format.js'
 import { lastBW, workoutDay } from '../lib/history.js'
 import { toKg, bmiBand, parseAmount, shiftDay, totalsOf, MACROS } from '../lib/nutrition.js'
-import { PACE_KG_WEEK, planFor, dayCost, observedTdee, calibrationOf, healthOf } from '../lib/body.js'
+import { PACE_KG_WEEK, STEP_GOAL_DEFAULT, stepGoalOf, planFor, dayCost, observedTdee, calibrationOf, healthOf } from '../lib/body.js'
 import * as napi from '../lib/nutrition-api.js'
 import { bwSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -142,6 +142,12 @@ export default function BodyGoals() {
         <p className="bx-small bx-dim" style={{ marginTop: 'var(--bx-s2)' }}>{t('{0} kg a week', fmtNum(paceKg[p.pace || 'steady']))}</p>
       </>}
       {!auto && <p className="bx-small bx-dim" style={{ marginTop: 'var(--bx-s3)' }}>{t('You set your daily goals yourself in Nutrition.')}</p>}
+    </section>
+
+    <section className="bx-card" aria-label={t('Daily steps goal')}>
+      <div className="bx-card-hd"><h2 className="bx-label" style={{ color: 'var(--bx-ink)' }}>{t('Daily steps goal')}</h2></div>
+      <Num label={t('Steps')} value={p.stepGoal ?? null} min={1000} max={100000} placeholder={String(STEP_GOAL_DEFAULT)} onSave={v => save({ stepGoal: v })} />
+      <p className="bx-small bx-dim">{t('{0} a day by default. The steps come from the Apple Health Shortcut.', fmtNum(stepGoalOf({})))}</p>
     </section>
 
     <section className="bx-card" aria-label={t('Your numbers')}>

@@ -8,7 +8,7 @@ import { t, dateLocale } from '../lib/i18n.js'
 import { getLang } from '../lib/i18n-core.js'
 import { todayISO, fmtNum } from '../lib/format.js'
 import { lastBW, workoutDay } from '../lib/history.js'
-import { planFor, healthOf } from '../lib/body.js'
+import { goalsFor, healthOf } from '../lib/body.js'
 import { MOBILE } from '../lib/mobile.js'
 import {
   MEALS, MACROS, macrosOf, totalsOf, byMeal, progress, mealForHour, shiftDay, weekEnding, kcalByDay,
@@ -93,9 +93,7 @@ export default function Nutrition() {
   // "Manual" keeps the goals typed by hand.
   const last = lastBW(S)
   const weightKg = last ? toKg(last.w, S.unit) : null
-  const plan = planFor({ profile: data?.profile || {}, weightKg, unit: S.unit, workouts: S.workouts.filter(w => workoutDay(w) === day), health, year: Number(day.slice(0, 4)) })
-  const auto = !!plan.target && !!data?.profile?.goalMode && data.profile.goalMode !== 'manual'
-  const goals = auto ? { kcal: plan.target.kcal, ...(plan.macros || {}) } : data?.goals || {}
+  const { goals, plan, auto } = goalsFor({ profile: data?.profile || {}, goals: data?.goals, weightKg, unit: S.unit, workouts: S.workouts.filter(w => workoutDay(w) === day), health, year: Number(day.slice(0, 4)) })
   const kcalP = progress(totals.kcal, goals.kcal)
   const meals = byMeal(log, day)
   const week = kcalByDay(log, days)

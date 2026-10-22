@@ -91,6 +91,10 @@ export function macrosFor({ mode, kcal, weightKg } = {}) {
   return { protein, fat, carbs: Math.max(0, Math.round((k - 4 * protein - 9 * fat) / 4)) }
 }
 
+export const STEP_GOAL_DEFAULT = 10000
+/** The daily steps goal: the one set in Body & goals, else 10,000. */
+export const stepGoalOf = profile => (num(profile?.stepGoal) >= 1000 ? Math.round(num(profile.stepGoal)) : STEP_GOAL_DEFAULT)
+
 /** What the Shortcut sent for one day, from the health-sample rows: { activeKcal?, steps? }. */
 export function healthOf(samples) {
   const out = {}
@@ -119,6 +123,17 @@ export function planFor({ profile = {}, weightKg, unit = 'kg', workouts = [], he
   const target = tdee ? targetOf({ mode: profile.goalMode, pace: profile.pace, tdee, bmr }) : null
   const macros = target ? macrosFor({ mode: profile.goalMode, kcal: target.kcal, weightKg }) : null
   return { age, bmi: bmiV, bmr, tdee, cost, target, macros, missing }
+}
+
+/**
+ * The goals a day is held against: calculated from what the day costs when a goal is chosen in
+ * Body & goals, else the ones typed by hand in Nutrition. `plan` is returned too, for the screens
+ * that show where the number comes from.
+ */
+export function goalsFor({ profile = {}, goals = null, weightKg, unit, workouts, health, year } = {}) {
+  const plan = planFor({ profile, weightKg, unit, workouts, health, year })
+  const auto = !!plan.target && !!profile.goalMode && profile.goalMode !== 'manual'
+  return { auto, plan, goals: auto ? { kcal: plan.target.kcal, ...(plan.macros || {}) } : goals || {} }
 }
 
 /**

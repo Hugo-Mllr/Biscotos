@@ -21,6 +21,7 @@ import NutritionToday from '../components/NutritionToday.jsx'
 import LeagueToday from '../components/LeagueToday.jsx'
 import ReadinessToday from '../components/ReadinessToday.jsx'
 import IdeasToday from '../components/IdeasToday.jsx'
+import StepsToday from '../components/StepsToday.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -196,6 +197,7 @@ export default function Home() {
     {/* Biscotos: today's food log at a glance, and the way into it (signed in only: the log is
         stored on the server). */}
     <ReadinessToday />
+    {user && <StepsToday />}
     {user && <NutritionToday />}
     {user && <LeagueToday />}
 
