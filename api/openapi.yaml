@@ -3181,7 +3181,7 @@ paths:
         '502': { description: Open Food Facts unreachable or answered with an error. }
         '503': { description: Food search off, or the instance-wide budget is spent. }
 
-  /api/hooks/tokens:
+  /api/integrations/tokens:
     get:
       tags: [health]
       operationId: listHookTokens
@@ -3226,7 +3226,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '409': { description: Five live tokens already; revoke one first. }
         '429': { description: More than 20 token changes a minute. }
-  /api/hooks/tokens/revoke:
+  /api/integrations/tokens/revoke:
     post:
       tags: [health]
       operationId: revokeHookToken
@@ -3240,13 +3240,39 @@ paths:
         '200': { description: 'The revoked token, as `{ hook }`.' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { description: Not one of the caller's tokens. }
+  /api/hooks/tokens:
+    get:
+      tags: [health]
+      operationId: listHookTokensLegacy
+      deprecated: true
+      summary: Old path of `GET /api/integrations/tokens`, same answer
+      responses:
+        '200': { description: Same as `GET /api/integrations/tokens`. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [health]
+      operationId: createHookTokenLegacy
+      deprecated: true
+      summary: Old path of `POST /api/integrations/tokens`, same behaviour
+      responses:
+        '201': { description: Same as `POST /api/integrations/tokens`. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/hooks/tokens/revoke:
+    post:
+      tags: [health]
+      operationId: revokeHookTokenLegacy
+      deprecated: true
+      summary: Old path of `POST /api/integrations/tokens/revoke`, same behaviour
+      responses:
+        '200': { description: Same as `POST /api/integrations/tokens/revoke`. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /api/hooks/widget:
     get:
       tags: [health]
       operationId: getWidgetSummary
       summary: The summary of the day for the iPhone widget
       description: >-
-        Authenticated only by a widget key (`kind: widget`, minted with `POST /api/hooks/tokens`) in
+        Authenticated only by a widget key (`kind: widget`, minted with `POST /api/integrations/tokens`) in
         `Authorization: Bearer`; a session, an Apple Health key or no key is `401`. Numbers only, about
         the key's owner: the streak in weeks, the week's workouts, today's calories and macros against
         the day's goal (the one the app calculated for today, else the typed one), and the latest steps
@@ -3675,7 +3701,7 @@ components:
       type: http
       scheme: bearer
       description: >-
-        A Biscotos webhook token (`bxh_…`, POST /api/hooks/tokens). Accepted by the webhook
+        A Biscotos webhook token (`bxh_…`, POST /api/integrations/tokens). Accepted by the webhook
         route only; it is not a session.
     cookieAuth:
       type: apiKey

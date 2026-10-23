@@ -250,7 +250,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>108 endpoints</span>
+    <span>111 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -2617,7 +2617,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 <details class="ep" id="op-listHookTokens">
   <summary>
     <span class="m get">GET</span>
-    <span class="ep-path"><code>/api/hooks/tokens</code></span>
+    <span class="ep-path"><code>/api/integrations/tokens</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
     <span class="ep-sum">The caller's webhook tokens (never the token or its hash)</span>
   </summary>
@@ -2643,7 +2643,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 <details class="ep" id="op-createHookToken">
   <summary>
     <span class="m post">POST</span>
-    <span class="ep-path"><code>/api/hooks/tokens</code></span>
+    <span class="ep-path"><code>/api/integrations/tokens</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
     <span class="ep-sum">Create a webhook token (shown once)</span>
   </summary>
@@ -2692,7 +2692,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 <details class="ep" id="op-revokeHookToken">
   <summary>
     <span class="m post">POST</span>
-    <span class="ep-path"><code>/api/hooks/tokens/revoke</code></span>
+    <span class="ep-path"><code>/api/integrations/tokens/revoke</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
     <span class="ep-sum">Revoke one of the caller's webhook tokens</span>
   </summary>
@@ -2725,6 +2725,84 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </details>
 
+<details class="ep" id="op-listHookTokensLegacy">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/hooks/tokens</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Old path of <code>GET /api/integrations/tokens</code>, same answer</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Same as <code>GET /api/integrations/tokens</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-createHookTokenLegacy">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/hooks/tokens</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Old path of <code>POST /api/integrations/tokens</code>, same behaviour</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">201</span>
+    <span class="p-desc">Same as <code>POST /api/integrations/tokens</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-revokeHookTokenLegacy">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/hooks/tokens/revoke</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Old path of <code>POST /api/integrations/tokens/revoke</code>, same behaviour</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Same as <code>POST /api/integrations/tokens/revoke</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
 <details class="ep" id="op-getWidgetSummary">
   <summary>
     <span class="m get">GET</span>
@@ -2733,7 +2811,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">The summary of the day for the iPhone widget</span>
   </summary>
   <div class="ep-body">
-<p>Authenticated only by a widget key (<code>kind: widget</code>, minted with <code>POST /api/hooks/tokens</code>) in <code>Authorization: Bearer</code>; a session, an Apple Health key or no key is <code>401</code>. Numbers only, about the key's owner: the streak in weeks, the week's workouts, today's calories and macros against the day's goal (the one the app calculated for today, else the typed one), and the latest steps of the last two days against the steps goal. 60 requests a minute per address, 30 per key.</p>
+<p>Authenticated only by a widget key (<code>kind: widget</code>, minted with <code>POST /api/integrations/tokens</code>) in <code>Authorization: Bearer</code>; a session, an Apple Health key or no key is <code>401</code>. Numbers only, about the key's owner: the streak in weeks, the week's workouts, today's calories and macros against the day's goal (the one the app calculated for today, else the typed one), and the latest steps of the last two days against the steps goal. 60 requests a minute per address, 30 per key.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
 
 
@@ -2764,7 +2842,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </summary>
   <div class="ep-body">
 <p>Authenticated only by a webhook token in <code>Authorization: Bearer bxh_…</code> (never a session, never a query parameter). Writes into the token owner's samples and nothing else. Daily types keep one value per day (the later replaces the earlier). Limits: 60 requests/min per address, 30/min per token, 256 KiB and 500 samples per request. Rejected samples are counted and named by index; values are never echoed. See docs/APPLE_HEALTH.md.</p>
-    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Webhook token only: <code>Authorization: Bearer bxh_…</code> from POST /api/hooks/tokens. A session is not accepted here, and the token is accepted nowhere else.</span></p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Webhook token only: <code>Authorization: Bearer bxh_…</code> from POST /api/integrations/tokens. A session is not accepted here, and the token is accepted nowhere else.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
   <div class="prow">

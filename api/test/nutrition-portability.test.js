@@ -89,7 +89,7 @@ test('an export never carries tokens and round-trips through parseImport', () =>
 test('A exports, erases, then imports the export back', async () => {
   await call('POST', '/api/nutrition/log', as(A), entry);
   await call('PUT', '/api/nutrition/settings', as(A), { goals: { kcal: 2300 }, profile: { heightCm: 178 } });
-  const tok = await call('POST', '/api/hooks/tokens', as(A), { label: 'iPhone' });
+  const tok = await call('POST', '/api/integrations/tokens', as(A), { label: 'iPhone' });
   await call('POST', '/api/hooks/apple-health', { Authorization: 'Bearer ' + tok.body.token, 'Content-Type': 'application/json' },
     { samples: [{ type: 'weight', date: TODAY, value: 75.4 }] });
 
@@ -104,7 +104,7 @@ test('A exports, erases, then imports the export back', async () => {
   assert.equal((await call('POST', '/api/nutrition/erase', as(A), { confirm: 'erase' })).status, 200);
   assert.equal(snap(`nutrition-${A}.json`), null);
   assert.equal(snap(`health-${A}.json`), null);
-  assert.deepEqual((await call('GET', '/api/hooks/tokens', as(A))).body.hooks, [], 'tokens erased too');
+  assert.deepEqual((await call('GET', '/api/integrations/tokens', as(A))).body.hooks, [], 'tokens erased too');
   assert.equal((await call('POST', '/api/hooks/apple-health', { Authorization: 'Bearer ' + tok.body.token, 'Content-Type': 'application/json' }, { samples: [] })).status, 401);
 
   const im = await call('POST', '/api/nutrition/import', as(A), { file: ex.body });
@@ -155,7 +155,7 @@ test('authz POST /api/nutrition/import: B\'s import lands in B\'s file only', as
 });
 
 test('authz POST /api/nutrition/erase: B erases B only; A\'s data and tokens stay', async () => {
-  const tok = await call('POST', '/api/hooks/tokens', as(A), { label: 'kept' });
+  const tok = await call('POST', '/api/integrations/tokens', as(A), { label: 'kept' });
   const before = snap(`nutrition-${A}.json`);
   assert.equal((await call('POST', '/api/nutrition/erase', as(B), { confirm: 'erase', uid: A })).status, 200);
   assert.equal(snap(`nutrition-${A}.json`), before);

@@ -33,15 +33,17 @@ export function healthRoutes({ json, readBody, readSession, tooMany, createWindo
   };
   const unreadable = res => { console.error('health: integrations or samples file unreadable'); json(res, 503, { error: 'health import data unreadable' }); };
 
-  return {
-    'GET /api/hooks/tokens': async (req, res) => {
+  // The keys' management (a session, from the app) lives under /api/integrations/ so that an access
+  // proxy can let only the two webhooks of /api/hooks/ through without the app's own screens needing
+  // the same hole. The old /api/hooks/tokens paths answer the same, for anything that still calls them.
+  const listTokens = async (req, res) => {
       const user = signedIn(req, res); if (!user) return;
       let doc; try { doc = readIntegrations(dataDir); } catch { return unreadable(res); }
       json(res, 200, { hooks: doc.webhooks.filter(w => w.uid === user.id).map(publicHook), endpoint: '/api/hooks/apple-health' });
-    },
+  };
 
-    // The token is in this answer and nowhere else, ever: only its hash is kept.
-    'POST /api/hooks/tokens': async (req, res) => {
+  // The token is in this answer and nowhere else, ever: only its hash is kept.
+  const createToken = async (req, res) => {
       const user = signedIn(req, res); if (!user) return;
       const wait = TOKEN_WRITES.take(user.id); if (wait) return tooMany(res, wait);
       const body = await readBody(req);
@@ -59,9 +61,9 @@ export function healthRoutes({ json, readBody, readSession, tooMany, createWindo
       writeIntegrations(dataDir, doc, atomicWrite);
       audit(req, 'hook.token.create', { user, msg: label });
       json(res, 201, { hook: publicHook(hook), token });
-    },
+  };
 
-    'POST /api/hooks/tokens/revoke': async (req, res) => {
+  const revokeToken = async (req, res) => {
       const user = signedIn(req, res); if (!user) return;
       const wait = TOKEN_WRITES.take(user.id); if (wait) return tooMany(res, wait);
       const body = await readBody(req);
@@ -74,7 +76,15 @@ export function healthRoutes({ json, readBody, readSession, tooMany, createWindo
         audit(req, 'hook.token.revoke', { user, msg: hook.label });
       }
       json(res, 200, { hook: publicHook(hook) });
-    },
+  };
+
+  return {
+    'GET /api/integrations/tokens': listTokens,
+    'POST /api/integrations/tokens': createToken,
+    'POST /api/integrations/tokens/revoke': revokeToken,
+    'GET /api/hooks/tokens': listTokens,
+    'POST /api/hooks/tokens': createToken,
+    'POST /api/hooks/tokens/revoke': revokeToken,
 
     'GET /api/health-samples': async (req, res) => {
       const user = signedIn(req, res); if (!user) return;
