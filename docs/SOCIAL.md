@@ -103,3 +103,12 @@ le partage de l'entraînement. Le serveur répond avec le nom affiché seulement
 /api/social/ghosts?ex=…`, 30 exercices au plus), jamais un uid, et jamais ses propres charges à
 celui qui demande. L'appli fait un seul appel pour tous les exercices de l'écran et garde la
 réponse 5 minutes.
+
+## Reprendre une série d'une autre appli
+
+Stats → la tuile « Série » → **Reprendre une série** : on entre le nombre de semaines d'affilée que
+l'autre appli (Basic-Fit…) affiche, jusqu'à la semaine dernière. Ces semaines comptent comme des semaines
+entraînées dans la série (`S.streakCarry`, lue par `lib/streak-carry.js` côté appli et par
+`social/score.js` côté serveur), donc la séance de la semaine en cours prolonge la série. Rien d'autre
+n'en profite : ni points de ligue, ni séances. Le chiffre est déclaratif (on se fait confiance entre amis) et
+les amis du cercle voient la série, badges de série compris.

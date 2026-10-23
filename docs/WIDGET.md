@@ -32,6 +32,18 @@ Lancer le script dans Scriptable affiche un aperçu du widget moyen.
 La route est `GET /api/hooks/widget`. Elle est sous `/api/hooks/`, comme le webhook Apple Santé :
 **la règle Bypass de l'accès Cloudflare pour `/api/hooks/*` la couvre déjà**, rien d'autre à ouvrir.
 
+**Vérifier que la règle Bypass est active** (sans clé, depuis n'importe où) :
+
+```bash
+curl -i https://ton-site/api/hooks/widget
+```
+
+- `401 {"error":"invalid widget key"}` : la route est joignable, c'est ce qu'on veut ;
+- `302` vers `….cloudflareaccess.com/cdn-cgi/access/login/…` : la règle Bypass n'est **pas** effective
+  sur ce chemin. Le widget et le Raccourci Apple Santé reçoivent alors la page de connexion au lieu
+  de l'API. Vérifier dans Zero Trust → Access → Applications : une application « Self-hosted » sur le
+  même domaine, chemin `api/hooks/*`, avec une politique d'action **Bypass** pour **Everyone**.
+
 - Elle ne répond qu'à une **clé de widget** (`Authorization: Bearer bxh_…`). Pas de session, pas de
   clé Apple Santé : une clé d'un type est refusée par la route de l'autre, donc une clé de widget
   perdue ne permet de lire que ce résumé et n'écrit rien.

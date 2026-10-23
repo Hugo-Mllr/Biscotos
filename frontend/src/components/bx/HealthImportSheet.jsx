@@ -9,6 +9,7 @@ import { SHORTCUT_JSON, guideSteps } from '../../lib/health-guide.js'
 import { apiUrl } from '../../lib/api.js'
 import { listHookTokens, createHookToken, revokeHookToken, loadHealthSamples } from '../../lib/nutrition-api.js'
 import { shiftDay } from '../../lib/nutrition.js'
+import { saveFailure } from '../../lib/failure.js'
 import { todayISO, fmtNum } from '../../lib/format.js'
 import { Sheet } from './index.jsx'
 
@@ -78,7 +79,7 @@ export default function HealthImportSheet({ onClose }) {
         <p className="bx-small bx-dim">{t('Paste both into the Shortcut, as described in the guide. Treat the token like a password.')}</p>
       </div>}
 
-      {err && <div className="bx-alert" role="alert" style={{ margin: 'var(--bx-s3) 0' }}>{err.status === 409 ? t('Five tokens at most: revoke one first.') : t('Could not save. Try again.')}</div>}
+      {err && <div className="bx-alert" role="alert" style={{ margin: 'var(--bx-s3) 0' }}>{err.status === 409 ? t('Five tokens at most: revoke one first.') : saveFailure(err)}</div>}
 
       <section className="bx-card" aria-label={t('Tokens')}>
         <div className="bx-card-hd"><h3 className="bx-label" style={{ color: 'var(--bx-ink)' }}>{t('Tokens')}</h3></div>
