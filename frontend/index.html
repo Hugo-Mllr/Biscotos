@@ -25,9 +25,10 @@
      proxy (Authelia, Cloudflare Access, Teleport…) that fetch is a login redirect and the Home Screen
      icon comes out generic. iOS 26 reads the icon from the manifest, so this is where it shows. -->
 <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="icon" type="image/png" sizes="48x48" href="icon-48.png">
-<link rel="icon" type="image/png" href="icon-180.png">
+<!-- ?v= : images are served with a 30-day immutable cache, so a new icon needs a new address -->
+<link rel="apple-touch-icon" href="icon-180.png?v=2">
+<link rel="icon" type="image/png" sizes="48x48" href="icon-48.png?v=2">
+<link rel="icon" type="image/png" href="icon-180.png?v=2">
 </head>
 <body>
 <div id="root"></div>

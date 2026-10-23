@@ -193,6 +193,20 @@ export function weekPoints(S, monday, { today, nutrition = null } = {}) {
 /* ---------- streak ---------- */
 
 /**
+ * The weeks a profile carried over from another app (Settings → Stats → streak), as Mondays: `weeks`
+ * of them, the newest in the week of `through`. Only a whole number of weeks from 1 to 520, a real day,
+ * and nothing in the future count; anything else is no streak at all.
+ */
+export function carriedWeeks(carry, today) {
+  const weeks = Math.floor(Number(carry?.weeks));
+  if (!(weeks >= 1) || !isDay(carry?.through) || carry.through > today) return [];
+  const out = [];
+  let wk = weekOf(carry.through);
+  for (let i = 0; i < Math.min(weeks, 520); i++) { out.push(wk); wk = shiftDay(wk, -7); }
+  return out;
+}
+
+/**
  * Consecutive weeks with at least one workout, ending this week (or last week, while this one
  * is still empty: a Monday morning does not break a streak). One joker a calendar month covers a
  * single missed week (the month of that week's Monday), applied on its own and walking back.
@@ -200,6 +214,7 @@ export function weekPoints(S, monday, { today, nutrition = null } = {}) {
  */
 export function streakOf(S, today, { maxWeeks = 520 } = {}) {
   const trained = new Set(usableWorkouts(S, today).map(w => weekOf(w.d)));
+  for (const wk of carriedWeeks(S?.streakCarry, today)) trained.add(wk);
   const thisWeek = weekOf(today);
   let wk = trained.has(thisWeek) ? thisWeek : shiftDay(thisWeek, -7);
   const usedMonths = new Set();

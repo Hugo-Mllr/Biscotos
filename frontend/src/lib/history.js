@@ -1,6 +1,7 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { syncSupersetMeta } from './superset-meta.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
+import { carriedWeekKeys } from './streak-carry.js'
 import { fmtSpeed } from './speed.js'
 import { hasIncline, inclineFrom } from './incline.js'
 import { isCardio, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
@@ -880,9 +881,11 @@ export function moveRoutineEntry(items, index, direction) {
 export function unitOf(units, idx) { return units.find(u => u.includes(idx)) || [idx] }
 
 export function streakWeeks(S) {
-  if (!S.workouts.length) return 0
+  const carried = S.streakCarry ? carriedWeekKeys(S.streakCarry, weekStartOf(S)) : []
+  if (!S.workouts.length && !carried.length) return 0
   const ws = weekStartOf(S)
-  const weeks = new Set(S.workouts.map(w => weekKey(w.d, ws)))
+  // The weeks carried over from another app (lib/streak-carry.js) count as trained weeks.
+  const weeks = new Set([...S.workouts.map(w => weekKey(w.d, ws)), ...carried])
   let streak = 0
   const cur = new Date()
   for (let i = 0; i < 520; i++) {

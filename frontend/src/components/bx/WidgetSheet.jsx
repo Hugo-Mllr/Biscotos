@@ -8,6 +8,7 @@ import { getLang } from '../../lib/i18n-core.js'
 import { apiUrl } from '../../lib/api.js'
 import { listHookTokens, createHookToken, revokeHookToken } from '../../lib/nutrition-api.js'
 import { widgetScript } from '../../lib/widget-script.js'
+import { saveFailure } from '../../lib/failure.js'
 import { Sheet } from './index.jsx'
 
 const fmtWhen = ms => (ms ? new Date(ms).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : t('never'))
@@ -22,7 +23,8 @@ export default function WidgetSheet({ onClose }) {
   const [fresh, setFresh] = useState(null)      // { token, hook } just created: its script can be copied now
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(null)   // null: not tried · true: on the clipboard · false: the phone refused
+  const [script, setScript] = useState('')
 
   useEffect(() => { listHookTokens().then(r => setHooks((r.hooks || []).filter(isWidget))).catch(setErr) }, [])
 
@@ -30,7 +32,9 @@ export default function WidgetSheet({ onClose }) {
     setBusy(true); setErr(null)
     try {
       const r = await createHookToken(t('iPhone widget'), 'widget')
-      setFresh(r); setHooks(h => [...(h || []), r.hook]); setCopied(false)
+      setFresh(r); setHooks(h => [...(h || []), r.hook]); setCopied(null)
+      // Shown in the sheet as well as copied: it holds the key, and a phone may refuse the clipboard.
+      setScript(widgetScript({ base: apiUrl('/api/hooks/widget').replace(/\/api\/hooks\/widget$/, ''), key: r.token, lang: getLang() }))
     } catch (x) { setErr(x) } finally { setBusy(false) }
   }
   const revoke = async id => {
@@ -38,13 +42,10 @@ export default function WidgetSheet({ onClose }) {
     try {
       const hook = await revokeHookToken(id)
       setHooks(h => h.map(x => (x.id === id ? hook : x)))
-      if (fresh?.hook.id === id) setFresh(null)
+      if (fresh?.hook.id === id) { setFresh(null); setScript('') }
     } catch (x) { setErr(x) } finally { setBusy(false) }
   }
-  const copyScript = async () => {
-    const base = apiUrl('/api/hooks/widget').replace(/\/api\/hooks\/widget$/, '')
-    setCopied(await copy(widgetScript({ base, key: fresh.token, lang: getLang() })))
-  }
+  const copyScript = async () => setCopied(await copy(script))
   const live = (hooks || []).filter(h => !h.revokedAt)
 
   return (
@@ -58,12 +59,15 @@ export default function WidgetSheet({ onClose }) {
         <li>{t('In Scriptable, tap +, paste, and name the script “Biscotos”. Then add a Scriptable widget to your Home Screen or Lock Screen and choose it.')}</li>
       </ol>
 
-      {err && <div className="bx-alert" role="alert" style={{ marginBottom: 'var(--bx-s3)' }}>{err.status === 409 ? t('Five tokens at most: revoke one first.') : t('Could not save. Try again.')}</div>}
+      {err && <div className="bx-alert" role="alert" style={{ marginBottom: 'var(--bx-s3)' }}>{err.status === 409 ? t('Five tokens at most: revoke one first.') : saveFailure(err)}</div>}
 
       {fresh
         ? <div className="bx-card bx-flash" style={{ borderColor: 'var(--bx-volt-text)' }} role="status">
           <p className="bx-small" style={{ marginBottom: 'var(--bx-s3)' }}>{t('Copy the script now: it holds your key, which will not be shown again.')}</p>
+          <textarea className="bx-input" readOnly rows={7} value={script} aria-label={t('Copy the script')} spellCheck={false} autoComplete="off"
+            onFocus={e => e.target.select()} style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 11, marginBottom: 'var(--bx-s3)' }} />
           <button type="button" className="bx-btn bx-btn-primary bx-btn-block bx-tap" onClick={copyScript}>{copied ? t('Copied') : t('Copy the script')}</button>
+          {copied === false && <p className="bx-small bx-dim" style={{ marginTop: 'var(--bx-s2)' }}>{t('Your phone refused the copy: touch the text above, select all and copy it by hand.')}</p>}
         </div>
         : live.length < 5 && <button type="button" className="bx-btn bx-btn-primary bx-btn-block bx-tap" disabled={busy} onClick={create}>{t('Create a widget key')}</button>}
 

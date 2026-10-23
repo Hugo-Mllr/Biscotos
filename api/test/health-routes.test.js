@@ -193,3 +193,14 @@ test('nothing of a token or a value reaches the server log', async () => {
   assert.ok(!h.log.includes(token.slice(4, 20)));
   assert.ok(!h.log.includes('123.45'));
 });
+
+test('the old /api/hooks/tokens paths and the /api/integrations/tokens ones are the same routes', async () => {
+  for (const h of (await call('GET', '/api/integrations/tokens', as(A))).body.hooks.filter(x => !x.revokedAt)) await call('POST', '/api/integrations/tokens/revoke', as(A), { id: h.id });
+  const a = await call('POST', '/api/integrations/tokens', as(A), { label: 'new path' });
+  assert.equal(a.status, 201);
+  const list = (await call('GET', '/api/hooks/tokens', as(A))).body.hooks;
+  assert.ok(list.some(h => h.id === a.body.hook.id), 'seen through the old path');
+  assert.equal((await call('POST', '/api/hooks/tokens/revoke', as(A), { id: a.body.hook.id })).status, 200);
+  const after = (await call('GET', '/api/integrations/tokens', as(A))).body.hooks.find(h => h.id === a.body.hook.id);
+  assert.ok(after.revokedAt, 'revoked through the old path, seen through the new one');
+});

@@ -213,8 +213,8 @@ self.addEventListener('push', e => {
     try { for (const n of await self.registration.getNotifications({ tag })) n.close() } catch {}
     await self.registration.showNotification(data.title || 'openGym', {
       body: data.body || '',
-      icon: 'icon-512.png',
-      badge: 'icon-180.png',
+      icon: 'icon-512.png?v=2',
+      badge: 'icon-180.png?v=2',
       tag,
       renotify: true,
       // Biscotos: where a tap takes you (a friend's reaction → the league). Only a path of this

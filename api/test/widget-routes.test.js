@@ -57,16 +57,16 @@ async function call(method, route, headers, body) {
 
 let widgetKey, healthKey, widgetId;
 test('keys of two kinds are minted by a session, and a bad kind is refused', async () => {
-  let r = await call('POST', '/api/hooks/tokens', as(A), { kind: 'widget', label: 'iPhone widget' });
+  let r = await call('POST', '/api/integrations/tokens', as(A), { kind: 'widget', label: 'iPhone widget' });
   assert.equal(r.status, 201);
   assert.equal(r.body.hook.kind, 'widget');
   widgetKey = r.body.token; widgetId = r.body.hook.id;
-  r = await call('POST', '/api/hooks/tokens', as(A), { label: 'Shortcut' });
+  r = await call('POST', '/api/integrations/tokens', as(A), { label: 'Shortcut' });
   assert.equal(r.body.hook.kind, 'apple-health', 'no kind: an Apple Health token, as before');
   healthKey = r.body.token;
-  r = await call('POST', '/api/hooks/tokens', as(A), { kind: 'widget' });
+  r = await call('POST', '/api/integrations/tokens', as(A), { kind: 'widget' });
   assert.equal(r.body.hook.label, 'Widget');
-  assert.equal((await call('POST', '/api/hooks/tokens', as(A), { kind: 'admin' })).status, 400);
+  assert.equal((await call('POST', '/api/integrations/tokens', as(A), { kind: 'admin' })).status, 400);
 });
 
 test('the summary: numbers of today only, the calculated goal, steps and the goal for them', async () => {
@@ -99,7 +99,7 @@ test('a key of the other kind, none, a malformed one, a session cookie: all 401'
 });
 
 test('revoked, it stops at once', async () => {
-  assert.equal((await call('POST', '/api/hooks/tokens/revoke', as(A), { id: widgetId })).status, 200);
+  assert.equal((await call('POST', '/api/integrations/tokens/revoke', as(A), { id: widgetId })).status, 200);
   assert.equal((await call('GET', '/api/hooks/widget', bearer(widgetKey))).status, 401);
 });
 

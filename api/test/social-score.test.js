@@ -1,7 +1,7 @@
 /* Biscotos league rules (social/score.js) on synthetic workouts. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { weekPoints, streakOf, weekOf, shiftDay, bestsOf, bestSetsOf, usableWorkouts, plannedPerWeek, seasonOf, POINTS } from '../social/score.js';
+import { weekPoints, streakOf, carriedWeeks, weekOf, shiftDay, bestsOf, bestSetsOf, usableWorkouts, plannedPerWeek, seasonOf, POINTS } from '../social/score.js';
 
 const MON = '2026-10-12';           // a Monday
 const TODAY = '2026-10-16';         // the Friday after
@@ -120,4 +120,22 @@ test('bestSetsOf: the best done work set per exercise, in kg, warm-ups and high 
   assert.equal(b.bench.kg, 102);
   assert.equal(b.bench.d, '2026-01-05');
   assert.equal(b.row.kg, 22.75);
+});
+
+test('a streak carried over from another app counts as trained weeks, and nothing else', () => {
+  const today = '2026-10-16';                                       // a Friday: this week is 2026-10-12
+  assert.deepEqual(carriedWeeks({ weeks: 3, through: '2026-10-08' }, today), ['2026-10-05', '2026-09-28', '2026-09-21']);
+  for (const bad of [null, {}, { weeks: 0, through: '2026-10-08' }, { weeks: 3, through: 'x' }, { weeks: 3, through: '2027-01-01' }]) assert.deepEqual(carriedWeeks(bad, today), []);
+  // alone: the run of last week and before, with this week still open
+  assert.equal(streakOf({ workouts: [], streakCarry: { weeks: 12, through: '2026-10-08' } }, today).weeks, 12);
+  // a workout this week joins it
+  const S = { workouts: [wk(MON, [ex('bench', set(60, 5))])], streakCarry: { weeks: 12, through: '2026-10-08' } };
+  assert.equal(streakOf(S, TODAY).weeks, 13);
+  // weeks logged here are not counted twice
+  assert.equal(streakOf({ workouts: [wk('2026-10-06', [ex('bench', set(60, 5))])], streakCarry: { weeks: 12, through: '2026-10-08' } }, today).weeks, 12);
+  // a gap of two weeks since breaks it; no points come from carried weeks
+  assert.equal(streakOf({ workouts: [], streakCarry: { weeks: 12, through: '2026-09-24' } }, today).weeks, 0);
+  assert.equal(weekPoints({ workouts: [], streakCarry: { weeks: 12, through: '2026-10-08' } }, MON, { today: TODAY }).points, 0);
+  // absurd numbers are capped, never an endless loop
+  assert.ok(streakOf({ workouts: [], streakCarry: { weeks: 1e9, through: '2026-10-08' } }, today).weeks <= 520);
 });

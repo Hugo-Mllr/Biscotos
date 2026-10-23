@@ -153,7 +153,7 @@ function authOf (op, tag) {
     return { chip: 'public', line: 'Public: no authentication required.' }
   }
   if (Array.isArray(op.security) && op.security.some(s => s && 'webhookToken' in s)) {
-    return { chip: 'webhook', line: 'Webhook token only: <code>Authorization: Bearer bxh_…</code> from POST /api/hooks/tokens. A session is not accepted here, and the token is accepted nowhere else.' }
+    return { chip: 'webhook', line: 'Webhook token only: <code>Authorization: Bearer bxh_…</code> from POST /api/integrations/tokens. A session is not accepted here, and the token is accepted nowhere else.' }
   }
   if (tag === 'admin') {
     return {
