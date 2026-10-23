@@ -2566,4 +2566,5 @@ export default {
   'React {0}': 'Reagir {0}',
   '{0} record': '{0} recorde',
   '{0} records': '{0} recordes',
+  "Program": "Programa",
 }

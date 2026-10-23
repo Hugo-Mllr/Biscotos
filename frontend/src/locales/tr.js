@@ -2566,4 +2566,5 @@ export default {
   'React {0}': '{0} ile tepki ver',
   '{0} record': '{0} rekor',
   '{0} records': '{0} rekor',
+  "Program": "Program",
 }

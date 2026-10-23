@@ -2621,4 +2621,5 @@ export default {
   'React {0}': 'تفاعل {0}',
   '{0} record': '{0} رقم',
   '{0} records': '{0} أرقام',
+  "Program": "البرنامج",
 }

@@ -12,6 +12,10 @@ window.matchMedia = q => ({ matches: q.includes('reduce'), addEventListener() {}
 
 let host, root, saved, close
 const flush = async () => { for (let i = 0; i < 4; i++) await act(async () => { await Promise.resolve() }) }
+const typeInput = (el, value) => act(() => {
+  Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(el, value)
+  el.dispatchEvent(new Event('input', { bubbles: true }))
+})
 const byText = (sel, text) => [...document.querySelectorAll(sel)].find(el => el.textContent.includes(text))
 const typeText = (el, value) => act(() => {
   Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(el, value)
@@ -38,15 +42,17 @@ describe('NoteImportSheet', () => {
     typeText(host.querySelector('textarea'), NOTE)
     act(() => byText('button', 'Read my note').click())
     await flush()
-    const names = [...host.querySelectorAll('input.input:not([data-search])')].map(i => i.value)
+    const names = [...host.querySelectorAll('input.input:not([data-search]):not([data-program])')].map(i => i.value)
     expect(names).toEqual(['Push', 'Pull'])
     expect(host.textContent).toContain('Bench press 4x8 80kg')
     expect(host.textContent).toContain('4 × 8 · 80 kg')                         // what the routine will ask for, load included
     expect(host.textContent).toContain('No match in the library')
     expect(byText('button', 'Add 2 routines')).toBeTruthy()
 
+    typeInput(host.querySelector('input[data-program]'), 'PPL')                // one program for the whole import
     act(() => byText('button', 'Add 2 routines').click())
     const routines = useStore.getState().S.routines
+    expect(routines.map(r => r.program)).toEqual([undefined, 'PPL', 'PPL'])
     expect(routines.map(r => r.name)).toEqual(['Mine', 'Push', 'Pull'])      // never replaces or reorders what exists
     expect(routines[1].ex.length).toBeGreaterThan(0)
     expect(routines[1].ex[0]).toMatchObject({ sets: 4, reps: 8, weight: 80 })

@@ -1615,6 +1615,7 @@ export const PT_BR_OVERRIDES = {
   'Records together': 'Recordes em grupo',
   'Weekly plans met': 'Planos da semana cumpridos',
   'Badges': 'Insígnias',
+  "Program": "Programa",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
