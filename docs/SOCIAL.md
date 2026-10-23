@@ -90,6 +90,10 @@ série en semaines (4, 12, 26, 52), records (10, 50, 100 ; seulement si les reco
 Tout est calculé à la demande (`api/social/badges.js`), rien n'est stocké, et les séances Strava
 ne comptent pas.
 
+Ses propres badges sont aussi dans l'onglet Stats (`GET /api/social/badges`, sans cercle), avec le
+palier suivant en grisé. Un nouveau badge depuis la dernière visite déclenche les confettis une fois ;
+la première visite ne fête rien, et la mémoire du « déjà vu » reste dans le navigateur.
+
 ## Le fantôme d'un pote
 
 Pendant une séance, sous chaque exercice en répétitions, une ligne « 👻 Sam : 100 kg × 5 »

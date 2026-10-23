@@ -3608,6 +3608,18 @@ paths:
       responses:
         '200': { description: "`ok`." }
         '404': { description: "No such idea, or not yours." }
+  /api/social/badges:
+    get:
+      tags: [social]
+      operationId: getSocialBadges
+      summary: The caller's own badges and the tiers of each kind
+      description: >-
+        Derived on demand from the caller's own workouts, nothing stored, no circle needed. `badges`
+        is the highest tier reached of each kind (sessions, streak in weeks, records); `tiers` lists
+        every tier of each kind so the app can show the next one.
+      responses:
+        '200': { description: "`badges`: [{ id: sessions|streak|records, tier }]; `tiers`: { sessions: [..], streak: [..], records: [..] }." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /api/social/challenge:
     get:
       tags: [social]
