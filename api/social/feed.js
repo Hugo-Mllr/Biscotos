@@ -9,7 +9,7 @@ import { usableWorkouts, bestsOf, shiftDay } from './score.js';
 
 export const FEED_DAYS = 14;
 export const FEED_MAX = 60;
-export const REACTIONS = Object.freeze(['💪', '🔥', '🍪', '👏', '😮']);
+export const REACTIONS = Object.freeze(['💪', '🔥', '🍪', '👏', '😮', '🏆']);
 export const REACTION_DAYS = 30;
 
 /** Records set by each workout, in order: { workoutId: n }. The first time ever is not one. */

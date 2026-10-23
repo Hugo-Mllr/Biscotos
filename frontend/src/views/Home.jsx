@@ -21,6 +21,7 @@ import NutritionToday from '../components/NutritionToday.jsx'
 import LeagueToday from '../components/LeagueToday.jsx'
 import ReadinessToday from '../components/ReadinessToday.jsx'
 import IdeasToday from '../components/IdeasToday.jsx'
+import StreakCarrySheet from '../components/bx/StreakCarrySheet.jsx'
 import StepsToday from '../components/StepsToday.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
@@ -31,6 +32,7 @@ export default function Home() {
   // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
   const trouble = useConnectionTrouble()
   const [weekOffset, setWeekOffset] = useState(0)
+  const [carry, setCarry] = useState(false)   // the "continue a streak" sheet
 
   const today = new Date()
   // A weekday can hold several routines. `todayRoutines` is the whole day; `routine` is the
@@ -239,6 +241,7 @@ export default function Home() {
       <HealthWeightPrompt />
     </div>}
 
+    {carry && <StreakCarrySheet onClose={() => setCarry(false)} />}
     <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
       <div className="row between">
         <div>
@@ -247,6 +250,8 @@ export default function Home() {
             {t('{0} week streak', streakWeeks(S))}
           </div>
           <div className="muted small" style={{ marginTop: 2 }}>{doneThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {tn('{0} workout total', '{0} workouts total', S.workouts.length)}</div>
+          <button className="muted small" style={{ marginTop: 4, padding: 0, background: 'none', border: 0, color: 'var(--acc, inherit)', cursor: 'pointer' }}
+            onClick={e => { e.stopPropagation(); setCarry(true) }}>{t('Continue a streak')} ›</button>
         </div>
         <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
       </div>
