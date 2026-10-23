@@ -3687,7 +3687,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: { type: object, required: [circle, event], properties: { circle: { type: string }, event: { type: string }, emoji: { type: string, nullable: true, enum: ['💪', '🔥', '🍪', '👏', '😮', null] } } }
+            schema: { type: object, required: [circle, event], properties: { circle: { type: string }, event: { type: string }, emoji: { type: string, nullable: true, enum: ['💪', '🔥', '🍪', '👏', '😮', '🏆', null] } } }
       responses:
         '200': { description: The event's reactions. }
         '400': { description: Unknown emoji. }

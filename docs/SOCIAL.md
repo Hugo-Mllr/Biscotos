@@ -58,7 +58,7 @@ cette semaine). Deux semaines ratées de suite cassent la série.
 
 - **Fil** (écran Ligue) : séances des 14 derniers jours des membres qui partagent l'entraînement
   (nom, durée, nombre d'exercices, nombre de records si partagés — jamais de charge), arrivées.
-- **Réactions** 💪 🔥 🍪 👏 😮 : une par personne et par séance ; gardées 30 jours dans `social.json`.
+- **Réactions** 💪 🔥 🍪 👏 😮 🏆 : une par personne et par séance ; gardées 30 jours dans `social.json`.
 - **Notifications** (interrupteur « Notifications », activé par défaut) : réaction à ta séance,
   record d'un pote, **bilan du lundi** à 9 h (podium de la semaine passée ; « mur de la honte »
   des 0 point, désactivable par le propriétaire du cercle).
