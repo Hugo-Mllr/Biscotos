@@ -2577,4 +2577,5 @@ export default {
   'React {0}': 'รีแอ็ก {0}',
   '{0} record': '{0} สถิติ',
   '{0} records': '{0} สถิติ',
+  "Program": "โปรแกรม",
 }

@@ -204,3 +204,12 @@ describe('a checklist note, as Apple Notes exports it', () => {
     expect(rankMatches('zzzz qqqq', CATALOGUE)).toEqual([])
   })
 })
+
+describe('a program on an imported routine', () => {
+  it('is kept, cleaned, and absent when empty', () => {
+    const picks = [{ exercise: CATALOGUE[0], item: { sets: 3, reps: 10 } }]
+    expect(buildRoutine('Push', picks, { program: '  PPL ' }).program).toBe('PPL')
+    expect('program' in buildRoutine('Push', picks)).toBe(false)
+    expect('program' in buildRoutine('Push', picks, { program: '   ' })).toBe(false)
+  })
+})

@@ -2559,4 +2559,5 @@ export default {
   'React {0}': '回應 {0}',
   '{0} record': '{0} 項紀錄',
   '{0} records': '{0} 項紀錄',
+  "Program": "訓練計畫",
 }

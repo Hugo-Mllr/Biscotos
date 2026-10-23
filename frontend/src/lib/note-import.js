@@ -7,6 +7,7 @@
 import { defaultConfig } from './history.js'
 import { searchExercises, normalizeStr } from './exercises.js'
 import { exerciseNameText, uid } from './format.js'
+import { cleanProgram } from './programs.js'
 
 export const NOTE_MAX_CHARS = 20000
 export const MAX_ROUTINES = 12
@@ -187,7 +188,7 @@ const toUnit = (w, from, to) => {
  * exercise's own mode wins (a plank is timed, a run is cardio) and a load is converted into the
  * profile's unit. Pure: the id comes from `newId`.
  */
-export function buildRoutine(name, picks, { unit = 'kg', glyph = 'dumbbell', newId = uid } = {}) {
+export function buildRoutine(name, picks, { unit = 'kg', glyph = 'dumbbell', newId = uid, program = '' } = {}) {
   const ex = []
   for (const { exercise, item } of picks) {
     if (!exercise) continue
@@ -211,5 +212,7 @@ export function buildRoutine(name, picks, { unit = 'kg', glyph = 'dumbbell', new
     }
     ex.push({ id: exercise.id, ...cfg })
   }
-  return { id: newId(), name: String(name || '').trim().slice(0, 60) || 'Imported', emoji: glyph, ex }
+  const out = { id: newId(), name: String(name || '').trim().slice(0, 60) || 'Imported', emoji: glyph, ex }
+  if (cleanProgram(program)) out.program = cleanProgram(program)
+  return out
 }

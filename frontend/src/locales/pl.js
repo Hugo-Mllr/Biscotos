@@ -2566,4 +2566,5 @@ export default {
   'React {0}': 'Zareaguj {0}',
   '{0} record': '{0} rekord',
   '{0} records': { one: '{0} rekord', few: '{0} rekordy', many: '{0} rekordów' },
+  "Program": "Program",
 }

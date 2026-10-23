@@ -1,3 +1,4 @@
+import { cleanProgram, programOf, programNames, PROGRAM_MAX } from '../lib/programs.js'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
@@ -470,6 +471,12 @@ export default function RoutineEdit() {
           onChange={e => update(s => { s.routines.find(x => x.id === id).name = e.target.value.trim() || t('Routine') })} />
       </div>
       <button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>
+    </div>
+
+    <div style={{ margin: '0 0 12px' }}>
+      <input className="input" list="programs-in-use" aria-label={t('Program')} placeholder={t('Program') + ' (PPL…)'} maxLength={PROGRAM_MAX}
+        defaultValue={programOf(r)} onChange={e => update(s => { s.routines.find(x => x.id === id).program = cleanProgram(e.target.value) || undefined })} />
+      <datalist id="programs-in-use">{programNames(S.routines).map(n => <option key={n} value={n} />)}</datalist>
     </div>
 
     <div className="sect-b" style={{ marginBottom: 16 }}>

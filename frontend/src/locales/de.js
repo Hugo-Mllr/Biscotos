@@ -2586,4 +2586,5 @@ export default {
   'React {0}': 'Mit {0} reagieren',
   '{0} record': '{0} Rekord',
   '{0} records': '{0} Rekorde',
+  "Program": "Programm",
 }

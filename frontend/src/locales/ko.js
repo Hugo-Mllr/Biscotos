@@ -2566,4 +2566,5 @@ export default {
   'React {0}': '{0} 반응',
   '{0} record': '기록 {0}개',
   '{0} records': '기록 {0}개',
+  "Program": "프로그램",
 }

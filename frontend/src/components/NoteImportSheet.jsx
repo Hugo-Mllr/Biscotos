@@ -12,6 +12,7 @@ import { deleteRoutine } from '../lib/routines.js'
 import { exLine } from '../lib/history.js'
 import { parseNote, rankMatches, buildRoutine, NOTE_MAX_CHARS } from '../lib/note-import.js'
 import { useSheetKeyboard } from '../lib/use-sheet-keyboard.js'
+import { programNames, PROGRAM_MAX } from '../lib/programs.js'
 import { Button } from './ui.jsx'
 
 const SKIP = -1
@@ -38,6 +39,7 @@ export function NoteImportSheet({ close }) {
   const list = useMemo(() => allExercises(S), [S.customEx])
   const [text, setText] = useState('')
   const [preview, setPreview] = useState(null)
+  const [program, setProgram] = useState('')   // one name for every routine of this import (lib/programs.js)
   const areaRef = useRef(null)
   const onFocus = useSheetKeyboard(areaRef)
 
@@ -61,7 +63,7 @@ export function NoteImportSheet({ close }) {
   const add = () => {
     const n = ready.length
     const made = ready.map(({ r, i, picks }) =>
-      buildRoutine(r.name || t('Imported') + (preview.routines.length > 1 ? ' ' + (i + 1) : ''), picks, { unit: S.unit }))
+      buildRoutine(r.name || t('Imported') + (preview.routines.length > 1 ? ' ' + (i + 1) : ''), picks, { unit: S.unit, program }))
     useStore.getState().update(s => { for (const r of made) s.routines.push(r) })
     close()
     useUI.getState().toast(t('Added to your plan: {0}', made.map(r => r.name).join(', ')), {
@@ -86,6 +88,9 @@ export function NoteImportSheet({ close }) {
 
   return <>
     <h3>{t('Import a note')}</h3>
+    {preview.routines.length > 1 && <input className="input" data-program="" list="programs-in-use" aria-label={t('Program')} placeholder={t('Program') + ' (PPL…)'}
+      maxLength={PROGRAM_MAX} value={program} onChange={e => setProgram(e.target.value)} style={{ marginBottom: 12 }} />}
+    <datalist id="programs-in-use">{programNames(S.routines).map(n => <option key={n} value={n} />)}</datalist>
     {!preview.routines.length
       ? <p className="muted" style={{ margin: '12px 0' }}>{t('Nothing recognised in this note.')}</p>
       : preview.routines.map((r, ri) => <section key={r.key} style={{ marginBottom: 16 }}>

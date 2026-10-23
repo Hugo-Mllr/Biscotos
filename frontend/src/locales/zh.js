@@ -2566,4 +2566,5 @@ export default {
   'React {0}': '回应 {0}',
   '{0} record': '{0} 项纪录',
   '{0} records': '{0} 项纪录',
+  "Program": "训练计划",
 }

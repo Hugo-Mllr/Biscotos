@@ -2078,6 +2078,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    to their own line instead and stay on the trailing edge. */
 .plan-sec-h>.plan-sec-acts{margin-inline-start:auto}
 .plan-sec-h h4.sec{margin:0}
+/* A program's name over its routines (lib/programs.js) */
+.plan-prog-g + .plan-prog-g{margin-top:14px}
+.plan-prog{display:flex;align-items:center;gap:7px;margin:2px 4px 6px;font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--label-2,var(--label))}
+.plan-prog .icn{font-size:15px;color:var(--acc)}
+.plan-prog .dim{margin-inline-start:auto;font-weight:500}
 .plan-routines-bar{margin-top:0}
 .plan-textbtn{color:var(--acc);font-size:16px;padding:6px 4px;position:relative}
 .plan-textbtn::before{content:'';position:absolute;inset:-6px}

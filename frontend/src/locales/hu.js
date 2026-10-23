@@ -2569,4 +2569,5 @@ export default {
   'React {0}': 'Reakció: {0}',
   '{0} record': '{0} csúcs',
   '{0} records': '{0} csúcs',
+  "Program": "Program",
 }

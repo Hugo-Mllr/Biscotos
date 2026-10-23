@@ -18,6 +18,7 @@ import { workoutControls } from '../lib/workout-controls.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { useListReorder, moved } from '../lib/use-list-reorder.js'
 import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
+import { groupRoutines, programOf } from '../lib/programs.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import { coachAvailable } from '../lib/coach.js'
@@ -423,7 +424,7 @@ function Routines({ S, update, nav }) {
   // The weekdays a routine is on, short, in the order the week runs.
   const order = weekOrder(weekStartOf(S))
   const daysOf = id => order.filter(d => [].concat(S.week[d] || []).includes(id)).map(d => t(DAYS[d]))
-  const sub = r => [exCount(r.ex.length), daysOf(r.id).join(', ')].filter(Boolean).join(' · ')
+  const sub = (r, withProgram) => [withProgram ? programOf(r) : '', exCount(r.ex.length), daysOf(r.id).join(', ')].filter(Boolean).join(' · ')
 
   return <>
     <div className="row between plan-sec-h plan-routines-bar">
@@ -441,11 +442,13 @@ function Routines({ S, update, nav }) {
           <div key={r.id} data-reorder-row className="item plan-routine" style={reorder.rowStyle(i)}>
             <button className="plan-minus" aria-label={t('Delete {0}', r.name)} title={t('Delete routine')} onClick={() => remove(r)}><Icon name="minus" /></button>
             <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-            <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
+            <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r, true)}</div></div>
             {routines.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r.name)} title={t('Drag to reorder')}
               {...reorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
           </div>)}</div>
-        : <div className="list routine-list plan-routines">{routines.map(r => {
+        : groupRoutines(routines).map(g => <section key={g.name} className="plan-prog-g">
+          {g.name && <div className="plan-prog"><Icon name="folder" /><span>{g.name}</span><span className="dim">{g.routines.length}</span></div>}
+          <div className="list routine-list plan-routines">{g.routines.map(r => {
           const row = <div key={r.id} className="item plan-routine" {...tappable(() => nav('/plan/r/' + r.id))}>
             <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
             <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
@@ -458,7 +461,7 @@ function Routines({ S, update, nav }) {
               onDelete={() => remove(r)} onCopy={() => duplicate(r)}
               flash={flash?.id === r.id ? flash.n : 0}>{row}</SwipeRow>
             : row
-        })}</div>}
+        })}</div></section>)}
       <p className="sect-f">{edit ? t('Drag to reorder. Tap the minus to delete.') : t('Tap a routine to edit it. Reorder and delete are behind Edit.')}</p>
     </> : <>
       <div className="empty"><div className="ico"><Icon name="clipboard" /></div>{t('No routines yet.')}<br />{t('Make one, or grab the starter plan to get going.')}</div>
