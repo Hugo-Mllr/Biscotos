@@ -13,7 +13,8 @@ export const MAX_ROUTINES = 12
 export const MAX_ITEMS = 40
 const LB_TO_KG = 0.45359237
 
-const BULLET = /^\s*(?:[-–—•·▪◦*]+|\[\s?[xX✓]?\s?\]|\d{1,2}[.)])\s+/
+// One marker ("-", "•", "1.", "[ ]") or several in a row: a Notes checklist line is "- [x] Squat".
+const BULLET = /^\s*(?:(?:[-–—•·▪◦*]+|\[\s?[xX✓]?\s?\]|[☐☑✅✔]\uFE0F?|\d{1,2}[.)])\s+)+/
 const DASHES = /[–—]/g
 
 // A line that is nothing but a day or a split ("Push", "Leg day", "Upper body", "Jour 1", "Lundi"),
@@ -61,8 +62,12 @@ export function parseLine(raw) {
     if (/^(min|mn|minute)/i.test(m[2])) item.min = v; else item.sec = v
     s = cut(s, m)
   }
+  // "Butterfly 2x8 7,5": a bare number after the sets is the load (the first one; "55 + 1x 50" is a drop).
+  if (item.weight == null && item.sets != null && (m = /(?:^|\s)(\d+(?:\.\d+)?)(?=\s|$)/.exec(s))) { item.weight = num(m[1]); s = cut(s, m) }
   if (item.repsMin != null && item.repsMin > item.reps) [item.repsMin, item.reps] = [item.reps, item.repsMin]
 
+  s = s.replace(/(?:\s+\+?\s*\d+(?:\.\d+)?(?:\s*[x×]\s*\d+(?:\.\d+)?)?)+\s*$/, '')   // "… + 1x 50" left after the load
+  s = s.split('+')[0]   // "Curl pupitre + 2x10 15 …": what follows a plus is another set, not the name
   item.name = s.replace(/[:;,()@|]+/g, ' ').replace(/(^|\s)(?:à|a|de|of|at|avec|with|x)(?=\s|$)/gi, ' ').replace(/\s+-\s+|^-+|-+$/g, ' ').replace(/\s+/g, ' ').trim()
   return /\p{L}/u.test(item.name) ? item : null     // a name has a letter: "42" or "---" is not an exercise
 }
@@ -102,6 +107,8 @@ export function parseNote(text, { isKnown = () => false } = {}) {
       const numbered = hasNumbers(item)
       const heading = !numbered && (
         /:\s*$/.test(line) || HEADING_WORD.test(item.name) || (i === 0 && block.length > 1 && !isKnown(item.name))
+        // "Pecs / épaules" over a checklist: the one line without a bullet among bulleted ones is the title
+        || (i === 0 && !BULLET.test(line) && block.slice(1).some(l => BULLET.test(l)))
       )
       if (heading) { sawHeading = true; start(bare); blockStarted = true; return }
       if (!cur || (!sawHeading && !blockStarted)) { start(null); blockStarted = true }
@@ -112,6 +119,18 @@ export function parseNote(text, { isKnown = () => false } = {}) {
   ignored += routines.length - kept.length
   return { routines: kept, ignored, truncated }
 }
+
+// French gym words the library's names do not carry; tried before the words as written.
+const SYNONYMS = [
+  [/d[ée]v(?:elopp[ée])?\.?\s*militaire/i, 'overhead press'],
+  [/[ée]l[ée]vations?\s*lat[ée]rales?/i, 'lateral raise'], [/tirage\s*vertical/i, 'cable wide grip lat pulldown'],
+  [/tirage\s*horizontal/i, 'seated cable row'], [/tirage\s*machine/i, 'seated row'], [/butterfly|pec\s*deck/i, 'pec deck fly'],
+  [/curl\s*pupitre/i, 'preacher curl'], [/curl\s*marteau/i, 'hammer curl'], [/curl\s*ischio/i, 'lever lying leg curl'],
+  [/triceps\s*poulie/i, 'triceps pushdown'], [/adducteurs?/i, 'hip adduction machine'], [/abducteurs?/i, 'hip abduction machine'],
+  [/\brdl\b|soulev[ée]\s*de\s*terre\s*roumain/i, 'romanian deadlift'], [/(?:extension\s*(?:de\s*)?jambes?|^leg\s*extensions?)/i, 'lever leg extension'],
+  [/presse\s*[àa]\s*cuisses?/i, 'leg press'], [/dips?/i, 'dip'], [/tractions?/i, 'pull-up'],
+]
+const synonymOf = q => { for (const [re, en] of SYNONYMS) if (re.test(q)) return en; return null }
 
 // When a name does not say which equipment ("Bench press", "Squat"), a barbell is what a note means.
 const EQUIPMENT_RANK = { barbell: 0, 'body weight': 1, dumbbell: 2, 'leverage machine': 3, cable: 4, 'smith machine': 5 }
@@ -127,14 +146,21 @@ const wordCount = e => String(e?.n || '').split(/\s+/).filter(Boolean).length
 export function rankMatches(name, list, limit = 5) {
   const q = String(name || '').trim()
   if (!q) return []
-  const nq = normalizeStr(q)
+  const syn = synonymOf(q)
+  const nq = normalizeStr(syn || q)
   const tokens = nq.split(/[^a-z0-9]+/).filter(w => w.length >= 2)
   const exact = e => normalizeStr(exerciseNameText(e)) === nq || normalizeStr(e.n) === nq
   const cover = e => {
     const hay = normalizeStr(exerciseNameText(e) + ' ' + e.n)
     return tokens.length ? tokens.filter(w => hay.includes(w)).length / tokens.length : 0
   }
-  return searchExercises(list, q).slice(0, 20)
+  // A note line carries comments ("Curl pupitre sensation bien mais chiant"): when every word
+  // finds nothing, fewer and fewer of the first words do (the name comes first), down to one.
+  const words = q.split(/\s+/).filter(Boolean)
+  let found = []
+  if (syn) found = searchExercises(list, syn).slice(0, 20)
+  for (let n = words.length; n >= 1 && !found.length; n--) found = searchExercises(list, words.slice(0, n).join(' ')).slice(0, 20)
+  return found
     .map((e, i) => ({ e, i, exact: exact(e) ? 1 : 0, cover: cover(e) }))
     .sort((a, b) => (b.exact - a.exact) || (b.cover - a.cover)
       || (wordCount(a.e) - wordCount(b.e))

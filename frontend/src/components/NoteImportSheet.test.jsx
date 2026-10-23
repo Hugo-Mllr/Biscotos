@@ -38,7 +38,7 @@ describe('NoteImportSheet', () => {
     typeText(host.querySelector('textarea'), NOTE)
     act(() => byText('button', 'Read my note').click())
     await flush()
-    const names = [...host.querySelectorAll('input.input')].map(i => i.value)
+    const names = [...host.querySelectorAll('input.input:not([data-search])')].map(i => i.value)
     expect(names).toEqual(['Push', 'Pull'])
     expect(host.textContent).toContain('Bench press 4x8 80kg')
     expect(host.textContent).toContain('4 × 8 · 80 kg')                         // what the routine will ask for, load included

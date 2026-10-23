@@ -76,7 +76,7 @@ body::before {
 }
 
 /* ------------------------------------------------------------------ glass -- */
-.card, .tile, .list, .menu-group.grouped .menu-list, .bx-card, .sect-b {
+.card, .tile, .menu-group.grouped .menu-list, .bx-card, .sect-b {
   -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
   box-shadow: inset 0 0 0 1px var(--glass-line), var(--glass-shadow);
 }
@@ -104,7 +104,7 @@ body::before {
     inset-inline: 10px; bottom: calc(6px + var(--sab) * .55);
     padding: 7px 8px 8px; border-radius: 28px;
   }
-  #app { padding-bottom: calc(96px + var(--sab)) }
+  #app { padding-bottom: calc(150px + var(--sab)) }
 }
 @media (min-width: 1000px) {
   #tabbar { border-radius: 0; box-shadow: inset -1px 0 0 var(--glass-line); background: var(--bg-el) }

@@ -28,7 +28,7 @@ function read(text, list) {
     ignored: parsed.ignored,
     routines: parsed.routines.map((r, i) => ({
       key: i, name: r.name || '',
-      items: r.items.map(item => { const candidates = rank(item.name); return { item, candidates, choice: candidates.length ? 0 : SKIP } })
+      items: r.items.map(item => { const candidates = rank(item.name); return { item, candidates, first: candidates, q: '', choice: candidates.length ? 0 : SKIP } })
     }))
   }
 }
@@ -43,6 +43,14 @@ export function NoteImportSheet({ close }) {
 
   const choose = (ri, ii, choice) => setPreview(p => ({
     ...p, routines: p.routines.map((r, i) => (i !== ri ? r : { ...r, items: r.items.map((it, j) => (j !== ii ? it : { ...it, choice })) }))
+  }))
+  // Typing in a line's own search box looks the library up again: a note's words are not always the library's.
+  const research = (ri, ii, q) => setPreview(p => ({
+    ...p, routines: p.routines.map((r, i) => (i !== ri ? r : { ...r, items: r.items.map((it, j) => {
+      if (j !== ii) return it
+      const candidates = q.trim().length >= 2 ? rankMatches(q, list, 8) : it.first
+      return { ...it, q, candidates, choice: candidates.length ? 0 : SKIP }
+    }) }))
   }))
   const rename = (ri, name) => setPreview(p => ({ ...p, routines: p.routines.map((r, i) => (i === ri ? { ...r, name } : r)) }))
 
@@ -93,6 +101,8 @@ export function NoteImportSheet({ close }) {
                   <option value={SKIP}>{t('Skip')}</option>
                 </select>
                 : <div className="small dim" style={{ marginTop: 4 }}>{t('No match in the library')} · {t('Skip')}</div>}
+              <input className="input" data-search="" aria-label={t('Search…')} placeholder={t('Search…')} value={x.q || ''} maxLength={60}
+                onChange={e => research(ri, ii, e.target.value)} style={{ marginTop: 4 }} />
               {x.choice !== SKIP && <div className="small dim" style={{ marginTop: 2 }}>{exLine(buildRoutine('', [{ exercise: x.candidates[x.choice], item: x.item }], { unit: S.unit }).ex[0], S.unit)}</div>}
             </div>
           </div>)}

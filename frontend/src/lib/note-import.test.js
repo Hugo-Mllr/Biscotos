@@ -190,3 +190,17 @@ describe('buildRoutine', () => {
     expect(timed || cardio).toBeTruthy()
   })
 })
+
+describe('a checklist note, as Apple Notes exports it', () => {
+  it('drops the dash and the checkbox together', () => {
+    expect(parseLine('- [x] Butterfly 2x8 7,5')).toMatchObject({ name: 'Butterfly', sets: 2, reps: 8, weight: 7.5 })
+    expect(parseLine('- [ ] Face pull').name).toBe('Face pull')
+    expect(parseLine('☑ Squat 3x5').name).toBe('Squat')
+    expect(parseLine('- [x] Chest press 1x7 55 + 1x 50')).toMatchObject({ name: 'Chest press', sets: 1, reps: 7, weight: 55 })
+  })
+
+  it('finds the exercise whatever comment follows its name', () => {
+    expect(rankMatches('Bench press sensation bien mais chiant quand c\u2019est trop lourd', CATALOGUE)[0]?.n.toLowerCase()).toBe('barbell bench press')
+    expect(rankMatches('zzzz qqqq', CATALOGUE)).toEqual([])
+  })
+})
