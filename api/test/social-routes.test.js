@@ -122,7 +122,7 @@ test('every route: no session → 401', async () => {
   const routes = [['GET', '/api/social'], ['PUT', '/api/social/prefs'], ['POST', '/api/social/circles'], ['POST', '/api/social/join'],
     ['POST', '/api/social/leave'], ['POST', '/api/social/circles/update'], ['POST', '/api/social/circles/remove'],
     ['POST', '/api/social/circles/delete'], ['GET', `/api/social/leaderboard?circle=${circle.id}`],
-    ['GET', `/api/social/gym?circle=${circle.id}`], ['POST', '/api/social/gym'], ['GET', `/api/social/challenge?circle=${circle.id}`], ['GET', '/api/social/ghosts?ex=bench']];
+    ['GET', `/api/social/gym?circle=${circle.id}`], ['POST', '/api/social/gym'], ['GET', `/api/social/challenge?circle=${circle.id}`], ['GET', '/api/social/ghosts?ex=bench'], ['GET', '/api/social/badges']];
   for (const [m, route] of routes) {
     const r = await call(m, route, anon, m === 'GET' ? undefined : { circle: circle.id, code: circle.code, name: 'x', training: true });
     assert.equal(r.status, 401, `${m} ${route}`);
@@ -295,4 +295,11 @@ test('ghosts: only friends who turned lifts on, best set in kg, never the caller
   for (const q of ['', '?ex=', '?ex=a%20b', '?ex=' + Array.from({ length: 31 }, (_, i) => 'e' + i).join(',')]) {
     assert.equal((await call('GET', '/api/social/ghosts' + q, as(B))).status, 400, q);
   }
+});
+
+test('badges: the caller\'s own, with the tiers, no circle needed', async () => {
+  const r = await call('GET', '/api/social/badges', as(A));
+  assert.equal(r.status, 200);
+  assert.ok(Array.isArray(r.body.badges));
+  assert.deepEqual(Object.keys(r.body.tiers).sort(), ['records', 'sessions', 'streak']);
 });

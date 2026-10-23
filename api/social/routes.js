@@ -17,7 +17,7 @@ import {
 } from './store.js';
 import { weekPoints, streakOf, seasonOf, weekOf, shiftDay, usableWorkouts, bestSetsOf } from './score.js';
 import { memberEvents, reactionView, pruneReactions, recordsByWorkout, REACTIONS, FEED_MAX } from './feed.js';
-import { badgesOf, challengeOf } from './badges.js';
+import { badgesOf, challengeOf, TIERS } from './badges.js';
 import { reactionPush, recordsPush, recapPush } from './push-copy.js';
 
 const RECAP_HOUR = 9;   // Monday, from 9:00 on the server's clock
@@ -325,6 +325,14 @@ export function createSocial({
       if (!c) return noCircle(res);
       const events = feedOf(doc, c, user.id, today()).map(({ owner, ...e }) => ({ ...e, reactions: reactionView(doc.reactions[e.id]?.by, user.id) }));
       json(res, 200, { circle: { id: c.id, name: c.name }, events, choices: REACTIONS });
+    },
+
+    // The caller's own badges, with the next tier of each, so the app can show a case and celebrate
+    // a new one. Derived on demand from the caller's own data; works without any circle.
+    'GET /api/social/badges': async (req, res) => {
+      const user = signedIn(req, res, READS); if (!user) return;
+      const S = readState(user.id) || { workouts: [] };
+      json(res, 200, { badges: badgesOf(S, today(), { prs: true }), tiers: TIERS });
     },
 
     // The circle's challenge of the week and each member's badges, both derived on demand from

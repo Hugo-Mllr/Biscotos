@@ -27,6 +27,7 @@ import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import StreakCarrySheet from '../components/bx/StreakCarrySheet.jsx'
+import BadgesCard from '../components/BadgesCard.jsx'
 import { isWarmupRow } from '../lib/workout-model.js'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
@@ -636,6 +637,8 @@ export default function Stats() {
       <div className="tile"><div className="l"><Icon name="scale" />{t('Weight 30d')}</div><div className="v" style={{ fontSize: 22, color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>
 
     </div>
+
+    <BadgesCard />
 
     <div className="card">
       <h2>{t('Activity (last 12 months)')}</h2>
